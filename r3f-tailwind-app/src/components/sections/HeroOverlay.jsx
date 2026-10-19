@@ -16,7 +16,7 @@ export default function HeroOverlay() {
           recommendations built around your room, style and budget.
         </p>
         <div className="cta-row">
-          <button onClick={() => navigateTo('/editor')} className="btn-primary">
+          <button onClick={() => navigateTo('/register')} className="btn-primary">
             Enter IntelliSpace
           </button>
           <button className="btn-link">Explore the workspace</button>

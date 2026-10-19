@@ -18,6 +18,7 @@ import REGISTRY from './data/furnitureRegistry';
 import { Heart, Plus, Search, SlidersHorizontal } from 'lucide-react';
 import LandingPage from './pages/LandingPage.jsx';
 import AuthPlaceholder from './pages/AuthPlaceholder.jsx';
+import useAuthStore from './store/useAuthStore.js';
 import { Box, ChevronDown, ChevronLeft, ChevronRight, Download, Expand, Grid2X2, Home, Layers3, Lightbulb, MousePointer2, Move, RotateCw, Ruler, Save, Settings2, Sparkles, Sun, Undo2, Redo2, X } from 'lucide-react';
 
 const tools = [
@@ -291,7 +292,9 @@ function getRoute() { const path = window.location.pathname.replace(/^\/+/, '');
 
 export default function App() {
   const [route, setRoute] = useState(getRoute);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   useEffect(() => { const onHashChange = () => setRoute(getRoute()); window.addEventListener('popstate', onHashChange); window.addEventListener('hashchange', onHashChange); return () => { window.removeEventListener('popstate', onHashChange); window.removeEventListener('hashchange', onHashChange); }; }, []);
+  if (route === 'editor' && !isAuthenticated) return <AuthPlaceholder mode="login" />;
   if (route === 'editor') return <EditorApp />;
   if (route === 'login') return <AuthPlaceholder mode="login" />;
   if (route === 'register') return <AuthPlaceholder mode="register" />;
