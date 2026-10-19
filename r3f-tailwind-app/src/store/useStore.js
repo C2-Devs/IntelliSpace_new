@@ -349,9 +349,27 @@ const useStore = create((set, get) => ({
 
   setLightPreset: (preset) => set({ lightPreset: preset }),
   setRoomAppearance: (updates) =>
-    set((state) => ({
-      room: { ...state.room, ...updates },
-    })),
+  set((state) => ({
+  room: { ...state.room, ...updates },
+  })),
+
+  addWindow: (windowData = {}) => {
+    get()._pushHistory();
+    const windowItem = {
+      id: generateId(),
+      wall: ['back', 'front', 'left', 'right'].includes(windowData.wall) ? windowData.wall : 'back',
+      position: Math.min(0.88, Math.max(0.12, finiteNumber(windowData.position, 0.5))),
+      width: Math.max(0.5, finiteNumber(windowData.width, 2.4)),
+      height: Math.max(0.5, finiteNumber(windowData.height, 1.8)),
+      sillHeight: Math.max(0, finiteNumber(windowData.sillHeight, 0.7)),
+      type: windowData.type || 'Sliding Window',
+      style: windowData.style || 'Minimal',
+      opening: windowData.opening || 'Sliding',
+      panels: windowData.panels || '2',
+    };
+    set((state) => ({ windows: [...state.windows, windowItem] }));
+    return windowItem.id;
+  },
 
   // ═══════════════════════════════════════════════
   // Snapping
