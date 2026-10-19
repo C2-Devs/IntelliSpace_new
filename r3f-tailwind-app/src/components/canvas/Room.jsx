@@ -55,7 +55,7 @@ function Wall({ position, size, color, rotation = [0, 0, 0], material = {} }) {
 }
 
 /** Create a window opening */
-function WindowPanel({ position, size, thickness, rotation = [0, 0, 0] }) {
+function WindowPanel({ position, size, thickness, rotation = [0, 0, 0], type = 'Sliding Window', panels = '2', opening = 'Sliding' }) {
   const depth = thickness + 0.05; // Slightly thicker than wall to prevent z-fighting
   return (
     <group position={position} rotation={rotation}>
@@ -89,15 +89,9 @@ function WindowPanel({ position, size, thickness, rotation = [0, 0, 0] }) {
         <planeGeometry args={[Math.max(size[0] - 0.08, 0.1), Math.max(size[1] - 0.08, 0.1)]} />
         <meshBasicMaterial color="#f5d7ad" transparent opacity={0.08} />
       </mesh>
-      {/* Cross bars */}
-      <mesh position={[0, 0, 0.02]}>
-        <boxGeometry args={[size[0], 0.04, 0.02]} />
-        <meshStandardMaterial color="#333333" roughness={0.3} metalness={0.5} />
-      </mesh>
-      <mesh position={[0, 0, 0.02]}>
-        <boxGeometry args={[0.04, size[1], 0.02]} />
-        <meshStandardMaterial color="#333333" roughness={0.3} metalness={0.5} />
-      </mesh>
+      {type !== 'Fixed Window' && <mesh position={[0, 0, 0.02]}><boxGeometry args={[0.04, size[1], 0.02]} /><meshStandardMaterial color="#333333" roughness={0.3} metalness={0.5} /></mesh>}
+      {type === 'French Window' && <mesh position={[0, 0, 0.02]}><boxGeometry args={[0.04, size[1], 0.02]} /><meshStandardMaterial color="#333333" roughness={0.3} metalness={0.5} /></mesh>}
+      {['Casement Window', 'Tilt & Turn Window'].includes(type) && <mesh position={[size[0] * 0.18, 0, 0.026]} rotation={[0, 0, opening === 'Right' ? -0.12 : 0.12]}><boxGeometry args={[0.025, size[1] * 0.82, 0.025]} /><meshStandardMaterial color="#b9935a" metalness={0.35} roughness={0.38} /></mesh>}
     </group>
   );
 }
@@ -203,6 +197,9 @@ export default function Room() {
           size={[win.width, win.height]}
           thickness={t}
           rotation={rot}
+          type={win.type}
+          panels={win.panels}
+          opening={win.opening}
         />
       );
     });
