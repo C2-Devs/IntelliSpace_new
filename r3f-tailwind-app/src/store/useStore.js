@@ -80,6 +80,7 @@ function createInitialState() {
 
     // ── Selection ────────────────────────────────
     selectedIds: [],
+    selectedWindowId: null,
 
     // ── Transform ────────────────────────────────
     transformMode: 'translate',
@@ -353,6 +354,7 @@ const useStore = create((set, get) => ({
   room: { ...state.room, ...updates },
   })),
 
+  selectWindow: (id) => set((state) => ({ selectedWindowId: state.windows.some((windowItem) => windowItem.id === id) ? id : null, selectedIds: [] })),
   updateWindow: (id, updates = {}) => {
     get()._pushHistory();
     set((state) => ({ windows: state.windows.map((windowItem) => windowItem.id === id ? { ...windowItem, ...updates } : windowItem) }));
@@ -360,7 +362,7 @@ const useStore = create((set, get) => ({
 
   deleteWindow: (id) => {
     get()._pushHistory();
-    set((state) => ({ windows: state.windows.filter((windowItem) => windowItem.id !== id) }));
+    set((state) => ({ windows: state.windows.filter((windowItem) => windowItem.id !== id), selectedWindowId: state.selectedWindowId === id ? null : state.selectedWindowId }));
   },
 
   addWindow: (windowData = {}) => {

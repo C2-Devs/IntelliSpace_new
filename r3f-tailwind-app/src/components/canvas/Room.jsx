@@ -55,14 +55,18 @@ function Wall({ position, size, color, rotation = [0, 0, 0], material = {} }) {
 }
 
 /** Create a window opening */
-function WindowPanel({ position, size, thickness, rotation = [0, 0, 0], type = 'Sliding Window', panels = '2', opening = 'Sliding' }) {
-  const depth = thickness + 0.05; // Slightly thicker than wall to prevent z-fighting
+function WindowPanel({ id, position, size, thickness, rotation = [0, 0, 0], type = 'Sliding Window', panels = '2', opening = 'Sliding' }) {
+  const selectWindow = useStore((state) => state.selectWindow);
+  const selectedWindowId = useStore((state) => state.selectedWindowId);
+  const depth = thickness + 0.05;
+  const selected = selectedWindowId === id;
   return (
-    <group position={position} rotation={rotation}>
+    <group position={position} rotation={rotation} onPointerDown={(event) => { event.stopPropagation(); selectWindow(id); }}> 
+      <mesh position={[0, 0, 0.045]}><planeGeometry args={[size[0] + 0.16, size[1] + 0.16]} /><meshBasicMaterial transparent opacity={selected ? 0.18 : 0} color="#f4c46b" /></mesh>
       {/* Window frame */}
       <mesh >
         <boxGeometry args={[size[0] + 0.08, size[1] + 0.08, depth]} />
-        <meshStandardMaterial color="#333333" roughness={0.3} metalness={0.6} />
+        <meshStandardMaterial color={selected ? '#f4c46b' : '#d7d9d6'} roughness={0.28} metalness={0.35} />
       </mesh>
       {/* Exterior reveal keeps the glazing from reading as a black placeholder. */}
       <mesh position={[0, 0, -0.01]}>
@@ -89,9 +93,11 @@ function WindowPanel({ position, size, thickness, rotation = [0, 0, 0], type = '
         <planeGeometry args={[Math.max(size[0] - 0.08, 0.1), Math.max(size[1] - 0.08, 0.1)]} />
         <meshBasicMaterial color="#f5d7ad" transparent opacity={0.08} />
       </mesh>
-      {type !== 'Fixed Window' && <mesh position={[0, 0, 0.02]}><boxGeometry args={[0.04, size[1], 0.02]} /><meshStandardMaterial color="#333333" roughness={0.3} metalness={0.5} /></mesh>}
-      {type === 'French Window' && <mesh position={[0, 0, 0.02]}><boxGeometry args={[0.04, size[1], 0.02]} /><meshStandardMaterial color="#333333" roughness={0.3} metalness={0.5} /></mesh>}
+      {type === 'Sliding Window' && <><mesh position={[0, 0, 0.02]}><boxGeometry args={[0.045, size[1], 0.025]} /><meshStandardMaterial color="#8b9291" roughness={0.3} metalness={0.55} /></mesh><mesh position={[0, 0.08, 0.03]}><boxGeometry args={[size[0] * 0.84, 0.025, 0.025]} /><meshStandardMaterial color="#8b9291" roughness={0.3} metalness={0.55} /></mesh></>}
+      {type === 'French Window' && <><mesh position={[0, 0, 0.02]}><boxGeometry args={[0.045, size[1], 0.025]} /><meshStandardMaterial color="#8b9291" roughness={0.3} metalness={0.55} /></mesh><mesh position={[-size[0] * 0.25, 0, 0.02]}><boxGeometry args={[0.035, size[1], 0.025]} /><meshStandardMaterial color="#8b9291" roughness={0.3} metalness={0.55} /></mesh><mesh position={[size[0] * 0.25, 0, 0.02]}><boxGeometry args={[0.035, size[1], 0.025]} /><meshStandardMaterial color="#8b9291" roughness={0.3} metalness={0.55} /></mesh></>}
       {['Casement Window', 'Tilt & Turn Window'].includes(type) && <mesh position={[size[0] * 0.18, 0, 0.026]} rotation={[0, 0, opening === 'Right' ? -0.12 : 0.12]}><boxGeometry args={[0.025, size[1] * 0.82, 0.025]} /><meshStandardMaterial color="#b9935a" metalness={0.35} roughness={0.38} /></mesh>}
+      {type === 'Casement Window' && <mesh position={[-size[0] * 0.18, 0, 0.026]} rotation={[0, 0, -0.12]}><boxGeometry args={[0.025, size[1] * 0.82, 0.025]} /><meshStandardMaterial color="#b9935a" metalness={0.35} roughness={0.38} /></mesh>}
+      {type === 'Tilt & Turn Window' && <mesh position={[0, 0, 0.027]}><boxGeometry args={[size[0] * 0.62, 0.025, 0.025]} /><meshStandardMaterial color="#b9935a" metalness={0.35} roughness={0.38} /></mesh>}
     </group>
   );
 }
@@ -209,6 +215,7 @@ export default function Room() {
           size={[win.width, win.height]}
           thickness={t}
           rotation={rot}
+          id={win.id}
           type={win.type}
           panels={win.panels}
           opening={win.opening}
