@@ -96,6 +96,17 @@ function WindowPanel({ position, size, thickness, rotation = [0, 0, 0], type = '
   );
 }
 
+function WallWithOpenings({ wall, position, size, color, material, windows }) {
+  const horizontal = wall === 'back' || wall === 'front';
+  const axisSize = horizontal ? size[0] : size[2];
+  const openings = windows.map((item) => ({ start: item.position * axisSize - item.width / 2, end: item.position * axisSize + item.width / 2, bottom: item.sillHeight, top: item.sillHeight + item.height })).sort((a, b) => a.start - b.start);
+  const segments = [];
+  let cursor = -axisSize / 2;
+  openings.forEach((opening, index) => { if (opening.start > cursor) segments.push({ key: `wall-${wall}-h-${index}`, start: cursor, end: opening.start, bottom: 0, top: size[1] }); if (opening.bottom > 0) segments.push({ key: `wall-${wall}-b-${index}`, start: opening.start, end: opening.end, bottom: 0, top: opening.bottom }); if (opening.top < size[1]) segments.push({ key: `wall-${wall}-t-${index}`, start: opening.start, end: opening.end, bottom: opening.top, top: size[1] }); cursor = Math.max(cursor, opening.end); });
+  if (cursor < axisSize / 2) segments.push({ key: `wall-${wall}-end`, start: cursor, end: axisSize / 2, bottom: 0, top: size[1] });
+  return <group position={position}>{segments.map((segment) => { const length = segment.end - segment.start; const center = (segment.start + segment.end) / 2; const segmentPosition = horizontal ? [center, (segment.bottom + segment.top) / 2, 0] : [0, (segment.bottom + segment.top) / 2, center]; const segmentSize = horizontal ? [length, segment.top - segment.bottom, size[2]] : [size[0], segment.top - segment.bottom, length]; return <Wall key={segment.key} position={segmentPosition} size={segmentSize} color={color} material={material} />; })}</group>;
+}
+
 /** Create a door opening */
 function DoorPanel({ position, size, thickness, rotation = [0, 0, 0] }) {
   const depth = thickness + 0.05;
@@ -322,36 +333,16 @@ export default function Room() {
       </group>
 
       {/* Back Wall (Z-) */}
-      <Wall
-        position={[0, hh, -hd - t / 2]}
-        size={[width + t * 2, height, t]}
-        color={wallMaterial.color || wallColor}
-        material={wallMaterial}
-      />
+      <WallWithOpenings wall="back" windows={windows.filter((windowItem) => windowItem.wall === 'back')} position={[0, 0, -hd - t / 2]} size={[width + t * 2, height, t]} color={wallMaterial.color || wallColor} material={wallMaterial} />
 
       {/* Front Wall (Z+) */}
-      <Wall
-        position={[0, hh, hd + t / 2]}
-        size={[width + t * 2, height, t]}
-        color={wallMaterial.color || wallColor}
-        material={wallMaterial}
-      />
+      <WallWithOpenings wall="front" windows={windows.filter((windowItem) => windowItem.wall === 'front')} position={[0, 0, hd + t / 2]} size={[width + t * 2, height, t]} color={wallMaterial.color || wallColor} material={wallMaterial} />
 
       {/* Left Wall (X-) */}
-      <Wall
-        position={[-hw - t / 2, hh, 0]}
-        size={[t, height, depth]}
-        color={wallMaterial.color || wallColor}
-        material={wallMaterial}
-      />
+      <WallWithOpenings wall="left" windows={windows.filter((windowItem) => windowItem.wall === 'left')} position={[-hw - t / 2, 0, 0]} size={[t, height, depth]} color={wallMaterial.color || wallColor} material={wallMaterial} />
 
       {/* Right Wall (X+) */}
-      <Wall
-        position={[hw + t / 2, hh, 0]}
-        size={[t, height, depth]}
-        color={wallMaterial.color || wallColor}
-        material={wallMaterial}
-      />
+      <WallWithOpenings wall="right" windows={windows.filter((windowItem) => windowItem.wall === 'right')} position={[hw + t / 2, 0, 0]} size={[t, height, depth]} color={wallMaterial.color || wallColor} material={wallMaterial} />
 
       {/* Windows and Doors */}
       {windowMeshes}

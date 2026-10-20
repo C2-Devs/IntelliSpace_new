@@ -123,8 +123,8 @@ const useStore = create((set, get) => ({
 
   /** Push current furniture state to history before a mutation. */
   _pushHistory: () => {
-    const { furniture, structures, room, history } = get();
-    const snapshot = JSON.parse(JSON.stringify({ furniture, structures, room }));
+    const { furniture, structures, windows, room, history } = get();
+    const snapshot = JSON.parse(JSON.stringify({ furniture, structures, windows, room }));
     const newHistory = [...history, snapshot];
     if (newHistory.length > MAX_HISTORY_SIZE) newHistory.shift();
     set({ history: newHistory, future: [] });
@@ -353,6 +353,16 @@ const useStore = create((set, get) => ({
   room: { ...state.room, ...updates },
   })),
 
+  updateWindow: (id, updates = {}) => {
+    get()._pushHistory();
+    set((state) => ({ windows: state.windows.map((windowItem) => windowItem.id === id ? { ...windowItem, ...updates } : windowItem) }));
+  },
+
+  deleteWindow: (id) => {
+    get()._pushHistory();
+    set((state) => ({ windows: state.windows.filter((windowItem) => windowItem.id !== id) }));
+  },
+
   addWindow: (windowData = {}) => {
     get()._pushHistory();
     const windowItem = {
@@ -397,29 +407,31 @@ const useStore = create((set, get) => ({
   // ═══════════════════════════════════��═══════════
 
   undo: () => {
-    const { history, furniture, structures, room, future } = get();
+    const { history, furniture, structures, windows, room, future } = get();
     if (history.length === 0) return;
     const previous = history[history.length - 1];
     set({
       history: history.slice(0, -1),
-      future: [JSON.parse(JSON.stringify({ furniture, structures, room })), ...future].slice(0, MAX_HISTORY_SIZE),
+      future: [JSON.parse(JSON.stringify({ furniture, structures, windows, room })), ...future].slice(0, MAX_HISTORY_SIZE),
       furniture: previous.furniture || previous,
-      structures: previous.structures || [],
-      room: previous.room || room,
+structures: previous.structures || [],
+  windows: previous.windows || windows,
+  room: previous.room || room,
       selectedIds: [],
     });
   },
 
   redo: () => {
-    const { history, furniture, structures, room, future } = get();
+    const { history, furniture, structures, windows, room, future } = get();
     if (future.length === 0) return;
     const next = future[0];
     set({
       future: future.slice(1),
-      history: [...history, JSON.parse(JSON.stringify({ furniture, structures, room }))].slice(-MAX_HISTORY_SIZE),
+      history: [...history, JSON.parse(JSON.stringify({ furniture, structures, windows, room }))].slice(-MAX_HISTORY_SIZE),
       furniture: next.furniture || next,
-      structures: next.structures || [],
-      room: next.room || room,
+structures: next.structures || [],
+  windows: next.windows || windows,
+  room: next.room || room,
       selectedIds: [],
     });
   },
