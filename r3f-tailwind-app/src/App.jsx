@@ -185,18 +185,19 @@ function ConfigurationPanel() {
   const room = useStore((s) => s.room);
   const setRoomAppearance = useStore((s) => s.setRoomAppearance);
   const [activeSection, setActiveSection] = useState('Layout');
+  const [isOpen, setIsOpen] = useState(true);
   const [activeTab, setActiveTab] = useState('Materials');
   const [heating, setHeating] = useState(true);
   const [panelWidth, setPanelWidth] = useState(366);
   const resizeState = React.useRef(null);
   useEffect(() => {
-    const openSection = (event) => setActiveSection(event.detail?.section || 'Layout');
+    const openSection = (event) => { setActiveSection(event.detail?.section || 'Layout'); setIsOpen(true); };
     window.addEventListener('intelli:open-config', openSection);
     return () => window.removeEventListener('intelli:open-config', openSection);
   }, []);
   const beginResize = (event) => { event.preventDefault(); resizeState.current = { startX: event.clientX, startWidth: panelWidth }; let latestWidth = panelWidth; const move = (moveEvent) => { latestWidth = Math.min(640, Math.max(330, resizeState.current.startWidth + resizeState.current.startX - moveEvent.clientX)); setPanelWidth(latestWidth); }; const stop = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', stop); }; window.addEventListener('pointermove', move); window.addEventListener('pointerup', stop); };
 
-  if (selectedIds.length > 0) return null;
+  if (selectedIds.length > 0 || !isOpen) return null;
   return (
     <aside className={`intelli-config ${activeSection === 'Furniture' ? 'is-furniture-config' : ''}`} style={{ width: panelWidth }} aria-label="Configuration"><button className="config-resize-handle" type="button" aria-label="Resize configuration panel" onPointerDown={beginResize}><span /></button>
       <div className="intelli-config-head">
@@ -204,7 +205,7 @@ function ConfigurationPanel() {
           <h2>Configuration</h2>
           <p>Customize your space</p>
         </div>
-        <button className="intelli-icon-button" aria-label="Close configuration"><X size={18} /></button>
+        <button className="intelli-icon-button" type="button" aria-label="Close configuration" onClick={() => setIsOpen(false)}><X size={18} /></button>
       </div>
       <div className="intelli-config-body">
         <nav className="intelli-config-nav" aria-label="Configuration sections">
