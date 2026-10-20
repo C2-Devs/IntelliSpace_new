@@ -369,7 +369,7 @@ const useStore = create((set, get) => ({
       id: generateId(),
       wall: ['back', 'front', 'left', 'right'].includes(windowData.wall) ? windowData.wall : 'back',
       position: Math.min(0.88, Math.max(0.12, finiteNumber(windowData.position, 0.5))),
-      width: Math.min((windowItem.wall === 'left' || windowItem.wall === 'right' ? get().room.depth : get().room.width) - 0.4, Math.max(0.5, finiteNumber(windowData.width, 2.4))),
+      width: Math.min((windowData.wall === 'left' || windowData.wall === 'right' ? get().room.depth : get().room.width) - 0.4, Math.max(0.5, finiteNumber(windowData.width, 2.4))),
       height: Math.min(get().room.height - 0.25, Math.max(0.5, finiteNumber(windowData.height, 1.8))),
       sillHeight: Math.min(get().room.height - 0.5, Math.max(0, finiteNumber(windowData.sillHeight, 0.7))),
       type: windowData.type || 'Sliding Window',
