@@ -197,7 +197,8 @@ function ConfigurationPanel() {
   }, []);
   const beginResize = (event) => { event.preventDefault(); resizeState.current = { startX: event.clientX, startWidth: panelWidth }; let latestWidth = panelWidth; const move = (moveEvent) => { latestWidth = Math.min(640, Math.max(330, resizeState.current.startWidth + resizeState.current.startX - moveEvent.clientX)); setPanelWidth(latestWidth); }; const stop = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', stop); }; window.addEventListener('pointermove', move); window.addEventListener('pointerup', stop); };
 
-  if (selectedIds.length > 0 || !isOpen) return null;
+  if (selectedIds.length > 0) return null;
+  if (!isOpen) return <button className="config-reopen-button" type="button" aria-label="Open configuration" onClick={() => setIsOpen(true)}><ChevronRight size={20} strokeWidth={1.8} /></button>;
   return (
     <aside className={`intelli-config ${activeSection === 'Furniture' ? 'is-furniture-config' : ''}`} style={{ width: panelWidth }} aria-label="Configuration"><button className="config-resize-handle" type="button" aria-label="Resize configuration panel" onPointerDown={beginResize}><span /></button>
       <div className="intelli-config-head">
