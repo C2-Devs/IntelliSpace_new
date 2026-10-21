@@ -19,6 +19,7 @@ import MeasurementOverlay from './MeasurementOverlay';
 import useStore from '../../store/useStore';
 
 function SceneFallback() { return null; }
+function EnvironmentBackdrop() { const background = useStore((s) => s.environmentSettings?.background || '#121313'); return <><color attach="background" args={[background]} /><fog attach="fog" args={[background, 18, 42]} /></>; }
 function RoomFallback() { return <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}><planeGeometry args={[12, 12]} /><meshStandardMaterial color="#24282c" /></mesh>; }
 
 class SceneErrorBoundary extends React.Component {
@@ -79,8 +80,7 @@ export default function SceneCanvas() {
     >
       <SceneErrorBoundary>
         <Suspense fallback={<SceneFallback />}>
-        <color attach="background" args={['#121313']} />
-        <fog attach="fog" args={['#121313', 18, 42]} />
+        <EnvironmentBackdrop />
         <SceneLayer><SceneLighting /></SceneLayer>
         <SceneLayer fallback={<RoomFallback />}><Room /></SceneLayer>
         <SceneLayer><FurnitureManager /></SceneLayer>
