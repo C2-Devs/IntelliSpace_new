@@ -150,7 +150,9 @@ const useStore = create((set, get) => ({
       doors: template.doors,
       furniture: normalizeFurniture(template.furniture),
       structures: normalizeStructures(template.structures),
-      lightPreset: template.lightPreset || 'day',
+    lightPreset: template.lightPreset || 'midday',
+    lightingSettings: { ambientIntensity: 0.58, mainIntensity: 1.55, color: '#fff8ea', exposure: 1, shadows: true },
+    lightingFixtures: [],
       lastSavedState: cloneFurnitureState(normalizeFurniture(template.furniture)),
       selectedIds: [],
       history: [],
@@ -349,6 +351,10 @@ const useStore = create((set, get) => ({
   // ═══════════════════════════════════════════════
 
   setLightPreset: (preset) => set({ lightPreset: preset }),
+  setLightingSettings: (updates) => set((state) => ({ lightingSettings: { ...state.lightingSettings, ...updates } })),
+  addLightingFixture: (type) => { const fixture = { id: generateId(), type, position: [0, 2.4, 0], intensity: 1, color: '#ffd6a3', visible: true }; set((state) => ({ lightingFixtures: [...state.lightingFixtures, fixture] })); return fixture.id; },
+  updateLightingFixture: (id, updates) => set((state) => ({ lightingFixtures: state.lightingFixtures.map((fixture) => fixture.id === id ? { ...fixture, ...updates } : fixture) })),
+  removeLightingFixture: (id) => set((state) => ({ lightingFixtures: state.lightingFixtures.filter((fixture) => fixture.id !== id) })),
   setRoomAppearance: (updates) =>
   set((state) => ({
   room: { ...state.room, ...updates },

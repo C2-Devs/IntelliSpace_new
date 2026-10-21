@@ -8,10 +8,15 @@ import React, { useMemo } from 'react';
 import useStore from '../../store/useStore';
 import { LIGHT_PRESETS } from '../../constants';
 
+const EMPTY_FIXTURES = [];
+const EMPTY_SETTINGS = {};
+
 export default function SceneLighting() {
   const lightPreset = useStore((s) => s.lightPreset);
   const room = useStore((s) => s.room);
   const windows = useStore((s) => s.windows);
+  const lightingSettings = useStore((s) => s.lightingSettings || EMPTY_SETTINGS);
+  const lightingFixtures = useStore((s) => s.lightingFixtures || EMPTY_FIXTURES);
 
   const config = useMemo(
     () => LIGHT_PRESETS[lightPreset] || LIGHT_PRESETS.midday,
@@ -42,16 +47,16 @@ export default function SceneLighting() {
     <>
       {/* Ambient fill light */}
       <ambientLight
-        intensity={config.ambient.intensity * 0.82}
+        intensity={(lightingSettings?.ambientIntensity ?? config.ambient.intensity) * 0.82}
         color={config.ambient.color}
       />
 
       {/* Primary directional light with shadows */}
       <directionalLight
         position={sunPosition}
-        intensity={config.directional.intensity}
-        color={config.directional.color}
-        castShadow={false}
+        intensity={lightingSettings?.mainIntensity ?? config.directional.intensity}
+        color={lightingSettings?.color ?? config.directional.color}
+        castShadow={lightingSettings?.shadows ?? false}
       />
 
       {/* Secondary fill light */}
@@ -97,6 +102,8 @@ export default function SceneLighting() {
         decay={2}
         color="#f3c18b"
       />
+
+      {lightingFixtures.filter((fixture) => fixture.visible !== false).map((fixture) => <React.Fragment key={fixture.id}><pointLight position={fixture.position} intensity={fixture.intensity} color={fixture.color} distance={6} decay={2} /><mesh position={fixture.position}><sphereGeometry args={[0.09, 12, 8]} /><meshStandardMaterial color={fixture.color} emissive={fixture.color} emissiveIntensity={1.8} /></mesh></React.Fragment>)}
 
       {/* Window bounce layer keeps glazing connected to the active sun preset. */}
       {windows.slice(0, 4).map((window, index) => {
