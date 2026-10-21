@@ -91,8 +91,10 @@ function createInitialState() {
     cameraMode: 'perspective',
 
     // ── Lighting ─────────────────────────────────
-    lightPreset: template.lightPreset || 'midday',
-    lightingSettings: { ambientIntensity: 0.58, mainIntensity: 1.55, color: '#fff8ea', exposure: 1, shadows: true },
+lightPreset: template.lightPreset || 'midday',
+  environmentPreset: 'Natural Daylight',
+  environmentSettings: { background: '#121313', ambientIntensity: 0.58, sunlightIntensity: 1.55, sunlightColor: '#fff8ea', azimuth: 218, elevation: 62, exposure: 1.08, shadows: true },
+  lightingSettings: { ambientIntensity: 0.58, mainIntensity: 1.55, color: '#fff8ea', exposure: 1, shadows: true },
     lightingFixtures: [],
     selectedLightingFixtureId: null,
     customLightingPresets: readCustomLightingPresets(),
@@ -156,8 +158,10 @@ const useStore = create((set, get) => ({
       doors: template.doors,
       furniture: normalizeFurniture(template.furniture),
       structures: normalizeStructures(template.structures),
-    lightPreset: template.lightPreset || 'midday',
-    lightingSettings: { ambientIntensity: 0.58, mainIntensity: 1.55, color: '#fff8ea', exposure: 1, shadows: true },
+lightPreset: template.lightPreset || 'midday',
+  environmentPreset: 'Natural Daylight',
+  environmentSettings: { background: '#121313', ambientIntensity: 0.58, sunlightIntensity: 1.55, sunlightColor: '#fff8ea', azimuth: 218, elevation: 62, exposure: 1.08, shadows: true },
+  lightingSettings: { ambientIntensity: 0.58, mainIntensity: 1.55, color: '#fff8ea', exposure: 1, shadows: true },
     lightingFixtures: [],
       lastSavedState: cloneFurnitureState(normalizeFurniture(template.furniture)),
       selectedIds: [],
@@ -357,6 +361,8 @@ const useStore = create((set, get) => ({
   // ═══════════════════════════════════════════════
 
   setLightPreset: (preset) => set({ lightPreset: preset }),
+  setEnvironmentPreset: (preset, settings = {}) => set((state) => ({ environmentPreset: preset, environmentSettings: { ...state.environmentSettings, ...settings } })),
+  setEnvironmentSettings: (updates) => set((state) => ({ environmentSettings: { ...state.environmentSettings, ...updates } })),
   setLightingSettings: (updates) => set((state) => ({ lightingSettings: { ...state.lightingSettings, ...updates } })),
   saveCustomLightingPreset: (name) => { const trimmed = String(name || '').trim(); if (!trimmed) return null; const preset = { id: `custom-light-${generateId()}`, name: trimmed, settings: { ...get().lightingSettings }, lightPreset: 'custom' }; set((state) => { const customLightingPresets = [...state.customLightingPresets.filter((item) => item.name.toLowerCase() !== trimmed.toLowerCase()), preset]; persistCustomLightingPresets(customLightingPresets); return { customLightingPresets }; }); return preset.id; },
   deleteCustomLightingPreset: (id) => set((state) => { const customLightingPresets = state.customLightingPresets.filter((item) => item.id !== id); persistCustomLightingPresets(customLightingPresets); return { customLightingPresets }; }),

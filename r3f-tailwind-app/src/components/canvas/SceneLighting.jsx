@@ -4,7 +4,8 @@
  * Renders ambient light, directional light with shadows, and
  * environment mapping based on the active preset.
  */
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
+import { useThree } from '@react-three/fiber';
 import useStore from '../../store/useStore';
 import { LIGHT_PRESETS } from '../../constants';
 
@@ -29,7 +30,9 @@ function FixtureObject({ fixture }) {
 }
 
 export default function SceneLighting() {
+  const { gl } = useThree();
   const lightPreset = useStore((s) => s.lightPreset);
+  const environmentSettings = useStore((s) => s.environmentSettings || EMPTY_SETTINGS);
   const room = useStore((s) => s.room);
   const windows = useStore((s) => s.windows);
   const lightingSettings = useStore((s) => s.lightingSettings || EMPTY_SETTINGS);
@@ -45,9 +48,10 @@ export default function SceneLighting() {
   const roomWidth = room?.width || 8;
   const roomDepth = room?.depth || 6;
   const roomHeight = room?.height || 3;
+  useEffect(() => { gl.toneMappingExposure = environmentSettings.exposure ?? 1.08; }, [gl, environmentSettings.exposure]);
 
   const sunPosition = useMemo(() => {
-    const { azimuth = 218, elevation = 62 } = config.directional;
+    const { azimuth = 218, elevation = 62 } = { ...config.directional, azimuth: environmentSettings.azimuth, elevation: environmentSettings.elevation };
     const azimuthRadians = (azimuth * Math.PI) / 180;
     const elevationRadians = (elevation * Math.PI) / 180;
     const radius = 12;
@@ -64,16 +68,16 @@ export default function SceneLighting() {
     <>
       {/* Ambient fill light */}
       <ambientLight
-        intensity={(lightingSettings?.ambientIntensity ?? config.ambient.intensity) * 0.82}
+        intensity={(environmentSettings.ambientIntensity ?? lightingSettings?.ambientIntensity ?? config.ambient.intensity) * 0.82}
         color={config.ambient.color}
       />
 
       {/* Primary directional light with shadows */}
       <directionalLight
         position={sunPosition}
-        intensity={lightingSettings?.mainIntensity ?? config.directional.intensity}
-        color={lightingSettings?.color ?? config.directional.color}
-        castShadow={lightingSettings?.shadows ?? false}
+        intensity={environmentSettings.sunlightIntensity ?? lightingSettings?.mainIntensity ?? config.directional.intensity}
+        color={environmentSettings.sunlightColor ?? lightingSettings?.color ?? config.directional.color}
+        castShadow={environmentSettings.shadows ?? lightingSettings?.shadows ?? false}
       />
 
       {/* Secondary fill light */}
