@@ -11,12 +11,29 @@ import * as THREE from 'three';
 import useStore from '../../store/useStore';
 import { FLOORING_MATERIALS, LIGHT_PRESETS, WALL_MATERIALS } from '../../constants';
 
-function createFloorTexture(pattern, baseColor, scale = 1) {
+function createFloorTexture(pattern, baseColor, scale = 1, materialName = '') {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = 512;
   const context = canvas.getContext('2d');
+  const isMarble = /marble|calacatta|carrara/i.test(materialName);
+  const isOak = /oak|ash|walnut|teak/i.test(materialName);
+  const isConcrete = /concrete|microcement/i.test(materialName);
+  const isPorcelain = /porcelain|slate|travertine|terrazzo/i.test(materialName);
   context.fillStyle = baseColor;
   context.fillRect(0, 0, 512, 512);
+  if (isMarble) {
+    const image = context.getImageData(0, 0, 512, 512);
+    const data = image.data;
+    for (let y = 0; y < 512; y += 1) for (let x = 0; x < 512; x += 1) { const wave = Math.sin(x * 0.035 + Math.sin(y * 0.018) * 3) * 3 + Math.sin(y * 0.06) * 2; const grain = Math.sin(x * 0.19 + y * 0.11) * 1.4; const value = Math.max(0, Math.min(255, 244 + wave + grain)); const i = (y * 512 + x) * 4; data[i] = value; data[i + 1] = value; data[i + 2] = Math.min(255, value + 2); data[i + 3] = 255; }
+    context.putImageData(image, 0, 0);
+    context.save(); context.globalCompositeOperation = 'multiply'; context.lineCap = 'round';
+    for (let vein = 0; vein < 7; vein += 1) { context.beginPath(); context.moveTo(-40, 40 + vein * 76); for (let x = -40; x <= 552; x += 18) { const y = 40 + vein * 76 + Math.sin(x * 0.018 + vein * 1.7) * 25 + Math.sin(x * 0.052 + vein) * 9; context.lineTo(x, y); } context.strokeStyle = `rgba(88, 96, 101, ${0.16 + (vein % 3) * 0.035})`; context.lineWidth = 2.2 + (vein % 2) * 1.4; context.stroke(); }
+    context.restore();
+  } else if (isOak) {
+    context.globalAlpha = 0.18; for (let y = 0; y < 512; y += 7) { context.strokeStyle = y % 21 === 0 ? '#6a432d' : '#e0b37b'; context.lineWidth = 1; context.beginPath(); context.moveTo(0, y); context.bezierCurveTo(150, y + 8, 310, y - 8, 512, y + 3); context.stroke(); } context.globalAlpha = 1;
+  } else if (isConcrete) {
+    const image = context.getImageData(0, 0, 512, 512); for (let i = 0; i < image.data.length; i += 4) { const n = Math.sin(i * 0.17) * 2.5; image.data[i] += n; image.data[i + 1] += n; image.data[i + 2] += n; } context.putImageData(image, 0, 0);
+  }
   const tile = Math.max(24, 112 / Math.max(0.5, scale));
   context.strokeStyle = 'rgba(42, 28, 18, 0.22)';
   context.lineWidth = Math.max(2, tile * 0.035);
@@ -28,8 +45,9 @@ function createFloorTexture(pattern, baseColor, scale = 1) {
   } else if (pattern === 'Hexagon') {
     const radius = tile * 0.56;
     for (let row = -2; row < 12; row += 1) for (let col = -2; col < 12; col += 1) { const x = col * radius * 1.72 + (row % 2) * radius * 0.86; const y = row * radius * 1.5; context.beginPath(); for (let i = 0; i < 6; i++) { const angle = Math.PI / 3 * i; context.lineTo(x + radius * Math.cos(angle), y + radius * Math.sin(angle)); } context.closePath(); context.stroke(); }
-  } else {
+  } else if (isPorcelain || (!isMarble && !isOak && !isConcrete)) {
     const gap = pattern === 'Large Format' ? tile * 1.55 : pattern === 'Grid' || pattern === 'Stack Bond' ? tile : tile * 0.75;
+    context.strokeStyle = 'rgba(70, 72, 72, 0.12)'; context.lineWidth = Math.max(1, tile * 0.012);
     for (let y = -gap; y < 512 + gap; y += gap) for (let x = -gap; x < 512 + gap; x += gap) { const offset = pattern === 'Running Bond' || pattern === 'Diagonal' ? (Math.floor(y / gap) % 2) * gap * 0.5 : 0; drawBoard(x + offset, y, gap * 0.98, gap * 0.98); }
   }
   const texture = new THREE.CanvasTexture(canvas); texture.wrapS = texture.wrapT = THREE.RepeatWrapping; texture.repeat.set(2, 2); texture.colorSpace = THREE.SRGBColorSpace; return texture;
@@ -158,8 +176,13 @@ export default function Room() {
   const resolvedCeilingColor = ceilingPalette[ceilingMaterial] || ceilingColor;
   const floorMaterial = FLOORING_MATERIALS[room.floorMaterial] || FLOORING_MATERIALS.oakNatural;
   const catalogMaterial = FLOORING_MATERIAL_BY_ID[room.floorMaterial];
+  const resolvedCatalogMaterial = catalogMaterial || (room.floorMaterial === 'oakNatural' ? FLOORING_MATERIAL_BY_ID['floor-1'] : null);
+  const floorName = resolvedCatalogMaterial?.name || floorMaterial.label || 'White Marble';
+  const floorColorValue = resolvedCatalogMaterial?.color || floorMaterial.color || floorColor;
   const floorPattern = room.floorPattern || 'Straight';
-  const floorTexture = useMemo(() => { if (typeof document === 'undefined') return null; const texture = createFloorTexture(floorPattern, catalogMaterial?.color || floorMaterial.color || floorColor, Number(room.floorPatternScale || 1)); texture.rotation = (Number(room.floorPatternRotation || 0) * Math.PI) / 180; texture.center.set(0.5, 0.5); return texture; }, [floorPattern, catalogMaterial?.color, floorMaterial.color, floorColor, room.floorPatternScale, room.floorPatternRotation]);
+  const floorTexture = useMemo(() => { if (typeof document === 'undefined') return null; const texture = createFloorTexture(floorPattern, floorColorValue, Number(room.floorPatternScale || 1), floorName); texture.rotation = (Number(room.floorPatternRotation || 0) * Math.PI) / 180; texture.center.set(0.5, 0.5); texture.anisotropy = 4; return texture; }, [floorPattern, floorColorValue, floorName, room.floorPatternScale, room.floorPatternRotation]);
+  const isMarbleFloor = /marble|calacatta|carrara/i.test(floorName);
+  const isWoodFloor = /oak|ash|walnut|teak/i.test(floorName);
   const wallMaterial = WALL_MATERIALS[room.wallMaterial] || WALL_MATERIALS.warmPaint;
   const fixtureIntensity = (LIGHT_PRESETS[lightPreset] || LIGHT_PRESETS.midday).directional.intensity > 1 ? 0.46 : 0.24;
   const hw = width / 2;
@@ -288,20 +311,17 @@ export default function Room() {
       >
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial
-          color={catalogMaterial?.color || floorMaterial.color || floorColor}
+          color={floorColorValue}
           map={floorTexture}
-          roughness={floorMaterial.roughness}
-          metalness={floorMaterial.metalness}
-          envMapIntensity={floorMaterial.pattern === 'tile' ? 0.72 : 0.48}
-          clearcoat={floorMaterial.pattern === 'tile' ? 0.28 : 0.12}
-          clearcoatRoughness={0.42}
+          roughness={isMarbleFloor ? 0.28 : isWoodFloor ? 0.5 : floorMaterial.roughness}
+          metalness={isMarbleFloor ? 0.02 : floorMaterial.metalness}
+          envMapIntensity={isMarbleFloor ? 0.62 : floorMaterial.pattern === 'tile' ? 0.5 : 0.38}
+          clearcoat={isMarbleFloor ? 0.34 : isWoodFloor ? 0.18 : 0.08}
+          clearcoatRoughness={isMarbleFloor ? 0.28 : 0.42}
           side={THREE.DoubleSide}
         />
       </mesh>
-      {floorTexture && <mesh position={[0, 0.022, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[Math.max(width - 0.08, 0.1), Math.max(depth - 0.08, 0.1)]} />
-        <meshBasicMaterial map={floorTexture} color="#ffffff" side={THREE.DoubleSide} toneMapped={false} />
-      </mesh>}
+
       </group>
 
       {/* Ceiling */}

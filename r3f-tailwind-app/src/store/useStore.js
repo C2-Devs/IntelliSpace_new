@@ -73,7 +73,7 @@ function createInitialState() {
     // ── Room & Template ──────────────────────────
     currentTemplate: DEFAULT_TEMPLATE,
     customTemplates: [],
-      room: { ...template.room, floorMaterial: template.room.floorMaterial || 'oakNatural', wallMaterial: template.room.wallMaterial || 'warmPaint' },
+      room: { ...template.room, floorMaterial: template.room.floorMaterial || 'floor-1', wallMaterial: template.room.wallMaterial || 'warmPaint' },
       windows: template.windows,
     doors: template.doors,
     furniture: normalizeFurniture(template.furniture),
@@ -119,7 +119,7 @@ lightPreset: template.lightPreset || 'midday',
     recentlyUsed: [],
     showMinimap: true,
     showMeasurements: true,
-    showGrid: true,
+    showGrid: false,
   };
 }
 
@@ -153,7 +153,7 @@ const useStore = create((set, get) => ({
     if (!template) return;
     set({
       currentTemplate: templateId,
-    room: { ...template.room, floorMaterial: template.room.floorMaterial || 'oakNatural', wallMaterial: template.room.wallMaterial || 'warmPaint' },
+    room: { ...template.room, floorMaterial: template.room.floorMaterial || 'floor-1', wallMaterial: template.room.wallMaterial || 'warmPaint' },
       windows: template.windows,
       doors: template.doors,
       furniture: normalizeFurniture(template.furniture),
@@ -493,7 +493,7 @@ structures: next.structures || [],
 
   // ═══════════════════════════════════════════════
   // Save / Load
-  // ═══════════════════════════════════════════════
+  // ═══════════════════════���═══════════════════════
 
   setSaveStatus: (status) => set({ saveStatus: status }),
 

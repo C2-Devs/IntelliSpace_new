@@ -1,6 +1,11 @@
 export const FLOORING_CATEGORIES = ['All', 'Wood', 'Tile', 'Stone', 'Concrete', 'Carpet', 'Vinyl & Laminate'];
 
 const MATERIALS = [
+  ['White Marble', 'Stone', '#f1f0eb'],
+  ['Warm Ivory Marble', 'Stone', '#e7dfd1'],
+  ['Light Oak', 'Wood', '#c9a06d'],
+  ['Large-Format Warm Grey Porcelain', 'Tile', '#aaa9a3'],
+  ['Matte Concrete', 'Concrete', '#aaa9a0'],
   ['Oak Natural', 'Wood', '#b88857'], ['Oak Grey', 'Wood', '#85877f'], ['Oak Honey', 'Wood', '#c18b4e'], ['Walnut Dark', 'Wood', '#70442f'], ['Teak Natural', 'Wood', '#a96e43'], ['Ash Light', 'Wood', '#d0b58f'],
   ['Porcelain White', 'Tile', '#e5e3dc'], ['Porcelain Warm Grey', 'Tile', '#b9b8b1'], ['Porcelain Sand', 'Tile', '#cdbb9e'], ['Marble Carrara', 'Tile', '#d9d5cc'], ['Travertine Beige', 'Tile', '#c5ad8e'], ['Terrazzo Sand', 'Tile', '#c6b298'], ['Slate Grey', 'Tile', '#777875'], ['Slate Black', 'Tile', '#37383a'],
   ['Carrara Marble', 'Stone', '#d7d2c8'], ['Calacatta Marble', 'Stone', '#e6e1d7'], ['Travertine Beige', 'Stone', '#c4ae91'], ['Limestone Cream', 'Stone', '#d5c7ae'], ['Granite Black', 'Stone', '#252629'],
