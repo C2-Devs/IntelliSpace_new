@@ -11,6 +11,23 @@ import { LIGHT_PRESETS } from '../../constants';
 const EMPTY_FIXTURES = [];
 const EMPTY_SETTINGS = {};
 
+function FixtureObject({ fixture }) {
+  const selectFixture = useStore((state) => state.selectLightingFixture);
+  const selected = useStore((state) => state.selectedLightingFixtureId === fixture.id);
+  const position = fixture.position || [0, 2.4, 0];
+  const type = fixture.type || 'Pendant Light';
+  const intensity = Number(fixture.intensity) || 0;
+  const material = <meshStandardMaterial color={selected ? '#f4c46b' : '#b9b2a5'} metalness={0.55} roughness={0.28} />;
+  return <group position={position} rotation={fixture.rotation || [0, 0, 0]} onPointerDown={(event) => { event.stopPropagation(); selectFixture?.(fixture.id); }}>
+    <pointLight intensity={intensity} color={fixture.color || '#ffd6a3'} distance={6} decay={2} />
+    {selected && <mesh><sphereGeometry args={[0.42, 16, 10]} /><meshBasicMaterial color="#f4c46b" transparent opacity={0.12} /></mesh>}
+    {type.includes('Pendant') && <><mesh position={[0, 0.42, 0]}><cylinderGeometry args={[0.018, 0.018, 0.84, 8]} />{material}</mesh><mesh position={[0, -0.02, 0]}><coneGeometry args={[0.34, 0.22, 24, 1, true]} />{material}</mesh><mesh position={[0, -0.13, 0]}><sphereGeometry args={[0.08, 12, 8]} /><meshStandardMaterial color={fixture.color || '#ffd6a3'} emissive={fixture.color || '#ffd6a3'} emissiveIntensity={0.8} /></mesh></>}
+    {type.includes('Recessed') && <><mesh><cylinderGeometry args={[0.18, 0.14, 0.08, 24]} />{material}</mesh><mesh position={[0, -0.05, 0]}><circleGeometry args={[0.1, 24]} /><meshStandardMaterial color={fixture.color || '#ffd6a3'} emissive={fixture.color || '#ffd6a3'} emissiveIntensity={0.7} /></mesh></>}
+    {type.includes('Floor') && <><mesh position={[0, -1.05, 0]}><cylinderGeometry args={[0.3, 0.3, 0.06, 24]} />{material}</mesh><mesh position={[0, -0.5, 0]}><cylinderGeometry args={[0.035, 0.035, 1.05, 10]} />{material}</mesh><mesh position={[0, 0.08, 0]}><coneGeometry args={[0.28, 0.24, 24, 1, true]} />{material}</mesh></>}
+    {type.includes('Wall') && <><mesh position={[0, 0, 0.12]}><boxGeometry args={[0.28, 0.38, 0.12]} />{material}</mesh><mesh position={[0, 0, 0.2]}><sphereGeometry args={[0.11, 16, 8]} /><meshStandardMaterial color={fixture.color || '#ffd6a3'} emissive={fixture.color || '#ffd6a3'} emissiveIntensity={0.8} /></mesh></>}
+  </group>;
+}
+
 export default function SceneLighting() {
   const lightPreset = useStore((s) => s.lightPreset);
   const room = useStore((s) => s.room);
@@ -103,7 +120,7 @@ export default function SceneLighting() {
         color="#f3c18b"
       />
 
-      {lightingFixtures.filter((fixture) => fixture.visible !== false).map((fixture) => <React.Fragment key={fixture.id}><pointLight position={fixture.position} intensity={fixture.intensity} color={fixture.color} distance={6} decay={2} /><mesh position={fixture.position}><sphereGeometry args={[0.09, 12, 8]} /><meshStandardMaterial color={fixture.color} emissive={fixture.color} emissiveIntensity={1.8} /></mesh></React.Fragment>)}
+      {lightingFixtures.filter((fixture) => fixture.visible !== false).map((fixture) => <FixtureObject key={fixture.id} fixture={fixture} />)}
 
       {/* Window bounce layer keeps glazing connected to the active sun preset. */}
       {windows.slice(0, 4).map((window, index) => {

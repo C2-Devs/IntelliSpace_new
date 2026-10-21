@@ -65,6 +65,8 @@ function normalizeStructure(item) {
 
 function normalizeStructures(items = []) { return items.filter(Boolean).map(normalizeStructure); }
 
+function readCustomLightingPresets() { try { return typeof window !== 'undefined' ? JSON.parse(window.localStorage.getItem('intellispace-custom-lighting-presets') || '[]') : []; } catch { return []; } }
+function persistCustomLightingPresets(presets) { try { if (typeof window !== 'undefined') window.localStorage.setItem('intellispace-custom-lighting-presets', JSON.stringify(presets)); } catch {} }
 function createInitialState() {
   const template = instantiateTemplate(DEFAULT_TEMPLATE);
   return {
@@ -89,7 +91,11 @@ function createInitialState() {
     cameraMode: 'perspective',
 
     // ── Lighting ─────────────────────────────────
-    lightPreset: template.lightPreset || 'day',
+    lightPreset: template.lightPreset || 'midday',
+    lightingSettings: { ambientIntensity: 0.58, mainIntensity: 1.55, color: '#fff8ea', exposure: 1, shadows: true },
+    lightingFixtures: [],
+    selectedLightingFixtureId: null,
+    customLightingPresets: readCustomLightingPresets(),
 
     // ── Snapping ─────────────────────────────────
     snapEnabled: true,
@@ -352,9 +358,13 @@ const useStore = create((set, get) => ({
 
   setLightPreset: (preset) => set({ lightPreset: preset }),
   setLightingSettings: (updates) => set((state) => ({ lightingSettings: { ...state.lightingSettings, ...updates } })),
-  addLightingFixture: (type) => { const fixture = { id: generateId(), type, position: [0, 2.4, 0], intensity: 1, color: '#ffd6a3', visible: true }; set((state) => ({ lightingFixtures: [...state.lightingFixtures, fixture] })); return fixture.id; },
+  saveCustomLightingPreset: (name) => { const trimmed = String(name || '').trim(); if (!trimmed) return null; const preset = { id: `custom-light-${generateId()}`, name: trimmed, settings: { ...get().lightingSettings }, lightPreset: 'custom' }; set((state) => { const customLightingPresets = [...state.customLightingPresets.filter((item) => item.name.toLowerCase() !== trimmed.toLowerCase()), preset]; persistCustomLightingPresets(customLightingPresets); return { customLightingPresets }; }); return preset.id; },
+  deleteCustomLightingPreset: (id) => set((state) => { const customLightingPresets = state.customLightingPresets.filter((item) => item.id !== id); persistCustomLightingPresets(customLightingPresets); return { customLightingPresets }; }),
+  applyCustomLightingPreset: (id) => { const preset = get().customLightingPresets.find((item) => item.id === id); if (!preset) return; set({ lightingSettings: { ...preset.settings }, lightPreset: 'custom' }); },
+  selectLightingFixture: (id) => set((state) => ({ selectedLightingFixtureId: state.lightingFixtures.some((fixture) => fixture.id === id) ? id : null, selectedIds: [] })),
+  addLightingFixture: (type) => { const presets = { 'Pendant Light': [0, 2.2, 0], 'Floor Lamp': [-1.6, 1.1, 0], 'Wall Sconce': [2.2, 1.8, -1.9], 'Recessed Light': [0, 2.62, 0] }; const fixture = { id: generateId(), type, position: presets[type] || [0, 2.4, 0], rotation: [0, 0, 0], intensity: 1, color: '#ffd6a3', visible: true }; set((state) => ({ lightingFixtures: [...state.lightingFixtures, fixture], selectedLightingFixtureId: fixture.id })); return fixture.id; },
   updateLightingFixture: (id, updates) => set((state) => ({ lightingFixtures: state.lightingFixtures.map((fixture) => fixture.id === id ? { ...fixture, ...updates } : fixture) })),
-  removeLightingFixture: (id) => set((state) => ({ lightingFixtures: state.lightingFixtures.filter((fixture) => fixture.id !== id) })),
+  removeLightingFixture: (id) => set((state) => ({ lightingFixtures: state.lightingFixtures.filter((fixture) => fixture.id !== id), selectedLightingFixtureId: state.selectedLightingFixtureId === id ? null : state.selectedLightingFixtureId })),
   setRoomAppearance: (updates) =>
   set((state) => ({
   room: { ...state.room, ...updates },
