@@ -65,13 +65,15 @@ function normalizeStructure(item) {
 
 function normalizeStructures(items = []) { return items.filter(Boolean).map(normalizeStructure); }
 
+function readCustomLightingPresets() { try { return typeof window !== 'undefined' ? JSON.parse(window.localStorage.getItem('intellispace-custom-lighting-presets') || '[]') : []; } catch { return []; } }
+function persistCustomLightingPresets(presets) { try { if (typeof window !== 'undefined') window.localStorage.setItem('intellispace-custom-lighting-presets', JSON.stringify(presets)); } catch {} }
 function createInitialState() {
   const template = instantiateTemplate(DEFAULT_TEMPLATE);
   return {
     // ── Room & Template ──────────────────────────
     currentTemplate: DEFAULT_TEMPLATE,
     customTemplates: [],
-      room: { ...template.room, floorMaterial: template.room.floorMaterial || 'oakNatural', wallMaterial: template.room.wallMaterial || 'warmPaint' },
+      room: { ...template.room, floorMaterial: template.room.floorMaterial || 'floor-1', wallMaterial: template.room.wallMaterial || 'warmPaint' },
       windows: template.windows,
     doors: template.doors,
     furniture: normalizeFurniture(template.furniture),
@@ -80,6 +82,7 @@ function createInitialState() {
 
     // ── Selection ────────────────────────────────
     selectedIds: [],
+    selectedWindowId: null,
 
     // ── Transform ────────────────────────────────
     transformMode: 'translate',
@@ -88,7 +91,13 @@ function createInitialState() {
     cameraMode: 'perspective',
 
     // ── Lighting ─────────────────────────────────
-    lightPreset: template.lightPreset || 'day',
+lightPreset: template.lightPreset || 'midday',
+  environmentPreset: 'Natural Daylight',
+  environmentSettings: { background: '#121313', ambientIntensity: 0.58, sunlightIntensity: 1.55, sunlightColor: '#fff8ea', azimuth: 218, elevation: 62, exposure: 1.08, shadows: true },
+  lightingSettings: { ambientIntensity: 0.58, mainIntensity: 1.55, color: '#fff8ea', exposure: 1, shadows: true },
+    lightingFixtures: [],
+    selectedLightingFixtureId: null,
+    customLightingPresets: readCustomLightingPresets(),
 
     // ── Snapping ─────────────────────────────────
     snapEnabled: true,
@@ -110,7 +119,7 @@ function createInitialState() {
     recentlyUsed: [],
     showMinimap: true,
     showMeasurements: true,
-    showGrid: true,
+    showGrid: false,
   };
 }
 
@@ -123,8 +132,8 @@ const useStore = create((set, get) => ({
 
   /** Push current furniture state to history before a mutation. */
   _pushHistory: () => {
-    const { furniture, structures, room, history } = get();
-    const snapshot = JSON.parse(JSON.stringify({ furniture, structures, room }));
+    const { furniture, structures, windows, room, history } = get();
+    const snapshot = JSON.parse(JSON.stringify({ furniture, structures, windows, room }));
     const newHistory = [...history, snapshot];
     if (newHistory.length > MAX_HISTORY_SIZE) newHistory.shift();
     set({ history: newHistory, future: [] });
@@ -144,12 +153,16 @@ const useStore = create((set, get) => ({
     if (!template) return;
     set({
       currentTemplate: templateId,
-    room: { ...template.room, floorMaterial: template.room.floorMaterial || 'oakNatural', wallMaterial: template.room.wallMaterial || 'warmPaint' },
+    room: { ...template.room, floorMaterial: template.room.floorMaterial || 'floor-1', wallMaterial: template.room.wallMaterial || 'warmPaint' },
       windows: template.windows,
       doors: template.doors,
       furniture: normalizeFurniture(template.furniture),
       structures: normalizeStructures(template.structures),
-      lightPreset: template.lightPreset || 'day',
+lightPreset: template.lightPreset || 'midday',
+  environmentPreset: 'Natural Daylight',
+  environmentSettings: { background: '#121313', ambientIntensity: 0.58, sunlightIntensity: 1.55, sunlightColor: '#fff8ea', azimuth: 218, elevation: 62, exposure: 1.08, shadows: true },
+  lightingSettings: { ambientIntensity: 0.58, mainIntensity: 1.55, color: '#fff8ea', exposure: 1, shadows: true },
+    lightingFixtures: [],
       lastSavedState: cloneFurnitureState(normalizeFurniture(template.furniture)),
       selectedIds: [],
       history: [],
@@ -348,10 +361,49 @@ const useStore = create((set, get) => ({
   // ═══════════════════════════════════════════════
 
   setLightPreset: (preset) => set({ lightPreset: preset }),
+  setEnvironmentPreset: (preset, settings = {}) => set((state) => ({ environmentPreset: preset, environmentSettings: { ...state.environmentSettings, ...settings } })),
+  setEnvironmentSettings: (updates) => set((state) => ({ environmentSettings: { ...state.environmentSettings, ...updates } })),
+  setLightingSettings: (updates) => set((state) => ({ lightingSettings: { ...state.lightingSettings, ...updates } })),
+  saveCustomLightingPreset: (name) => { const trimmed = String(name || '').trim(); if (!trimmed) return null; const preset = { id: `custom-light-${generateId()}`, name: trimmed, settings: { ...get().lightingSettings }, lightPreset: 'custom' }; set((state) => { const customLightingPresets = [...state.customLightingPresets.filter((item) => item.name.toLowerCase() !== trimmed.toLowerCase()), preset]; persistCustomLightingPresets(customLightingPresets); return { customLightingPresets }; }); return preset.id; },
+  deleteCustomLightingPreset: (id) => set((state) => { const customLightingPresets = state.customLightingPresets.filter((item) => item.id !== id); persistCustomLightingPresets(customLightingPresets); return { customLightingPresets }; }),
+  applyCustomLightingPreset: (id) => { const preset = get().customLightingPresets.find((item) => item.id === id); if (!preset) return; set({ lightingSettings: { ...preset.settings }, lightPreset: 'custom' }); },
+  selectLightingFixture: (id) => set((state) => ({ selectedLightingFixtureId: state.lightingFixtures.some((fixture) => fixture.id === id) ? id : null, selectedIds: [] })),
+  addLightingFixture: (type) => { const presets = { 'Pendant Light': [0, 2.2, 0], 'Floor Lamp': [-1.6, 1.1, 0], 'Wall Sconce': [2.2, 1.8, -1.9], 'Recessed Light': [0, 2.62, 0] }; const fixture = { id: generateId(), type, position: presets[type] || [0, 2.4, 0], rotation: [0, 0, 0], intensity: 1, color: '#ffd6a3', visible: true }; set((state) => ({ lightingFixtures: [...state.lightingFixtures, fixture], selectedLightingFixtureId: fixture.id })); return fixture.id; },
+  updateLightingFixture: (id, updates) => set((state) => ({ lightingFixtures: state.lightingFixtures.map((fixture) => fixture.id === id ? { ...fixture, ...updates } : fixture) })),
+  removeLightingFixture: (id) => set((state) => ({ lightingFixtures: state.lightingFixtures.filter((fixture) => fixture.id !== id), selectedLightingFixtureId: state.selectedLightingFixtureId === id ? null : state.selectedLightingFixtureId })),
   setRoomAppearance: (updates) =>
-    set((state) => ({
-      room: { ...state.room, ...updates },
-    })),
+  set((state) => ({
+  room: { ...state.room, ...updates },
+  })),
+
+  selectWindow: (id) => set((state) => ({ selectedWindowId: state.windows.some((windowItem) => windowItem.id === id) ? id : null, selectedIds: [] })),
+  updateWindow: (id, updates = {}) => {
+    get()._pushHistory();
+    set((state) => ({ windows: state.windows.map((windowItem) => windowItem.id === id ? { ...windowItem, ...updates } : windowItem) }));
+  },
+
+  deleteWindow: (id) => {
+    get()._pushHistory();
+    set((state) => ({ windows: state.windows.filter((windowItem) => windowItem.id !== id), selectedWindowId: state.selectedWindowId === id ? null : state.selectedWindowId }));
+  },
+
+  addWindow: (windowData = {}) => {
+    get()._pushHistory();
+    const windowItem = {
+      id: generateId(),
+      wall: ['back', 'front', 'left', 'right'].includes(windowData.wall) ? windowData.wall : 'back',
+      position: Math.min(0.88, Math.max(0.12, finiteNumber(windowData.position, 0.5))),
+      width: Math.min((windowData.wall === 'left' || windowData.wall === 'right' ? get().room.depth : get().room.width) - 0.4, Math.max(0.5, finiteNumber(windowData.width, 2.4))),
+      height: Math.min(get().room.height - 0.25, Math.max(0.5, finiteNumber(windowData.height, 1.8))),
+      sillHeight: Math.min(get().room.height - 0.5, Math.max(0, finiteNumber(windowData.sillHeight, 0.7))),
+      type: windowData.type || 'Sliding Window',
+      style: windowData.style || 'Minimal',
+      opening: windowData.opening || 'Sliding',
+      panels: windowData.panels || '2',
+    };
+    set((state) => ({ windows: [...state.windows, windowItem] }));
+    return windowItem.id;
+  },
 
   // ═══════════════════════════════════════════════
   // Snapping
@@ -379,29 +431,31 @@ const useStore = create((set, get) => ({
   // ═══════════════════════════════════��═══════════
 
   undo: () => {
-    const { history, furniture, structures, room, future } = get();
+    const { history, furniture, structures, windows, room, future } = get();
     if (history.length === 0) return;
     const previous = history[history.length - 1];
     set({
       history: history.slice(0, -1),
-      future: [JSON.parse(JSON.stringify({ furniture, structures, room })), ...future].slice(0, MAX_HISTORY_SIZE),
+      future: [JSON.parse(JSON.stringify({ furniture, structures, windows, room })), ...future].slice(0, MAX_HISTORY_SIZE),
       furniture: previous.furniture || previous,
-      structures: previous.structures || [],
-      room: previous.room || room,
+structures: previous.structures || [],
+  windows: previous.windows || windows,
+  room: previous.room || room,
       selectedIds: [],
     });
   },
 
   redo: () => {
-    const { history, furniture, structures, room, future } = get();
+    const { history, furniture, structures, windows, room, future } = get();
     if (future.length === 0) return;
     const next = future[0];
     set({
       future: future.slice(1),
-      history: [...history, JSON.parse(JSON.stringify({ furniture, structures, room }))].slice(-MAX_HISTORY_SIZE),
+      history: [...history, JSON.parse(JSON.stringify({ furniture, structures, windows, room }))].slice(-MAX_HISTORY_SIZE),
       furniture: next.furniture || next,
-      structures: next.structures || [],
-      room: next.room || room,
+structures: next.structures || [],
+  windows: next.windows || windows,
+  room: next.room || room,
       selectedIds: [],
     });
   },
@@ -439,7 +493,7 @@ const useStore = create((set, get) => ({
 
   // ═══════════════════════════════════════════════
   // Save / Load
-  // ═══════════════════════════════════════════════
+  // ═══════════════════════���═══════════════════════
 
   setSaveStatus: (status) => set({ saveStatus: status }),
 

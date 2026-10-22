@@ -11,12 +11,29 @@ import * as THREE from 'three';
 import useStore from '../../store/useStore';
 import { FLOORING_MATERIALS, LIGHT_PRESETS, WALL_MATERIALS } from '../../constants';
 
-function createFloorTexture(pattern, baseColor, scale = 1) {
+function createFloorTexture(pattern, baseColor, scale = 1, materialName = '') {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = 512;
   const context = canvas.getContext('2d');
+  const isMarble = /marble|calacatta|carrara/i.test(materialName);
+  const isOak = /oak|ash|walnut|teak/i.test(materialName);
+  const isConcrete = /concrete|microcement/i.test(materialName);
+  const isPorcelain = /porcelain|slate|travertine|terrazzo/i.test(materialName);
   context.fillStyle = baseColor;
   context.fillRect(0, 0, 512, 512);
+  if (isMarble) {
+    const image = context.getImageData(0, 0, 512, 512);
+    const data = image.data;
+    for (let y = 0; y < 512; y += 1) for (let x = 0; x < 512; x += 1) { const wave = Math.sin(x * 0.035 + Math.sin(y * 0.018) * 3) * 3 + Math.sin(y * 0.06) * 2; const grain = Math.sin(x * 0.19 + y * 0.11) * 1.4; const value = Math.max(0, Math.min(255, 244 + wave + grain)); const i = (y * 512 + x) * 4; data[i] = value; data[i + 1] = value; data[i + 2] = Math.min(255, value + 2); data[i + 3] = 255; }
+    context.putImageData(image, 0, 0);
+    context.save(); context.globalCompositeOperation = 'multiply'; context.lineCap = 'round';
+    for (let vein = 0; vein < 7; vein += 1) { context.beginPath(); context.moveTo(-40, 40 + vein * 76); for (let x = -40; x <= 552; x += 18) { const y = 40 + vein * 76 + Math.sin(x * 0.018 + vein * 1.7) * 25 + Math.sin(x * 0.052 + vein) * 9; context.lineTo(x, y); } context.strokeStyle = `rgba(88, 96, 101, ${0.16 + (vein % 3) * 0.035})`; context.lineWidth = 2.2 + (vein % 2) * 1.4; context.stroke(); }
+    context.restore();
+  } else if (isOak) {
+    context.globalAlpha = 0.18; for (let y = 0; y < 512; y += 7) { context.strokeStyle = y % 21 === 0 ? '#6a432d' : '#e0b37b'; context.lineWidth = 1; context.beginPath(); context.moveTo(0, y); context.bezierCurveTo(150, y + 8, 310, y - 8, 512, y + 3); context.stroke(); } context.globalAlpha = 1;
+  } else if (isConcrete) {
+    const image = context.getImageData(0, 0, 512, 512); for (let i = 0; i < image.data.length; i += 4) { const n = Math.sin(i * 0.17) * 2.5; image.data[i] += n; image.data[i + 1] += n; image.data[i + 2] += n; } context.putImageData(image, 0, 0);
+  }
   const tile = Math.max(24, 112 / Math.max(0.5, scale));
   context.strokeStyle = 'rgba(42, 28, 18, 0.22)';
   context.lineWidth = Math.max(2, tile * 0.035);
@@ -28,8 +45,9 @@ function createFloorTexture(pattern, baseColor, scale = 1) {
   } else if (pattern === 'Hexagon') {
     const radius = tile * 0.56;
     for (let row = -2; row < 12; row += 1) for (let col = -2; col < 12; col += 1) { const x = col * radius * 1.72 + (row % 2) * radius * 0.86; const y = row * radius * 1.5; context.beginPath(); for (let i = 0; i < 6; i++) { const angle = Math.PI / 3 * i; context.lineTo(x + radius * Math.cos(angle), y + radius * Math.sin(angle)); } context.closePath(); context.stroke(); }
-  } else {
+  } else if (isPorcelain || (!isMarble && !isOak && !isConcrete)) {
     const gap = pattern === 'Large Format' ? tile * 1.55 : pattern === 'Grid' || pattern === 'Stack Bond' ? tile : tile * 0.75;
+    context.strokeStyle = 'rgba(70, 72, 72, 0.12)'; context.lineWidth = Math.max(1, tile * 0.012);
     for (let y = -gap; y < 512 + gap; y += gap) for (let x = -gap; x < 512 + gap; x += gap) { const offset = pattern === 'Running Bond' || pattern === 'Diagonal' ? (Math.floor(y / gap) % 2) * gap * 0.5 : 0; drawBoard(x + offset, y, gap * 0.98, gap * 0.98); }
   }
   const texture = new THREE.CanvasTexture(canvas); texture.wrapS = texture.wrapT = THREE.RepeatWrapping; texture.repeat.set(2, 2); texture.colorSpace = THREE.SRGBColorSpace; return texture;
@@ -55,14 +73,18 @@ function Wall({ position, size, color, rotation = [0, 0, 0], material = {} }) {
 }
 
 /** Create a window opening */
-function WindowPanel({ position, size, thickness, rotation = [0, 0, 0] }) {
-  const depth = thickness + 0.05; // Slightly thicker than wall to prevent z-fighting
+function WindowPanel({ id, position, size, thickness, rotation = [0, 0, 0], type = 'Sliding Window', panels = '2', opening = 'Sliding' }) {
+  const selectWindow = useStore((state) => state.selectWindow);
+  const selectedWindowId = useStore((state) => state.selectedWindowId);
+  const depth = thickness + 0.05;
+  const selected = selectedWindowId === id;
   return (
-    <group position={position} rotation={rotation}>
+    <group position={position} rotation={rotation} onPointerDown={(event) => { event.stopPropagation(); selectWindow(id); }}> 
+      <mesh position={[0, 0, 0.045]}><planeGeometry args={[size[0] + 0.16, size[1] + 0.16]} /><meshBasicMaterial transparent opacity={selected ? 0.18 : 0} color="#f4c46b" /></mesh>
       {/* Window frame */}
       <mesh >
         <boxGeometry args={[size[0] + 0.08, size[1] + 0.08, depth]} />
-        <meshStandardMaterial color="#333333" roughness={0.3} metalness={0.6} />
+        <meshStandardMaterial color={selected ? '#f4c46b' : '#d7d9d6'} roughness={0.28} metalness={0.35} />
       </mesh>
       {/* Exterior reveal keeps the glazing from reading as a black placeholder. */}
       <mesh position={[0, 0, -0.01]}>
@@ -89,17 +111,25 @@ function WindowPanel({ position, size, thickness, rotation = [0, 0, 0] }) {
         <planeGeometry args={[Math.max(size[0] - 0.08, 0.1), Math.max(size[1] - 0.08, 0.1)]} />
         <meshBasicMaterial color="#f5d7ad" transparent opacity={0.08} />
       </mesh>
-      {/* Cross bars */}
-      <mesh position={[0, 0, 0.02]}>
-        <boxGeometry args={[size[0], 0.04, 0.02]} />
-        <meshStandardMaterial color="#333333" roughness={0.3} metalness={0.5} />
-      </mesh>
-      <mesh position={[0, 0, 0.02]}>
-        <boxGeometry args={[0.04, size[1], 0.02]} />
-        <meshStandardMaterial color="#333333" roughness={0.3} metalness={0.5} />
-      </mesh>
+      {type === 'Sliding Window' && <><mesh position={[0, 0, 0.02]}><boxGeometry args={[0.045, size[1], 0.025]} /><meshStandardMaterial color="#8b9291" roughness={0.3} metalness={0.55} /></mesh><mesh position={[0, 0.08, 0.03]}><boxGeometry args={[size[0] * 0.84, 0.025, 0.025]} /><meshStandardMaterial color="#8b9291" roughness={0.3} metalness={0.55} /></mesh></>}
+      {type === 'French Window' && <><mesh position={[0, 0, 0.02]}><boxGeometry args={[0.045, size[1], 0.025]} /><meshStandardMaterial color="#8b9291" roughness={0.3} metalness={0.55} /></mesh><mesh position={[-size[0] * 0.25, 0, 0.02]}><boxGeometry args={[0.035, size[1], 0.025]} /><meshStandardMaterial color="#8b9291" roughness={0.3} metalness={0.55} /></mesh><mesh position={[size[0] * 0.25, 0, 0.02]}><boxGeometry args={[0.035, size[1], 0.025]} /><meshStandardMaterial color="#8b9291" roughness={0.3} metalness={0.55} /></mesh></>}
+      {['Casement Window', 'Tilt & Turn Window'].includes(type) && <mesh position={[size[0] * 0.18, 0, 0.026]} rotation={[0, 0, opening === 'Right' ? -0.12 : 0.12]}><boxGeometry args={[0.025, size[1] * 0.82, 0.025]} /><meshStandardMaterial color="#b9935a" metalness={0.35} roughness={0.38} /></mesh>}
+      {type === 'Casement Window' && <mesh position={[-size[0] * 0.18, 0, 0.026]} rotation={[0, 0, -0.12]}><boxGeometry args={[0.025, size[1] * 0.82, 0.025]} /><meshStandardMaterial color="#b9935a" metalness={0.35} roughness={0.38} /></mesh>}
+      {type === 'Tilt & Turn Window' && <mesh position={[0, 0, 0.027]}><boxGeometry args={[size[0] * 0.62, 0.025, 0.025]} /><meshStandardMaterial color="#b9935a" metalness={0.35} roughness={0.38} /></mesh>}
     </group>
   );
+}
+
+function WallWithOpenings({ wall, position, size, color, material, windows }) {
+  const horizontal = wall === 'back' || wall === 'front';
+  const axisSize = horizontal ? size[0] : size[2];
+  const openings = windows.map((item) => ({ start: item.position * axisSize - axisSize / 2 - item.width / 2, end: item.position * axisSize - axisSize / 2 + item.width / 2, bottom: Math.max(0, item.sillHeight), top: Math.min(size[1], item.sillHeight + item.height) })).map((opening) => ({ ...opening, start: Math.max(-axisSize / 2, opening.start), end: Math.min(axisSize / 2, opening.end) })).filter((opening) => opening.end > opening.start && opening.top > opening.bottom).sort((a, b) => a.start - b.start);
+  const segments = [];
+  const mergedOpenings = openings.reduce((merged, opening) => { const previous = merged[merged.length - 1]; if (previous && opening.start <= previous.end) { previous.end = Math.max(previous.end, opening.end); previous.bottom = Math.min(previous.bottom, opening.bottom); previous.top = Math.max(previous.top, opening.top); return merged; } return [...merged, { ...opening }]; }, []);
+  let cursor = -axisSize / 2;
+  mergedOpenings.forEach((opening, index) => { if (opening.start > cursor) segments.push({ key: `wall-${wall}-h-${index}`, start: cursor, end: opening.start, bottom: 0, top: size[1] }); if (opening.bottom > 0) segments.push({ key: `wall-${wall}-b-${index}`, start: opening.start, end: opening.end, bottom: 0, top: opening.bottom }); if (opening.top < size[1]) segments.push({ key: `wall-${wall}-t-${index}`, start: opening.start, end: opening.end, bottom: opening.top, top: size[1] }); cursor = Math.max(cursor, opening.end); });
+  if (cursor < axisSize / 2) segments.push({ key: `wall-${wall}-end`, start: cursor, end: axisSize / 2, bottom: 0, top: size[1] });
+  return <group position={position}>{segments.map((segment) => { const length = segment.end - segment.start; const center = (segment.start + segment.end) / 2; const segmentPosition = horizontal ? [center, (segment.bottom + segment.top) / 2, 0] : [0, (segment.bottom + segment.top) / 2, center]; const segmentSize = horizontal ? [length, segment.top - segment.bottom, size[2]] : [size[0], segment.top - segment.bottom, length]; return <Wall key={segment.key} position={segmentPosition} size={segmentSize} color={color} material={material} />; })}</group>;
 }
 
 /** Create a door opening */
@@ -146,8 +176,13 @@ export default function Room() {
   const resolvedCeilingColor = ceilingPalette[ceilingMaterial] || ceilingColor;
   const floorMaterial = FLOORING_MATERIALS[room.floorMaterial] || FLOORING_MATERIALS.oakNatural;
   const catalogMaterial = FLOORING_MATERIAL_BY_ID[room.floorMaterial];
+  const resolvedCatalogMaterial = catalogMaterial || (room.floorMaterial === 'oakNatural' ? FLOORING_MATERIAL_BY_ID['floor-1'] : null);
+  const floorName = resolvedCatalogMaterial?.name || floorMaterial.label || 'White Marble';
+  const floorColorValue = resolvedCatalogMaterial?.color || floorMaterial.color || floorColor;
   const floorPattern = room.floorPattern || 'Straight';
-  const floorTexture = useMemo(() => { if (typeof document === 'undefined') return null; const texture = createFloorTexture(floorPattern, catalogMaterial?.color || floorMaterial.color || floorColor, Number(room.floorPatternScale || 1)); texture.rotation = (Number(room.floorPatternRotation || 0) * Math.PI) / 180; texture.center.set(0.5, 0.5); return texture; }, [floorPattern, catalogMaterial?.color, floorMaterial.color, floorColor, room.floorPatternScale, room.floorPatternRotation]);
+  const floorTexture = useMemo(() => { if (typeof document === 'undefined') return null; const texture = createFloorTexture(floorPattern, floorColorValue, Number(room.floorPatternScale || 1), floorName); texture.rotation = (Number(room.floorPatternRotation || 0) * Math.PI) / 180; texture.center.set(0.5, 0.5); texture.anisotropy = 4; return texture; }, [floorPattern, floorColorValue, floorName, room.floorPatternScale, room.floorPatternRotation]);
+  const isMarbleFloor = /marble|calacatta|carrara/i.test(floorName);
+  const isWoodFloor = /oak|ash|walnut|teak/i.test(floorName);
   const wallMaterial = WALL_MATERIALS[room.wallMaterial] || WALL_MATERIALS.warmPaint;
   const fixtureIntensity = (LIGHT_PRESETS[lightPreset] || LIGHT_PRESETS.midday).directional.intensity > 1 ? 0.46 : 0.24;
   const hw = width / 2;
@@ -203,6 +238,10 @@ export default function Room() {
           size={[win.width, win.height]}
           thickness={t}
           rotation={rot}
+          id={win.id}
+          type={win.type}
+          panels={win.panels}
+          opening={win.opening}
         />
       );
     });
@@ -272,20 +311,17 @@ export default function Room() {
       >
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial
-          color={catalogMaterial?.color || floorMaterial.color || floorColor}
+          color={floorColorValue}
           map={floorTexture}
-          roughness={floorMaterial.roughness}
-          metalness={floorMaterial.metalness}
-          envMapIntensity={floorMaterial.pattern === 'tile' ? 0.72 : 0.48}
-          clearcoat={floorMaterial.pattern === 'tile' ? 0.28 : 0.12}
-          clearcoatRoughness={0.42}
+          roughness={isMarbleFloor ? 0.28 : isWoodFloor ? 0.5 : floorMaterial.roughness}
+          metalness={isMarbleFloor ? 0.02 : floorMaterial.metalness}
+          envMapIntensity={isMarbleFloor ? 0.62 : floorMaterial.pattern === 'tile' ? 0.5 : 0.38}
+          clearcoat={isMarbleFloor ? 0.34 : isWoodFloor ? 0.18 : 0.08}
+          clearcoatRoughness={isMarbleFloor ? 0.28 : 0.42}
           side={THREE.DoubleSide}
         />
       </mesh>
-      {floorTexture && <mesh position={[0, 0.022, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[Math.max(width - 0.08, 0.1), Math.max(depth - 0.08, 0.1)]} />
-        <meshBasicMaterial map={floorTexture} color="#ffffff" side={THREE.DoubleSide} toneMapped={false} />
-      </mesh>}
+
       </group>
 
       {/* Ceiling */}
@@ -325,36 +361,16 @@ export default function Room() {
       </group>
 
       {/* Back Wall (Z-) */}
-      <Wall
-        position={[0, hh, -hd - t / 2]}
-        size={[width + t * 2, height, t]}
-        color={wallMaterial.color || wallColor}
-        material={wallMaterial}
-      />
+      <WallWithOpenings wall="back" windows={windows.filter((windowItem) => windowItem.wall === 'back')} position={[0, 0, -hd - t / 2]} size={[width + t * 2, height, t]} color={wallMaterial.color || wallColor} material={wallMaterial} />
 
       {/* Front Wall (Z+) */}
-      <Wall
-        position={[0, hh, hd + t / 2]}
-        size={[width + t * 2, height, t]}
-        color={wallMaterial.color || wallColor}
-        material={wallMaterial}
-      />
+      <WallWithOpenings wall="front" windows={windows.filter((windowItem) => windowItem.wall === 'front')} position={[0, 0, hd + t / 2]} size={[width + t * 2, height, t]} color={wallMaterial.color || wallColor} material={wallMaterial} />
 
       {/* Left Wall (X-) */}
-      <Wall
-        position={[-hw - t / 2, hh, 0]}
-        size={[t, height, depth]}
-        color={wallMaterial.color || wallColor}
-        material={wallMaterial}
-      />
+      <WallWithOpenings wall="left" windows={windows.filter((windowItem) => windowItem.wall === 'left')} position={[-hw - t / 2, 0, 0]} size={[t, height, depth]} color={wallMaterial.color || wallColor} material={wallMaterial} />
 
       {/* Right Wall (X+) */}
-      <Wall
-        position={[hw + t / 2, hh, 0]}
-        size={[t, height, depth]}
-        color={wallMaterial.color || wallColor}
-        material={wallMaterial}
-      />
+      <WallWithOpenings wall="right" windows={windows.filter((windowItem) => windowItem.wall === 'right')} position={[hw + t / 2, 0, 0]} size={[t, height, depth]} color={wallMaterial.color || wallColor} material={wallMaterial} />
 
       {/* Windows and Doors */}
       {windowMeshes}

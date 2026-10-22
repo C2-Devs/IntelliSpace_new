@@ -4,14 +4,39 @@
  * Renders ambient light, directional light with shadows, and
  * environment mapping based on the active preset.
  */
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
+import { useThree } from '@react-three/fiber';
 import useStore from '../../store/useStore';
 import { LIGHT_PRESETS } from '../../constants';
 
+const EMPTY_FIXTURES = [];
+const EMPTY_SETTINGS = {};
+
+function FixtureObject({ fixture }) {
+  const selectFixture = useStore((state) => state.selectLightingFixture);
+  const selected = useStore((state) => state.selectedLightingFixtureId === fixture.id);
+  const position = fixture.position || [0, 2.4, 0];
+  const type = fixture.type || 'Pendant Light';
+  const intensity = Number(fixture.intensity) || 0;
+  const material = <meshStandardMaterial color={selected ? '#f4c46b' : '#b9b2a5'} metalness={0.55} roughness={0.28} />;
+  return <group position={position} rotation={fixture.rotation || [0, 0, 0]} onPointerDown={(event) => { event.stopPropagation(); selectFixture?.(fixture.id); }}>
+    <pointLight intensity={intensity} color={fixture.color || '#ffd6a3'} distance={6} decay={2} />
+    {selected && <mesh><sphereGeometry args={[0.42, 16, 10]} /><meshBasicMaterial color="#f4c46b" transparent opacity={0.12} /></mesh>}
+    {type.includes('Pendant') && <><mesh position={[0, 0.42, 0]}><cylinderGeometry args={[0.018, 0.018, 0.84, 8]} />{material}</mesh><mesh position={[0, -0.02, 0]}><coneGeometry args={[0.34, 0.22, 24, 1, true]} />{material}</mesh><mesh position={[0, -0.13, 0]}><sphereGeometry args={[0.08, 12, 8]} /><meshStandardMaterial color={fixture.color || '#ffd6a3'} emissive={fixture.color || '#ffd6a3'} emissiveIntensity={0.8} /></mesh></>}
+    {type.includes('Recessed') && <><mesh><cylinderGeometry args={[0.18, 0.14, 0.08, 24]} />{material}</mesh><mesh position={[0, -0.05, 0]}><circleGeometry args={[0.1, 24]} /><meshStandardMaterial color={fixture.color || '#ffd6a3'} emissive={fixture.color || '#ffd6a3'} emissiveIntensity={0.7} /></mesh></>}
+    {type.includes('Floor') && <><mesh position={[0, -1.05, 0]}><cylinderGeometry args={[0.3, 0.3, 0.06, 24]} />{material}</mesh><mesh position={[0, -0.5, 0]}><cylinderGeometry args={[0.035, 0.035, 1.05, 10]} />{material}</mesh><mesh position={[0, 0.08, 0]}><coneGeometry args={[0.28, 0.24, 24, 1, true]} />{material}</mesh></>}
+    {type.includes('Wall') && <><mesh position={[0, 0, 0.12]}><boxGeometry args={[0.28, 0.38, 0.12]} />{material}</mesh><mesh position={[0, 0, 0.2]}><sphereGeometry args={[0.11, 16, 8]} /><meshStandardMaterial color={fixture.color || '#ffd6a3'} emissive={fixture.color || '#ffd6a3'} emissiveIntensity={0.8} /></mesh></>}
+  </group>;
+}
+
 export default function SceneLighting() {
+  const { gl } = useThree();
   const lightPreset = useStore((s) => s.lightPreset);
+  const environmentSettings = useStore((s) => s.environmentSettings || EMPTY_SETTINGS);
   const room = useStore((s) => s.room);
   const windows = useStore((s) => s.windows);
+  const lightingSettings = useStore((s) => s.lightingSettings || EMPTY_SETTINGS);
+  const lightingFixtures = useStore((s) => s.lightingFixtures || EMPTY_FIXTURES);
 
   const config = useMemo(
     () => LIGHT_PRESETS[lightPreset] || LIGHT_PRESETS.midday,
@@ -23,9 +48,10 @@ export default function SceneLighting() {
   const roomWidth = room?.width || 8;
   const roomDepth = room?.depth || 6;
   const roomHeight = room?.height || 3;
+  useEffect(() => { gl.toneMappingExposure = environmentSettings.exposure ?? 1.08; }, [gl, environmentSettings.exposure]);
 
   const sunPosition = useMemo(() => {
-    const { azimuth = 218, elevation = 62 } = config.directional;
+    const { azimuth = 218, elevation = 62 } = { ...config.directional, azimuth: environmentSettings.azimuth, elevation: environmentSettings.elevation };
     const azimuthRadians = (azimuth * Math.PI) / 180;
     const elevationRadians = (elevation * Math.PI) / 180;
     const radius = 12;
@@ -42,16 +68,16 @@ export default function SceneLighting() {
     <>
       {/* Ambient fill light */}
       <ambientLight
-        intensity={config.ambient.intensity * 0.82}
+        intensity={(environmentSettings.ambientIntensity ?? lightingSettings?.ambientIntensity ?? config.ambient.intensity) * 0.82}
         color={config.ambient.color}
       />
 
       {/* Primary directional light with shadows */}
       <directionalLight
         position={sunPosition}
-        intensity={config.directional.intensity}
-        color={config.directional.color}
-        castShadow={false}
+        intensity={environmentSettings.sunlightIntensity ?? lightingSettings?.mainIntensity ?? config.directional.intensity}
+        color={environmentSettings.sunlightColor ?? lightingSettings?.color ?? config.directional.color}
+        castShadow={environmentSettings.shadows ?? lightingSettings?.shadows ?? false}
       />
 
       {/* Secondary fill light */}
@@ -97,6 +123,8 @@ export default function SceneLighting() {
         decay={2}
         color="#f3c18b"
       />
+
+      {lightingFixtures.filter((fixture) => fixture.visible !== false).map((fixture) => <FixtureObject key={fixture.id} fixture={fixture} />)}
 
       {/* Window bounce layer keeps glazing connected to the active sun preset. */}
       {windows.slice(0, 4).map((window, index) => {
