@@ -8,7 +8,11 @@ import { create } from 'zustand';
 import { generateId } from '../utils/idUtils';
 import { getFurnitureById } from '../data/furnitureRegistry';
 import { getCatalogFootprint } from '../utils/catalogUtils';
-import { furnitureInstanceToDto } from '../utils/catalogApi';
+import {
+  furnitureInstanceToDto,
+  getBackendCatalogItemId,
+  getRegistryIdForCatalogItem,
+} from '../utils/catalogApi';
 import { instantiateTemplate } from '../data/roomTemplates';
 import { MAX_HISTORY_SIZE } from '../constants';
 import { cloneFurnitureState } from '../utils/coordinateTransformers';
@@ -27,9 +31,19 @@ function normalizeVector(vector, fallback, length = 3) {
 
 function normalizeFurnitureItem(item) {
   const scale = normalizeVector(item.scale, [1, 1, 1]).map((value) => Math.min(MAX_SCALE, Math.max(MIN_SCALE, value)));
+  const originalCatalogItemId = item.catalogItemId ?? item.registryId;
+  const registryId =
+    item.registryId ??
+    getRegistryIdForCatalogItem(originalCatalogItemId) ??
+    originalCatalogItemId;
   return {
     ...item,
-    catalogItemId: item.catalogItemId ?? item.registryId,
+    catalogItemId: registryId,
+    registryId,
+    backendCatalogItemId:
+      item.backendCatalogItemId ??
+      getBackendCatalogItemId(registryId) ??
+      (registryId !== originalCatalogItemId ? originalCatalogItemId : null),
     position: normalizeVector(item.position, [0, 0, 0]),
     rotation: normalizeVector(item.rotation, [0, 0, 0]),
     scale,
@@ -217,6 +231,8 @@ lightPreset: template.lightPreset || 'midday',
     const newItem = {
       id: generateId(),
       catalogItemId: registryId,
+      registryId,
+      backendCatalogItemId: getBackendCatalogItemId(registryId),
       position: [...position],
       rotation: [...definition.defaultRotation],
       scale: [...definition.defaultScale],
