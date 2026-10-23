@@ -16,17 +16,22 @@ function FixtureObject({ fixture }) {
   const selectFixture = useStore((state) => state.selectLightingFixture);
   const selected = useStore((state) => state.selectedLightingFixtureId === fixture.id);
   const position = fixture.position || [0, 2.4, 0];
-  const type = fixture.type || 'Pendant Light';
-  const intensity = Number(fixture.intensity) || 0;
+  const type = String(fixture.type || 'Pendant Light').trim().toLowerCase();
+  const intensity = Math.max(0, Number(fixture.intensity) || 0);
+  const color = fixture.color || '#ffd6a3';
   const material = <meshStandardMaterial color={selected ? '#f4c46b' : '#b9b2a5'} metalness={0.55} roughness={0.28} />;
+  const bulb = <mesh><sphereGeometry args={[0.09, 12, 8]} /><meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.9} /></mesh>;
+  const shade = <mesh position={[0, -0.14, 0]}><coneGeometry args={[0.32, 0.24, 24, 1, true]} />{material}</mesh>;
   return <group position={position} rotation={fixture.rotation || [0, 0, 0]} onPointerDown={(event) => { event.stopPropagation(); selectFixture?.(fixture.id); }}>
-    <pointLight intensity={intensity} color={fixture.color || '#ffd6a3'} distance={6} decay={2} />
+    <pointLight intensity={intensity} color={color} distance={Number(fixture.range) || 6} decay={2} />
     {selected && <mesh raycast={() => null}><sphereGeometry args={[0.42, 16, 10]} /><meshBasicMaterial color="#f4c46b" transparent opacity={0.12} /></mesh>}
-    {type.includes('Pendant') && <><mesh position={[0, 0.42, 0]}><cylinderGeometry args={[0.018, 0.018, 0.84, 8]} />{material}</mesh><mesh position={[0, -0.02, 0]}><coneGeometry args={[0.34, 0.22, 24, 1, true]} />{material}</mesh><mesh position={[0, -0.13, 0]}><sphereGeometry args={[0.08, 12, 8]} /><meshStandardMaterial color={fixture.color || '#ffd6a3'} emissive={fixture.color || '#ffd6a3'} emissiveIntensity={0.8} /></mesh></>}
-    {type.includes('Recessed') && <><mesh><cylinderGeometry args={[0.18, 0.14, 0.08, 24]} />{material}</mesh><mesh position={[0, -0.05, 0]}><circleGeometry args={[0.1, 24]} /><meshStandardMaterial color={fixture.color || '#ffd6a3'} emissive={fixture.color || '#ffd6a3'} emissiveIntensity={0.7} /></mesh></>}
-    {type.includes('Floor') && <><mesh position={[0, -1.05, 0]}><cylinderGeometry args={[0.3, 0.3, 0.06, 24]} />{material}</mesh><mesh position={[0, -0.5, 0]}><cylinderGeometry args={[0.035, 0.035, 1.05, 10]} />{material}</mesh><mesh position={[0, 0.08, 0]}><coneGeometry args={[0.28, 0.24, 24, 1, true]} />{material}</mesh></>}
-    {type.includes('Wall') && <><mesh position={[0, 0, 0.12]}><boxGeometry args={[0.28, 0.38, 0.12]} />{material}</mesh><mesh position={[0, 0, 0.2]}><sphereGeometry args={[0.11, 16, 8]} /><meshStandardMaterial color={fixture.color || '#ffd6a3'} emissive={fixture.color || '#ffd6a3'} emissiveIntensity={0.8} /></mesh></>}
-    {!type.includes('Pendant') && !type.includes('Recessed') && !type.includes('Floor') && !type.includes('Wall') && <><mesh><cylinderGeometry args={[0.2, 0.2, 0.12, 20]} />{material}</mesh><mesh position={[0, -0.08, 0]}><sphereGeometry args={[0.12, 12, 8]} /><meshStandardMaterial color={fixture.color || '#ffd6a3'} emissive={fixture.color || '#ffd6a3'} emissiveIntensity={0.8} /></mesh></>}
+    {(type === 'chandelier') && <><mesh position={[0, 0.48, 0]}><cylinderGeometry args={[0.025, 0.025, 0.96, 8]} />{material}</mesh><mesh position={[0, 0.04, 0]}><sphereGeometry args={[0.16, 16, 10]} />{material}</mesh>{[-1, -0.5, 0, 0.5, 1].map((x) => <group key={x} position={[x * 0.48, 0.04 - Math.abs(x) * 0.05, 0]} rotation={[0, 0, x * 0.25]}><mesh position={[0, -0.18, 0]}><cylinderGeometry args={[0.014, 0.014, 0.36, 8]} />{material}</mesh><mesh position={[0, -0.38, 0]}>{bulb}</mesh></group>)}</>}
+    {(type === 'table lamp') && <><mesh position={[0, -0.62, 0]}><cylinderGeometry args={[0.32, 0.38, 0.12, 24]} />{material}</mesh><mesh position={[0, -0.2, 0]}><cylinderGeometry args={[0.035, 0.05, 0.72, 12]} />{material}</mesh><mesh position={[0, 0.18, 0]}><coneGeometry args={[0.32, 0.3, 24, 1, true]} />{material}</mesh><mesh position={[0, 0.04, 0]}>{bulb}</mesh></>}
+    {(type === 'floor lamp') && <><mesh position={[0, -1.1, 0]}><cylinderGeometry args={[0.42, 0.48, 0.1, 24]} />{material}</mesh><mesh position={[0, -0.52, 0]}><cylinderGeometry args={[0.045, 0.06, 1.1, 12]} />{material}</mesh><mesh position={[0, 0.16, 0]}>{shade}</mesh><mesh position={[0, 0.02, 0]}>{bulb}</mesh></>}
+    {(type === 'pendant light') && <><mesh position={[0, 0.42, 0]}><cylinderGeometry args={[0.018, 0.018, 0.84, 8]} />{material}</mesh>{shade}<mesh position={[0, -0.22, 0]}>{bulb}</mesh></>}
+    {(type === 'recessed light' || type === 'ceiling light' || type === 'track light' || type === 'linear light' || type === 'spotlight' || type === 'smart light' || type === 'led strip') && <><mesh><cylinderGeometry args={[0.2, 0.2, 0.1, 20]} />{material}</mesh>{bulb}</>}
+    {(type === 'wall sconce') && <><mesh position={[0, 0, 0.12]}><boxGeometry args={[0.28, 0.38, 0.12]} />{material}</mesh><mesh position={[0, 0, 0.2]}>{bulb}</mesh></>}
+    {!['chandelier','table lamp','floor lamp','pendant light','recessed light','ceiling light','track light','linear light','spotlight','smart light','led strip','wall sconce'].includes(type) && <><mesh><cylinderGeometry args={[0.2, 0.2, 0.12, 20]} />{material}</mesh>{bulb}</>}
   </group>;
 }
 
