@@ -44,7 +44,7 @@ export default function SceneLighting() {
   );
 
   const warmLayer = config.directional.color;
-  const decorativeIntensity = lightPreset === 'night' ? 0.45 : lightPreset === 'evening' || lightPreset === 'goldenHour' ? 0.72 : 0.26;
+  const decorativeIntensity = lightPreset === 'night' ? 0.2 : lightPreset === 'evening' || lightPreset === 'goldenHour' ? 0.42 : lightPreset === 'studio' ? 0.08 : 0.12;
   const roomWidth = room?.width || 8;
   const roomDepth = room?.depth || 6;
   const roomHeight = room?.height || 3;
@@ -62,7 +62,7 @@ export default function SceneLighting() {
       Math.sin(elevationRadians) * radius,
       Math.cos(azimuthRadians) * horizontal,
     ];
-  }, [config]);
+  }, [config, environmentSettings.azimuth, environmentSettings.elevation]);
 
   return (
     <>
@@ -77,7 +77,18 @@ export default function SceneLighting() {
         position={sunPosition}
         intensity={environmentSettings.sunlightIntensity ?? lightingSettings?.mainIntensity ?? config.directional.intensity}
         color={environmentSettings.sunlightColor ?? lightingSettings?.color ?? config.directional.color}
-        castShadow={environmentSettings.shadows ?? lightingSettings?.shadows ?? false}
+        castShadow={environmentSettings.shadows ?? lightingSettings?.shadows ?? true}
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-bias={-0.00018}
+        shadow-normalBias={0.035}
+        shadow-radius={4}
+        shadow-camera-near={0.5}
+        shadow-camera-far={32}
+        shadow-camera-left={-roomWidth * 0.72}
+        shadow-camera-right={roomWidth * 0.72}
+        shadow-camera-top={roomDepth * 0.72}
+        shadow-camera-bottom={-roomDepth * 0.72}
       />
 
       {/* Secondary fill light */}

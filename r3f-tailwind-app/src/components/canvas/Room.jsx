@@ -56,11 +56,12 @@ function createFloorTexture(pattern, baseColor, scale = 1, materialName = '') {
 /** Create a wall mesh. */
 function Wall({ position, size, color, rotation = [0, 0, 0], material = {} }) {
   return (
-    <mesh
-      position={position}
-      rotation={rotation}
-
-    >
+  <mesh
+  position={position}
+  rotation={rotation}
+  castShadow
+  receiveShadow
+  >
       <boxGeometry args={size} />
       <meshStandardMaterial
         color={color}
@@ -138,7 +139,7 @@ function DoorPanel({ position, size, thickness, rotation = [0, 0, 0] }) {
   return (
     <group position={position} rotation={rotation}>
       {/* Door frame */}
-      <mesh >
+      <mesh castShadow receiveShadow>
         <boxGeometry args={[size[0] + 0.1, size[1] + 0.05, depth]} />
         <meshStandardMaterial color="#222222" roughness={0.4} metalness={0.2} />
       </mesh>
@@ -307,7 +308,7 @@ export default function Room() {
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, 0, 0]}
-
+        receiveShadow
       >
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial

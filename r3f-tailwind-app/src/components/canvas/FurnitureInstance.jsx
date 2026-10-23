@@ -43,6 +43,8 @@ function LoadedFurnitureInstance({ item, definition }) {
     const clone = scene.clone(true);
     clone.traverse((child) => {
       if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
         if (child.material) {
           child.material = child.material.clone();
         }
