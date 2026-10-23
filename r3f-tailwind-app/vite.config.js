@@ -13,6 +13,11 @@ export default defineConfig({
         target: 'https://backend-intellispace.onrender.com',
         changeOrigin: true,
         secure: true,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.removeHeader('origin')
+          })
+        },
       },
     },
   },
