@@ -7,7 +7,10 @@ import { CAMERA_MODES } from '../../constants';
 const MIN_ZOOM = 50;
 const MAX_ZOOM = 200;
 const ZOOM_STEP = 10;
-const PERSPECTIVE_DIRECTION = new THREE.Vector3(1, 0.72, 1).normalize();
+const PERSPECTIVE_DIRECTIONS = {
+  '3d': new THREE.Vector3(1, 0.72, 1).normalize(),
+  'apartment-plan': new THREE.Vector3(0, 1.55, 1).normalize(),
+};
 
 function getRoomSpan(room) {
   return Math.max(3, Number(room.width) || 6, Number(room.depth) || 5);
@@ -24,6 +27,8 @@ export default function CameraManager() {
   const transition = useRef(false);
   const targetPosition = useRef(new THREE.Vector3());
   const fitZoom = useRef(100);
+
+  const perspectiveDirection = PERSPECTIVE_DIRECTIONS[viewMode] || PERSPECTIVE_DIRECTIONS['3d'];
 
   const fitCamera = useCallback(() => {
     const span = getRoomSpan(room);
@@ -45,7 +50,7 @@ export default function CameraManager() {
       const fovRadians = THREE.MathUtils.degToRad(camera.fov || 46);
       const halfVertical = fovRadians / 2;
       const distance = (span * 0.59) / Math.tan(halfVertical) * 1.18;
-      targetPosition.current.copy(target.current).addScaledVector(PERSPECTIVE_DIRECTION, distance);
+      targetPosition.current.copy(target.current).addScaledVector(perspectiveDirection, distance);
       transition.current = true;
     }
     camera.updateProjectionMatrix();
