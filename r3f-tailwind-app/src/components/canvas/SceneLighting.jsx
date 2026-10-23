@@ -26,6 +26,7 @@ function FixtureObject({ fixture }) {
     {type.includes('Recessed') && <><mesh><cylinderGeometry args={[0.18, 0.14, 0.08, 24]} />{material}</mesh><mesh position={[0, -0.05, 0]}><circleGeometry args={[0.1, 24]} /><meshStandardMaterial color={fixture.color || '#ffd6a3'} emissive={fixture.color || '#ffd6a3'} emissiveIntensity={0.7} /></mesh></>}
     {type.includes('Floor') && <><mesh position={[0, -1.05, 0]}><cylinderGeometry args={[0.3, 0.3, 0.06, 24]} />{material}</mesh><mesh position={[0, -0.5, 0]}><cylinderGeometry args={[0.035, 0.035, 1.05, 10]} />{material}</mesh><mesh position={[0, 0.08, 0]}><coneGeometry args={[0.28, 0.24, 24, 1, true]} />{material}</mesh></>}
     {type.includes('Wall') && <><mesh position={[0, 0, 0.12]}><boxGeometry args={[0.28, 0.38, 0.12]} />{material}</mesh><mesh position={[0, 0, 0.2]}><sphereGeometry args={[0.11, 16, 8]} /><meshStandardMaterial color={fixture.color || '#ffd6a3'} emissive={fixture.color || '#ffd6a3'} emissiveIntensity={0.8} /></mesh></>}
+    {!type.includes('Pendant') && !type.includes('Recessed') && !type.includes('Floor') && !type.includes('Wall') && <><mesh><cylinderGeometry args={[0.2, 0.2, 0.12, 20]} />{material}</mesh><mesh position={[0, -0.08, 0]}><sphereGeometry args={[0.12, 12, 8]} /><meshStandardMaterial color={fixture.color || '#ffd6a3'} emissive={fixture.color || '#ffd6a3'} emissiveIntensity={0.8} /></mesh></>}
   </group>;
 }
 
@@ -42,8 +43,13 @@ export default function SceneLighting() {
     () => LIGHT_PRESETS[lightPreset] || LIGHT_PRESETS.midday,
     [lightPreset]
   );
+  const isCustom = lightPreset === 'custom';
+  const ambientIntensity = isCustom ? (lightingSettings.ambientIntensity ?? config.ambient.intensity) : (environmentSettings.ambientIntensity ?? config.ambient.intensity);
+  const mainIntensity = isCustom ? (lightingSettings.mainIntensity ?? config.directional.intensity) : (environmentSettings.sunlightIntensity ?? config.directional.intensity);
+  const lightColor = isCustom ? (lightingSettings.color ?? config.directional.color) : (environmentSettings.sunlightColor ?? config.directional.color);
+  const shadows = isCustom ? (lightingSettings.shadows ?? false) : (environmentSettings.shadows ?? true);
 
-  const warmLayer = config.directional.color;
+  const warmLayer = lightColor;
   const decorativeIntensity = lightPreset === 'night' ? 0.45 : lightPreset === 'evening' || lightPreset === 'goldenHour' ? 0.72 : 0.26;
   const roomWidth = room?.width || 8;
   const roomDepth = room?.depth || 6;
@@ -51,7 +57,7 @@ export default function SceneLighting() {
   useEffect(() => { gl.toneMappingExposure = environmentSettings.exposure ?? 1.08; }, [gl, environmentSettings.exposure]);
 
   const sunPosition = useMemo(() => {
-    const { azimuth = 218, elevation = 62 } = { ...config.directional, azimuth: environmentSettings.azimuth, elevation: environmentSettings.elevation };
+    const { azimuth = 218, elevation = 62 } = { ...config.directional, azimuth: isCustom ? environmentSettings.azimuth : config.directional.azimuth, elevation: isCustom ? environmentSettings.elevation : config.directional.elevation };
     const azimuthRadians = (azimuth * Math.PI) / 180;
     const elevationRadians = (elevation * Math.PI) / 180;
     const radius = 12;
@@ -62,22 +68,22 @@ export default function SceneLighting() {
       Math.sin(elevationRadians) * radius,
       Math.cos(azimuthRadians) * horizontal,
     ];
-  }, [config]);
+  }, [config, environmentSettings.azimuth, environmentSettings.elevation]);
 
   return (
     <>
       {/* Ambient fill light */}
       <ambientLight
-        intensity={(environmentSettings.ambientIntensity ?? lightingSettings?.ambientIntensity ?? config.ambient.intensity) * 0.82}
-        color={config.ambient.color}
+        intensity={ambientIntensity * 0.82}
+        color={isCustom ? (lightingSettings.color ?? config.ambient.color) : config.ambient.color}
       />
 
       {/* Primary directional light with shadows */}
       <directionalLight
         position={sunPosition}
-        intensity={environmentSettings.sunlightIntensity ?? lightingSettings?.mainIntensity ?? config.directional.intensity}
-        color={environmentSettings.sunlightColor ?? lightingSettings?.color ?? config.directional.color}
-        castShadow={environmentSettings.shadows ?? lightingSettings?.shadows ?? false}
+        intensity={mainIntensity}
+        color={lightColor}
+        castShadow={shadows}
       />
 
       {/* Secondary fill light */}

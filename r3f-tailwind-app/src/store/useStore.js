@@ -14,7 +14,7 @@ import {
   getRegistryIdForCatalogItem,
 } from '../utils/catalogApi';
 import { instantiateTemplate } from '../data/roomTemplates';
-import { MAX_HISTORY_SIZE } from '../constants';
+import { MAX_HISTORY_SIZE, LIGHT_PRESETS } from '../constants';
 import { cloneFurnitureState } from '../utils/coordinateTransformers';
 
 const DEFAULT_TEMPLATE = 'modern-living-room';
@@ -378,7 +378,27 @@ lightPreset: template.lightPreset || 'midday',
   // Lighting
   // ═══════════════════════════════════════════════
 
-  setLightPreset: (preset) => set({ lightPreset: preset }),
+  setLightPreset: (preset) => set((state) => {
+    const config = LIGHT_PRESETS[preset];
+    if (!config) return { lightPreset: preset };
+    const lightingSettings = {
+      ...state.lightingSettings,
+      ambientIntensity: config.ambient.intensity,
+      mainIntensity: config.directional.intensity,
+      color: config.directional.color,
+    };
+    const environmentSettings = {
+      ...state.environmentSettings,
+      background: config.background,
+      ambientIntensity: config.ambient.intensity,
+      sunlightIntensity: config.directional.intensity,
+      sunlightColor: config.directional.color,
+      azimuth: config.directional.azimuth,
+      elevation: config.directional.elevation,
+      shadows: state.lightingSettings?.shadows ?? true,
+    };
+    return { lightPreset: preset, lightingSettings, environmentSettings };
+  }),
   setEnvironmentPreset: (preset, settings = {}) => set((state) => ({ environmentPreset: preset, environmentSettings: { ...state.environmentSettings, ...settings } })),
   setEnvironmentSettings: (updates) => set((state) => ({ environmentSettings: { ...state.environmentSettings, ...updates } })),
   setLightingSettings: (updates) => set((state) => ({ lightingSettings: { ...state.lightingSettings, ...updates } })),
