@@ -22,6 +22,38 @@ export default function FurnitureInstance({ item }) {
   return <LoadedFurnitureInstance item={item} definition={definition} />;
 }
 
+function applyMaterialProfile(material, meshName = '') {
+  if (!material || !material.isMaterial) return;
+
+  const materialLabel = `${material.name || ''} ${meshName}`.toLowerCase();
+  const isFabric = /fabric|cloth|textile|upholstery|cushion|velvet|leather|sofa|chair|curtain|carpet|rug/.test(materialLabel);
+  const isWood = /wood|oak|walnut|ash|teak|timber|veneer|cabinet|desk|table|shelf/.test(materialLabel);
+  const isMetal = /metal|steel|iron|chrome|brass|copper|aluminium|aluminum|handle|frame/.test(materialLabel);
+  const isGlass = /glass|glazing|mirror|lens|transparent/.test(materialLabel);
+  const isCeramic = /ceramic|porcelain|stone|marble|concrete|terracotta|tile|basin|toilet|bathtub/.test(materialLabel);
+
+  if (isFabric) {
+    material.roughness = Math.max(material.roughness ?? 0.8, 0.82);
+    material.metalness = 0;
+    material.envMapIntensity = Math.min(material.envMapIntensity ?? 0.2, 0.22);
+  } else if (isWood) {
+    material.roughness = Math.max(material.roughness ?? 0.58, 0.56);
+    material.metalness = Math.min(material.metalness ?? 0, 0.04);
+    material.envMapIntensity = Math.min(material.envMapIntensity ?? 0.3, 0.3);
+  } else if (isMetal) {
+    material.roughness = Math.max(material.roughness ?? 0.28, 0.24);
+    material.metalness = Math.max(material.metalness ?? 0.5, 0.55);
+    material.envMapIntensity = Math.min(material.envMapIntensity ?? 0.7, 0.72);
+  } else if (isGlass) {
+    material.roughness = Math.min(material.roughness ?? 0.12, 0.18);
+    material.envMapIntensity = Math.min(material.envMapIntensity ?? 0.8, 0.85);
+  } else if (isCeramic) {
+    material.roughness = Math.max(material.roughness ?? 0.32, 0.3);
+    material.metalness = Math.min(material.metalness ?? 0, 0.03);
+    material.envMapIntensity = Math.min(material.envMapIntensity ?? 0.4, 0.42);
+  }
+}
+
 function LoadedFurnitureInstance({ item, definition }) {
   const ref = useRef();
   const [hovered, setHovered] = useState(false);
@@ -45,6 +77,7 @@ function LoadedFurnitureInstance({ item, definition }) {
       if (child.isMesh) {
         if (child.material) {
           child.material = child.material.clone();
+          applyMaterialProfile(child.material, child.name);
         }
       }
     });
@@ -116,20 +149,17 @@ function LoadedFurnitureInstance({ item, definition }) {
         })}
       />
 
-      {/* Selection outline box uses measured native model bounds. */}
+      {/* Keep the selection guide just outside the model so it cannot z-fight with furniture surfaces. */}
       {isSelected && (
-          <mesh
-            position={[modelBounds.center.x, modelBounds.center.y, modelBounds.center.z]}
-            raycast={() => null}
-          >
-          <boxGeometry args={[modelBounds.size.x, modelBounds.size.y, modelBounds.size.z]} />
-          <meshBasicMaterial
-            color="#c7a66a"
-            wireframe
-            transparent
-            opacity={0.16}
-          />
-        </mesh>
+        <lineSegments
+          position={[modelBounds.center.x, modelBounds.center.y, modelBounds.center.z]}
+          scale={[1.015, 1.015, 1.015]}
+          raycast={() => null}
+          renderOrder={10}
+        >
+          <edgesGeometry args={[new THREE.BoxGeometry(modelBounds.size.x, modelBounds.size.y, modelBounds.size.z)]} />
+          <lineBasicMaterial color="#c7a66a" transparent opacity={0.82} depthTest={false} depthWrite={false} />
+        </lineSegments>
       )}
     </group>
   );
