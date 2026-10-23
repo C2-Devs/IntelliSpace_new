@@ -104,7 +104,17 @@ function LoadedFurnitureInstance({ item, definition }) {
         gl.domElement.style.cursor = 'auto';
       }}
     >
-      <primitive object={clonedScene} />
+      <primitive
+        object={clonedScene}
+        castShadow
+        receiveShadow
+        onUpdate={(object) => object.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        })}
+      />
 
       {/* Selection outline box uses measured native model bounds. */}
       {isSelected && (

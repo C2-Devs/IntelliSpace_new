@@ -76,6 +76,7 @@ export default function SceneCanvas() {
         near: 0.1,
         far: 100,
       }}
+      shadows={{ type: THREE.PCFSoftShadowMap }}
       gl={{
         antialias: true,
         toneMapping: THREE.ACESFilmicToneMapping,

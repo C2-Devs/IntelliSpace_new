@@ -4,7 +4,7 @@
  * Renders ambient light, directional light with shadows, and
  * environment mapping based on the active preset.
  */
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useThree } from '@react-three/fiber';
 import useStore from '../../store/useStore';
 import { LIGHT_PRESETS } from '../../constants';
@@ -21,7 +21,7 @@ function FixtureObject({ fixture }) {
   const material = <meshStandardMaterial color={selected ? '#f4c46b' : '#b9b2a5'} metalness={0.55} roughness={0.28} />;
   return <group position={position} rotation={fixture.rotation || [0, 0, 0]} onPointerDown={(event) => { event.stopPropagation(); selectFixture?.(fixture.id); }}>
     <pointLight intensity={intensity} color={fixture.color || '#ffd6a3'} distance={6} decay={2} />
-    {selected && <mesh><sphereGeometry args={[0.42, 16, 10]} /><meshBasicMaterial color="#f4c46b" transparent opacity={0.12} /></mesh>}
+    {selected && <mesh raycast={() => null}><sphereGeometry args={[0.42, 16, 10]} /><meshBasicMaterial color="#f4c46b" transparent opacity={0.12} /></mesh>}
     {type.includes('Pendant') && <><mesh position={[0, 0.42, 0]}><cylinderGeometry args={[0.018, 0.018, 0.84, 8]} />{material}</mesh><mesh position={[0, -0.02, 0]}><coneGeometry args={[0.34, 0.22, 24, 1, true]} />{material}</mesh><mesh position={[0, -0.13, 0]}><sphereGeometry args={[0.08, 12, 8]} /><meshStandardMaterial color={fixture.color || '#ffd6a3'} emissive={fixture.color || '#ffd6a3'} emissiveIntensity={0.8} /></mesh></>}
     {type.includes('Recessed') && <><mesh><cylinderGeometry args={[0.18, 0.14, 0.08, 24]} />{material}</mesh><mesh position={[0, -0.05, 0]}><circleGeometry args={[0.1, 24]} /><meshStandardMaterial color={fixture.color || '#ffd6a3'} emissive={fixture.color || '#ffd6a3'} emissiveIntensity={0.7} /></mesh></>}
     {type.includes('Floor') && <><mesh position={[0, -1.05, 0]}><cylinderGeometry args={[0.3, 0.3, 0.06, 24]} />{material}</mesh><mesh position={[0, -0.5, 0]}><cylinderGeometry args={[0.035, 0.035, 1.05, 10]} />{material}</mesh><mesh position={[0, 0.08, 0]}><coneGeometry args={[0.28, 0.24, 24, 1, true]} />{material}</mesh></>}
@@ -38,6 +38,7 @@ export default function SceneLighting() {
   const windows = useStore((s) => s.windows);
   const lightingSettings = useStore((s) => s.lightingSettings || EMPTY_SETTINGS);
   const lightingFixtures = useStore((s) => s.lightingFixtures || EMPTY_FIXTURES);
+  const sunRef = useRef();
 
   const config = useMemo(
     () => LIGHT_PRESETS[lightPreset] || LIGHT_PRESETS.midday,
@@ -54,7 +55,25 @@ export default function SceneLighting() {
   const roomWidth = room?.width || 8;
   const roomDepth = room?.depth || 6;
   const roomHeight = room?.height || 3;
-  useEffect(() => { gl.toneMappingExposure = environmentSettings.exposure ?? 1.08; }, [gl, environmentSettings.exposure]);
+  useEffect(() => {
+    gl.toneMappingExposure = environmentSettings.exposure ?? 1.08;
+  }, [gl, environmentSettings.exposure]);
+
+  useEffect(() => {
+    const light = sunRef.current;
+    if (!light) return;
+    const extent = Math.max(roomWidth, roomDepth) * 0.72;
+    light.shadow.mapSize.set(2048, 2048);
+    light.shadow.camera.left = -extent;
+    light.shadow.camera.right = extent;
+    light.shadow.camera.top = extent;
+    light.shadow.camera.bottom = -extent;
+    light.shadow.camera.near = 0.1;
+    light.shadow.camera.far = Math.max(24, roomHeight + extent * 2.2);
+    light.shadow.bias = -0.00035;
+    light.shadow.normalBias = 0.025;
+    light.shadow.camera.updateProjectionMatrix();
+  }, [gl, roomWidth, roomDepth, roomHeight]);
 
   const sunPosition = useMemo(() => {
     const { azimuth = 218, elevation = 62 } = { ...config.directional, azimuth: isCustom ? environmentSettings.azimuth : config.directional.azimuth, elevation: isCustom ? environmentSettings.elevation : config.directional.elevation };
@@ -80,6 +99,7 @@ export default function SceneLighting() {
 
       {/* Primary directional light with shadows */}
       <directionalLight
+        ref={sunRef}
         position={sunPosition}
         intensity={mainIntensity}
         color={lightColor}
