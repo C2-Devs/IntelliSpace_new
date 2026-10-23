@@ -140,11 +140,12 @@ function LoadedFurnitureInstance({ item, definition }) {
       <primitive
         object={clonedScene}
         castShadow
-        receiveShadow
         onUpdate={(object) => object.traverse((child) => {
           if (child.isMesh) {
+            // Furniture casts onto the floor, but should not self-receive shadow-map samples.
+            // Complex GLBs often contain near-coplanar parts that produce fragmented acne.
             child.castShadow = true;
-            child.receiveShadow = true;
+            child.receiveShadow = false;
           }
         })}
       />
