@@ -70,12 +70,8 @@ export default function SceneCanvas() {
         toneMapping: THREE.ACESFilmicToneMapping,
         toneMappingExposure: 1.08,
         outputColorSpace: THREE.SRGBColorSpace,
-        shadows: {
-          type: THREE.PCFSoftShadowMap,
-          enabled: true,
-          autoUpdate: true,
-        },
       }}
+      shadows={{ type: THREE.PCFSoftShadowMap }}
       dpr={[1, 1.75]}
       onCreated={({ gl }) => {
         gl.setClearColor('#121313', 1);
