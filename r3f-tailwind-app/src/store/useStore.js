@@ -103,6 +103,7 @@ function createInitialState() {
 
     // ── View & Camera ────────────────────────────
     viewMode: '3d',
+    cameraZoom: 100,
 
     // ── Lighting ─────────────────────────────────
 lightPreset: template.lightPreset || 'midday',
@@ -362,7 +363,7 @@ lightPreset: template.lightPreset || 'midday',
 
   // ═══════════════════════════════════════════════
   // Transform Mode
-  // ═══════════════════════════════════════════════
+  // ══════════════════════════════���════════════════
 
   setTransformMode: (mode) => set({ transformMode: mode }),
 
@@ -370,7 +371,8 @@ lightPreset: template.lightPreset || 'midday',
   // Camera
   // ═══════════════════════════════════════════════
 
-  setViewMode: (mode) => set({ viewMode: mode }),
+  setViewMode: (mode) => set({ viewMode: mode, cameraZoom: 100 }),
+  setCameraZoom: (cameraZoom) => set({ cameraZoom: Math.round(Math.min(200, Math.max(50, cameraZoom))) }),
 
   // ═══════════════════════════════════════════════
   // Lighting

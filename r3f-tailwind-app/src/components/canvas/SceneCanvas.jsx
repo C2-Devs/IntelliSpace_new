@@ -37,8 +37,8 @@ function SceneLayer({ children, fallback = null }) {
 /** Click on empty space to deselect */
 function ViewCamera() {
   const viewMode = useStore((s) => s.viewMode);
-  if (viewMode === 'floor-plan') return <OrthographicCamera makeDefault position={[0, 16, 0.01]} near={0.1} far={100} />;
-  return <PerspectiveCamera makeDefault position={[8.8, 6.6, 8.8]} fov={46} near={0.1} far={100} />;
+  if (viewMode === 'floor-plan') return <OrthographicCamera key={viewMode} makeDefault position={[0, 16, 0.01]} near={0.1} far={100} />;
+  return <PerspectiveCamera key={viewMode} makeDefault position={[8.8, 6.6, 8.8]} fov={46} near={0.1} far={100} />;
 }
 
 function DeselectPlane() {
