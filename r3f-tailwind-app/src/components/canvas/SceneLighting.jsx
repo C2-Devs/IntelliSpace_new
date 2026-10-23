@@ -5,6 +5,7 @@
  * environment mapping based on the active preset.
  */
 import React, { useEffect, useMemo, useRef } from 'react';
+import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import useStore from '../../store/useStore';
 import { LIGHT_PRESETS } from '../../constants';
@@ -67,9 +68,22 @@ export default function SceneLighting() {
   }, [gl, environmentSettings.exposure]);
 
   useEffect(() => {
+    // Keep the active renderer in sync with the editor toggle. Canvas-level
+    // shadow props are applied at creation time, but this state can change
+    // after mount and Three.js needs an explicit map refresh in that case.
+    gl.shadowMap.enabled = shadows;
+    gl.shadowMap.type = THREE.PCFSoftShadowMap;
+    gl.shadowMap.autoUpdate = shadows;
+    gl.shadowMap.needsUpdate = true;
+    if (!shadows) gl.shadowMap.dispose();
+  }, [gl, shadows]);
+
+  useEffect(() => {
     const light = sunRef.current;
     if (!light) return;
-    const extent = Math.max(roomWidth, roomDepth) * 0.72;
+    const extent = Math.hypot(roomWidth, roomDepth) * 0.72;
+    light.target.position.set(0, 0, 0);
+    light.target.updateMatrixWorld();
     light.shadow.mapSize.set(2048, 2048);
     light.shadow.radius = config.directional.softness ?? 0.5;
     light.shadow.camera.left = -extent;
@@ -77,12 +91,13 @@ export default function SceneLighting() {
     light.shadow.camera.top = extent;
     light.shadow.camera.bottom = -extent;
     light.shadow.camera.near = 0.1;
-    light.shadow.camera.far = Math.max(24, roomHeight + extent * 2.2);
+    light.shadow.camera.far = Math.max(30, roomHeight + extent * 2.2);
     // A small bias avoids acne without separating contacts from the floor.
     light.shadow.bias = -0.00008;
     light.shadow.normalBias = 0.012;
     light.shadow.camera.updateProjectionMatrix();
-  }, [gl, roomWidth, roomDepth, roomHeight]);
+    light.shadow.needsUpdate = true;
+  }, [config.directional.softness, gl, roomWidth, roomDepth, roomHeight, sunPosition]);
 
   const sunPosition = useMemo(() => {
     const { azimuth = 218, elevation = 62 } = { ...config.directional, azimuth: isCustom ? environmentSettings.azimuth : config.directional.azimuth, elevation: isCustom ? environmentSettings.elevation : config.directional.elevation };
