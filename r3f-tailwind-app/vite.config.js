@@ -7,4 +7,13 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://backend-intellispace.onrender.com',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
+  },
 })
