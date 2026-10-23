@@ -56,7 +56,9 @@ export default function SceneLighting() {
   const shadows = isCustom ? (lightingSettings.shadows ?? false) : (environmentSettings.shadows ?? true);
 
   const warmLayer = lightColor;
-  const decorativeIntensity = lightPreset === 'night' ? 0.45 : lightPreset === 'evening' || lightPreset === 'goldenHour' ? 0.72 : 0.26;
+  // Keep architectural fill subordinate to the preset's ambient and sun so
+  // furniture colors stay stable instead of accumulating warm point-light casts.
+  const decorativeIntensity = lightPreset === 'night' ? 0.22 : lightPreset === 'evening' || lightPreset === 'goldenHour' ? 0.34 : 0.1;
   const roomWidth = room?.width || 8;
   const roomDepth = room?.depth || 6;
   const roomHeight = room?.height || 3;
@@ -69,14 +71,16 @@ export default function SceneLighting() {
     if (!light) return;
     const extent = Math.max(roomWidth, roomDepth) * 0.72;
     light.shadow.mapSize.set(2048, 2048);
+    light.shadow.radius = config.directional.softness ?? 0.5;
     light.shadow.camera.left = -extent;
     light.shadow.camera.right = extent;
     light.shadow.camera.top = extent;
     light.shadow.camera.bottom = -extent;
     light.shadow.camera.near = 0.1;
     light.shadow.camera.far = Math.max(24, roomHeight + extent * 2.2);
-    light.shadow.bias = -0.00035;
-    light.shadow.normalBias = 0.025;
+    // A small bias avoids acne without separating contacts from the floor.
+    light.shadow.bias = -0.00008;
+    light.shadow.normalBias = 0.012;
     light.shadow.camera.updateProjectionMatrix();
   }, [gl, roomWidth, roomDepth, roomHeight]);
 
@@ -98,7 +102,7 @@ export default function SceneLighting() {
     <>
       {/* Ambient fill light */}
       <ambientLight
-        intensity={ambientIntensity * 0.82}
+        intensity={ambientIntensity * 0.72}
         color={isCustom ? (lightingSettings.color ?? config.ambient.color) : config.ambient.color}
       />
 
@@ -114,33 +118,33 @@ export default function SceneLighting() {
       {/* Secondary fill light */}
       <directionalLight
         position={[-3, 4, -2]}
-        intensity={config.ambient.intensity * 0.22}
+        intensity={config.ambient.intensity * 0.12}
         color={config.ambient.color}
       />
 
       {/* Hemisphere light for natural sky/ground color blending */}
       <hemisphereLight
-        args={['#d9e4ec', '#55463a', 0.32]}
+        args={['#d9e4ec', '#55463a', 0.18]}
       />
 
       {/* Architectural layer: ceiling wash and quiet perimeter illumination. */}
       <pointLight
         position={[0, roomHeight - 0.22, 0]}
-        intensity={decorativeIntensity * 0.9}
+        intensity={decorativeIntensity * 0.55}
         distance={roomWidth * 1.25}
         decay={2}
         color={warmLayer}
       />
       <pointLight
         position={[-roomWidth * 0.34, roomHeight - 0.28, -roomDepth * 0.28]}
-        intensity={decorativeIntensity * 0.55}
+        intensity={decorativeIntensity * 0.32}
         distance={roomWidth * 0.75}
         decay={2}
         color="#fff1d5"
       />
       <pointLight
         position={[roomWidth * 0.3, roomHeight - 0.28, roomDepth * 0.2]}
-        intensity={decorativeIntensity * 0.45}
+        intensity={decorativeIntensity * 0.26}
         distance={roomWidth * 0.72}
         decay={2}
         color="#f6d4a8"
@@ -149,7 +153,7 @@ export default function SceneLighting() {
       {/* Decorative layer: small warm pools suggest recessed fixtures without clutter. */}
       <pointLight
         position={[0, roomHeight * 0.78, -roomDepth * 0.42]}
-        intensity={decorativeIntensity * 0.35}
+        intensity={decorativeIntensity * 0.18}
         distance={roomWidth * 0.7}
         decay={2}
         color="#f3c18b"
