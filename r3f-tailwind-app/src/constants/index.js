@@ -20,19 +20,39 @@ export const CATEGORIES = [
 
 // ─── Camera Presets ─────────────────────────────────────────
 export const CAMERA_MODES = {
-  perspective: {
-    label: 'Perspective',
-    icon: '🎥',
+  '3d': {
+    label: '3D View',
     position: [10.8, 8.2, 10.8],
     target: [0, 0.75, 0],
     fov: 46,
+    projection: 'perspective',
+  },
+  'apartment-plan': {
+    label: 'Apartment Plan',
+    position: [0, 14, 7.5],
+    target: [0, 0, 0],
+    fov: 50,
+    projection: 'perspective',
+  },
+  'floor-plan': {
+    label: 'Floor Plan',
+    position: [0, 16, 0.01],
+    target: [0, 0, 0],
+    projection: 'orthographic',
+  },
+  perspective: {
+    label: 'Perspective',
+    position: [10.8, 8.2, 10.8],
+    target: [0, 0.75, 0],
+    fov: 46,
+    projection: 'perspective',
   },
   top: {
     label: 'Top View',
-    icon: '⬆️',
     position: [0, 12, 0.01],
     target: [0, 0, 0],
     fov: 50,
+    projection: 'perspective',
   },
   front: {
     label: 'Front View',

@@ -101,8 +101,8 @@ function createInitialState() {
     // ── Transform ────────────────────────────────
     transformMode: 'translate',
 
-    // ── Camera ───────────────────────────────────
-    cameraMode: 'perspective',
+    // ── View & Camera ────────────────────────────
+    viewMode: '3d',
 
     // ── Lighting ─────────────────────────────────
 lightPreset: template.lightPreset || 'midday',
@@ -370,7 +370,7 @@ lightPreset: template.lightPreset || 'midday',
   // Camera
   // ═══════════════════════════════════════════════
 
-  setCameraMode: (mode) => set({ cameraMode: mode }),
+  setViewMode: (mode) => set({ viewMode: mode }),
 
   // ═══════════════════════════════════════════════
   // Lighting

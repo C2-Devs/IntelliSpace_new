@@ -7,6 +7,7 @@
 import React, { Suspense } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
+import { OrthographicCamera, PerspectiveCamera } from '@react-three/drei';
 import Room from './Room';
 import FurnitureManager from './FurnitureManager';
 import InteriorStructures from './InteriorStructures';
@@ -34,6 +35,12 @@ function SceneLayer({ children, fallback = null }) {
 }
 
 /** Click on empty space to deselect */
+function ViewCamera() {
+  const viewMode = useStore((s) => s.viewMode);
+  if (viewMode === 'floor-plan') return <OrthographicCamera makeDefault position={[0, 16, 0.01]} near={0.1} far={100} />;
+  return <PerspectiveCamera makeDefault position={[8.8, 6.6, 8.8]} fov={46} near={0.1} far={100} />;
+}
+
 function DeselectPlane() {
   const clearSelection = useStore((s) => s.clearSelection);
   const room = useStore((s) => s.room);
@@ -78,6 +85,7 @@ export default function SceneCanvas() {
       onPointerMissed={() => useStore.getState().clearSelection()}
       style={{ background: 'transparent' }}
     >
+      <ViewCamera />
       <SceneErrorBoundary>
         <Suspense fallback={<SceneFallback />}>
         <EnvironmentBackdrop />

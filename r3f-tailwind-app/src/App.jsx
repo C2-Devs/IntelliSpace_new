@@ -176,13 +176,13 @@ function EnvironmentContent({ setRoomAppearance }) {
 }
 
 function EnvironmentControls() {
-  const cameraMode = useStore((s) => s.cameraMode);
-  const setCameraMode = useStore((s) => s.setCameraMode);
+  const viewMode = useStore((s) => s.viewMode);
+  const setViewMode = useStore((s) => s.setViewMode);
   const lightPreset = useStore((s) => s.lightPreset);
   const setLightPreset = useStore((s) => s.setLightPreset);
   return <section className="environment-controls" aria-label="Environment controls">
     <div className="environment-control-heading"><div><strong>Scene environment</strong><small>Camera and daylight are configured here</small></div><Sparkles size={16} aria-hidden="true" /></div>
-    <label className="environment-select"><span><Box size={14} /> Camera view</span><select value={cameraMode} onChange={(event) => setCameraMode(event.target.value)}>{Object.entries(CAMERA_MODES).map(([key, mode]) => <option key={key} value={key}>{mode.label}</option>)}</select></label>
+    <label className="environment-select"><span><Box size={14} /> Camera view</span><select value={viewMode} onChange={(event) => setViewMode(event.target.value)}>{['3d', 'apartment-plan', 'floor-plan'].map((key) => <option key={key} value={key}>{CAMERA_MODES[key].label}</option>)}</select></label>
     <label className="environment-select"><span><Sun size={14} /> Lighting preset</span><select value={lightPreset} onChange={(event) => setLightPreset(event.target.value)}>{Object.entries(LIGHT_PRESETS).map(([key, preset]) => <option key={key} value={key}>{preset.label}</option>)}</select></label>
   </section>;
 }
@@ -303,8 +303,8 @@ function ConfigurationPanel() {
 
 function WorkspaceOverlay() {
   const selectedIds = useStore((s) => s.selectedIds);
-  const cameraMode = useStore((s) => s.cameraMode);
-  const setCameraMode = useStore((s) => s.setCameraMode);
+  const viewMode = useStore((s) => s.viewMode);
+  const setViewMode = useStore((s) => s.setViewMode);
   const transformMode = useStore((s) => s.transformMode);
   const setTransformMode = useStore((s) => s.setTransformMode);
   const lightPreset = useStore((s) => s.lightPreset);
@@ -313,15 +313,15 @@ function WorkspaceOverlay() {
   const undo = useStore((s) => s.undo);
   const redo = useStore((s) => s.redo);
   const setLightPreset = useStore((s) => s.setLightPreset);
-  const [view, setView] = useState('3D View');
   const openConfig = (section) => window.dispatchEvent(new CustomEvent('intelli:open-config', { detail: { section } }));
-  const cycleCamera = () => { const modes = Object.keys(CAMERA_MODES); setCameraMode(modes[(modes.indexOf(cameraMode) + 1) % modes.length]); };
+  const viewModes = ['3d', 'apartment-plan', 'floor-plan'];
+  const cycleCamera = () => setViewMode(viewModes[(viewModes.indexOf(viewMode) + 1) % viewModes.length]);
   return <>
-    <div className="intelli-view-tabs"><button className={view === '3D View' ? 'is-active' : ''} onClick={() => setView('3D View')}>3D View</button><button className={view === 'Apartment Plan' ? 'is-active' : ''} onClick={() => setView('Apartment Plan')}>Apartment Plan</button><button className={view === 'Floor Plan' ? 'is-active' : ''} onClick={() => setView('Floor Plan')}>Floor Plan</button></div>
+    <div className="intelli-view-tabs"><button className={viewMode === '3d' ? 'is-active' : ''} onClick={() => setViewMode('3d')}>3D View</button><button className={viewMode === 'apartment-plan' ? 'is-active' : ''} onClick={() => setViewMode('apartment-plan')}>Apartment Plan</button><button className={viewMode === 'floor-plan' ? 'is-active' : ''} onClick={() => setViewMode('floor-plan')}>Floor Plan</button></div>
     <div className="intelli-canvas-actions"><button onClick={undo} disabled={!history.length} aria-label="Undo"><Undo2 size={17} /></button><button onClick={redo} disabled={!future.length} aria-label="Redo"><Redo2 size={17} /></button><button className="sun-action" onClick={() => setLightPreset(lightPreset === 'night' ? 'midday' : 'night')} aria-label="Toggle sunlight"><Sun size={18} /></button><button className="shadow-action">Shadows <ChevronDown size={14} /></button></div>
     <div className="intelli-tool-rail">{tools.map(({ label, icon: Icon }, index) => { const mode = label === 'Move' ? 'translate' : label === 'Rotate' ? 'rotate' : label === 'Scale' ? 'scale' : null; return <button key={label} className={(mode ? transformMode === mode : index === 0) ? 'is-active' : ''} onClick={() => mode && selectedIds.length === 1 && setTransformMode(mode)}><Icon size={20} strokeWidth={1.6} /><span>{label}</span></button>; })}</div>
-    <div className="intelli-bottom-dock"><button className="is-active" onClick={() => openConfig('Lighting')}><Sun size={21} /><span>Sunlight</span></button><button onClick={cycleCamera} title={`Camera: ${CAMERA_MODES[cameraMode]?.label || 'Perspective'}`}><Box size={21} /><span>Camera</span></button><button onClick={() => openConfig('Environment')}><Lightbulb size={21} /><span>Environment</span></button><button onClick={() => openConfig('Flooring')}><Grid2X2 size={21} /><span>Materials</span></button><button onClick={() => setView(view === '3D View' ? 'Apartment Plan' : '3D View')}><Layers3 size={21} /><span>View Modes</span></button><button onClick={() => document.documentElement.requestFullscreen?.()}><Expand size={21} /><span>Presentation</span></button></div>
-    <div className="intelli-zoom"><button>−</button><span>90%</span><button>+</button></div><button className="intelli-fit"><Expand size={15} /> Fit to Screen</button><div className="intelli-view-toggle"><button>2D</button><button className="is-active">3D</button><button aria-label="Fullscreen"><Expand size={15} /></button></div>
+    <div className="intelli-bottom-dock"><button className="is-active" onClick={() => openConfig('Lighting')}><Sun size={21} /><span>Sunlight</span></button><button onClick={cycleCamera} title={`Camera: ${CAMERA_MODES[viewMode]?.label || '3D View'}`}><Box size={21} /><span>Camera</span></button><button onClick={() => openConfig('Environment')}><Lightbulb size={21} /><span>Environment</span></button><button onClick={() => openConfig('Flooring')}><Grid2X2 size={21} /><span>Materials</span></button><button onClick={cycleCamera}><Layers3 size={21} /><span>View Modes</span></button><button onClick={() => document.documentElement.requestFullscreen?.()}><Expand size={21} /><span>Presentation</span></button></div>
+    <div className="intelli-zoom"><button>−</button><span>90%</span><button>+</button></div><button className="intelli-fit"><Expand size={15} /> Fit to Screen</button><div className="intelli-view-toggle"><button className={viewMode === 'floor-plan' ? 'is-active' : ''} onClick={() => setViewMode('floor-plan')}>2D</button><button className={viewMode !== 'floor-plan' ? 'is-active' : ''} onClick={() => setViewMode('3d')}>3D</button><button aria-label="Fullscreen"><Expand size={15} /></button></div>
   </>;
 }
 
