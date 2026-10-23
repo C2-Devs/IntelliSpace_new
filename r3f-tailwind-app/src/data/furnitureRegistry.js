@@ -98,6 +98,13 @@ const REGISTRY = [
     defaultScale: [1, 1, 1],
     defaultRotation: [0, 0, 0],
     snapHeight: 0,
+    normalization: {
+      measuredDimensions: [5.4755, 2.1064, 1.9923],
+      modelScale: [1, 1, 1],
+      modelRotation: [0, 0, 0],
+      contactOffset: [0, 0, 0],
+    },
+    dimensions: { width: 5.4755, height: 2.1064, depth: 1.9923 },
   },
   {
     id: 'rounded-coffee-table',
@@ -1303,7 +1310,23 @@ export function searchFurniture(query) {
   return REGISTRY.filter((item) => item.name.toLowerCase().includes(q));
 }
 
+const PILOT_NORMALIZATION = {
+  'couch-large': { measuredDimensions: [5.4755, 2.1064, 1.9923], modelScale: [1, 1, 1], modelRotation: [0, 0, 0], contactOffset: [0, 0, 0] },
+  'rounded-coffee-table': { measuredDimensions: [1.5799, 0.5797, 1.5799], modelScale: [1, 1, 1], modelRotation: [0, 0, 0], contactOffset: [0, 0.3274, 0] },
+  'wood-kitchen-chair': { measuredDimensions: [2.2515, 0.4963, 0.5696], modelScale: [1, 1, 1], modelRotation: [0, 0, 0], contactOffset: [0, 0.21, 0] },
+  'bed-king': { measuredDimensions: [3.0641, 1.2146, 3.9528], modelScale: [1, 1, 1], modelRotation: [0, 0, 0], contactOffset: [0, 0, 0] },
+  'double-door-tall-cabinet': { measuredDimensions: [0.9371, 1.7895, 0.7366], modelScale: [1, 1, 1], modelRotation: [0, 0, 0], contactOffset: [0, 1.0235, 0] },
+  houseplant: { measuredDimensions: [0.2506, 0.3849, 0.2506], modelScale: [1, 1, 1], modelRotation: [0, 0, 0], contactOffset: [0, 0, 0] },
+  rug: { measuredDimensions: [2.1312, 0.0367, 3.0932], modelScale: [1, 1, 1], modelRotation: [0, 0, 0], contactOffset: [0, 0.0009, 0] },
+  'table-lamp': { measuredDimensions: [0.3507, 0.7632, 0.3507], modelScale: [1, 1, 1], modelRotation: [0, 0, 0], contactOffset: [0, 0, 0] },
+  'table-lamp-modern': { measuredDimensions: [0.2968, 0.4609, 0.3121], modelScale: [1, 1, 1], modelRotation: [0, 0, 0], contactOffset: [0, 0.2701, 0] },
+  'desk-lamp': { measuredDimensions: [0.6487, 0.4765, 0.2084], modelScale: [1, 1, 1], modelRotation: [0, 0, 0], contactOffset: [0, 0.2493, 0] },
+};
+
 export function normalizeCatalogItem(item) {
+  const pilotNormalization = PILOT_NORMALIZATION[item.id];
+  const normalization = item.normalization ?? pilotNormalization;
+  const measuredDimensions = normalization?.measuredDimensions;
   return {
     ...item,
     catalogItemId: item.catalogItemId ?? item.catalog_item_id ?? item.id,
@@ -1311,10 +1334,11 @@ export function normalizeCatalogItem(item) {
     defaultScale: item.defaultScale ?? [1, 1, 1],
     defaultRotation: item.defaultRotation ?? [0, 0, 0],
     snapHeight: Number.isFinite(item.snapHeight) ? item.snapHeight : 0,
+    normalization,
     dimensions: {
-      width: Number(item.dimensions?.width ?? item.width ?? 1),
-      height: Number(item.dimensions?.height ?? item.height ?? 1),
-      depth: Number(item.dimensions?.depth ?? item.depth ?? 1),
+      width: Number(item.dimensions?.width ?? item.width ?? measuredDimensions?.[0] ?? 1),
+      height: Number(item.dimensions?.height ?? item.height ?? measuredDimensions?.[1] ?? 1),
+      depth: Number(item.dimensions?.depth ?? item.depth ?? measuredDimensions?.[2] ?? 1),
     },
   };
 }

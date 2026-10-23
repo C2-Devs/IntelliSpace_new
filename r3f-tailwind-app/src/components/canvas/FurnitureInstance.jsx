@@ -107,6 +107,10 @@ function LoadedFurnitureInstance({ item, definition }) {
   }, [clonedScene, isSelected, hovered, item.isColliding]);
 
   const { gl } = useThree();
+  const normalization = definition.normalization ?? {};
+  const modelScale = normalization.modelScale ?? [1, 1, 1];
+  const modelRotation = normalization.modelRotation ?? [0, 0, 0];
+  const contactOffset = normalization.contactOffset ?? [0, 0, 0];
   const castsShadow = !/rug/i.test(`${definition.id} ${definition.name || ''}`);
 
   useEffect(() => () => {
@@ -138,18 +142,20 @@ function LoadedFurnitureInstance({ item, definition }) {
         gl.domElement.style.cursor = 'auto';
       }}
     >
-      <primitive
-        object={clonedScene}
-        castShadow
-        onUpdate={(object) => object.traverse((child) => {
-          if (child.isMesh) {
-            // Furniture casts onto the floor, but should not self-receive shadow-map samples.
-            // Complex GLBs often contain near-coplanar parts that produce fragmented acne.
-            child.castShadow = castsShadow;
-            child.receiveShadow = false;
-          }
-        })}
-      />
+      <group position={contactOffset} rotation={modelRotation} scale={modelScale}>
+        <primitive
+          object={clonedScene}
+          castShadow
+          onUpdate={(object) => object.traverse((child) => {
+            if (child.isMesh) {
+              // Furniture casts onto the floor, but should not self-receive shadow-map samples.
+              // Complex GLBs often contain near-coplanar parts that produce fragmented acne.
+              child.castShadow = castsShadow;
+              child.receiveShadow = false;
+            }
+          })}
+        />
+      </group>
 
       {/* Keep the selection guide just outside the model so it cannot z-fight with furniture surfaces. */}
       {isSelected && (
