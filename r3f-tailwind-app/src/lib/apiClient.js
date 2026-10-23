@@ -1,7 +1,8 @@
 const DEFAULT_API_BASE_URL = 'https://backend-intellispace.onrender.com'
 const SESSION_KEY = 'intellispace.session'
 
-export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL).replace(/\/+$/, '')
+const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL
+export const API_BASE_URL = (import.meta.env.DEV && !import.meta.env.VITE_API_BASE_URL ? '' : configuredApiBaseUrl).replace(/\/+$/, '')
 
 function readSession() {
   try {
