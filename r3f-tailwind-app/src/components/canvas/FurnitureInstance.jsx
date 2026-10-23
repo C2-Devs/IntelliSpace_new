@@ -107,6 +107,7 @@ function LoadedFurnitureInstance({ item, definition }) {
   }, [clonedScene, isSelected, hovered, item.isColliding]);
 
   const { gl } = useThree();
+  const castsShadow = !/rug/i.test(`${definition.id} ${definition.name || ''}`);
 
   useEffect(() => () => {
     if (gl.domElement.style.cursor === 'pointer') gl.domElement.style.cursor = 'auto';
@@ -144,7 +145,7 @@ function LoadedFurnitureInstance({ item, definition }) {
           if (child.isMesh) {
             // Furniture casts onto the floor, but should not self-receive shadow-map samples.
             // Complex GLBs often contain near-coplanar parts that produce fragmented acne.
-            child.castShadow = true;
+            child.castShadow = castsShadow;
             child.receiveShadow = false;
           }
         })}
