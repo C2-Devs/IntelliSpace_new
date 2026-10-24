@@ -4,7 +4,7 @@
  * Loads a GLB model, supports selection and hover highlighting.
  * Position/rotation/scale are fully controlled by the store (set via gizmo).
  */
-import React, { useRef, useState, useMemo, useEffect } from 'react';
+import React, { useRef, useMemo, useEffect } from 'react';
 import { useGLTF } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -56,7 +56,6 @@ function applyMaterialProfile(material, meshName = '') {
 
 function LoadedFurnitureInstance({ item, definition }) {
   const ref = useRef();
-  const [hovered, setHovered] = useState(false);
 
   const selectedIds = useStore((s) => s.selectedIds);
   const selectFurniture = useStore((s) => s.selectFurniture);
@@ -84,25 +83,6 @@ function LoadedFurnitureInstance({ item, definition }) {
     return clone;
   }, [scene]);
 
-  // Highlight on hover/select
-  useEffect(() => {
-    if (!clonedScene) return;
-    clonedScene.traverse((child) => {
-      if (child.isMesh && child.material) {
-        if (item.isColliding) {
-          child.material.emissive = new THREE.Color('#b96b55');
-          child.material.emissiveIntensity = 0.42;
-        } else if (hovered && !isSelected) {
-          child.material.emissive = new THREE.Color('#d0c5ad');
-          child.material.emissiveIntensity = 0.06;
-        } else {
-          child.material.emissive = new THREE.Color('#000000');
-          child.material.emissiveIntensity = 0;
-        }
-      }
-    });
-  }, [clonedScene, isSelected, hovered, item.isColliding]);
-
   const { gl } = useThree();
   const castsShadow = !/rug/i.test(`${definition.id} ${definition.name || ''}`);
 
@@ -127,11 +107,9 @@ function LoadedFurnitureInstance({ item, definition }) {
       onPointerOver={(e) => {
         if (item.isLocked) e.stopPropagation();
         e.stopPropagation();
-        setHovered(true);
         gl.domElement.style.cursor = 'pointer';
       }}
       onPointerOut={() => {
-        setHovered(false);
         gl.domElement.style.cursor = 'auto';
       }}
     >
