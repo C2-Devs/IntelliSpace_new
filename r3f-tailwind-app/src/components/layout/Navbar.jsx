@@ -9,6 +9,7 @@ import useStore from '../../store/useStore';
 import { TEMPLATE_LIST } from '../../data/roomTemplates';
 import REGISTRY from '../../data/furnitureRegistry';
 import SaveIndicator from '../ui/SaveIndicator';
+import WorkspaceManager from './WorkspaceManager.jsx';
 import { motion } from 'framer-motion';
 import { Magnet, Grid, Map as MapIcon, Ruler, Undo, Redo, ArrowDown, Sparkles } from 'lucide-react';
 import { useMemo } from 'react';
@@ -118,6 +119,7 @@ export default function Navbar() {
       </div>
 
       {/* Save Indicator */}
+      <WorkspaceManager />
       <SaveIndicator />
 
       {/* Actions */}
