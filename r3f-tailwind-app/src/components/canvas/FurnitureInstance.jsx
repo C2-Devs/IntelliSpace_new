@@ -92,10 +92,7 @@ function LoadedFurnitureInstance({ item, definition }) {
         if (item.isColliding) {
           child.material.emissive = new THREE.Color('#b96b55');
           child.material.emissiveIntensity = 0.42;
-        } else if (isSelected) {
-          child.material.emissive = new THREE.Color('#c7a66a');
-          child.material.emissiveIntensity = 0.1;
-        } else if (hovered) {
+        } else if (hovered && !isSelected) {
           child.material.emissive = new THREE.Color('#d0c5ad');
           child.material.emissiveIntensity = 0.06;
         } else {
@@ -107,10 +104,6 @@ function LoadedFurnitureInstance({ item, definition }) {
   }, [clonedScene, isSelected, hovered, item.isColliding]);
 
   const { gl } = useThree();
-  const normalization = definition.normalization ?? {};
-  const modelScale = normalization.modelScale ?? [1, 1, 1];
-  const modelRotation = normalization.modelRotation ?? [0, 0, 0];
-  const contactOffset = normalization.contactOffset ?? [0, 0, 0];
   const castsShadow = !/rug/i.test(`${definition.id} ${definition.name || ''}`);
 
   useEffect(() => () => {
@@ -142,20 +135,18 @@ function LoadedFurnitureInstance({ item, definition }) {
         gl.domElement.style.cursor = 'auto';
       }}
     >
-      <group position={contactOffset} rotation={modelRotation} scale={modelScale}>
-        <primitive
-          object={clonedScene}
-          castShadow
-          onUpdate={(object) => object.traverse((child) => {
-            if (child.isMesh) {
-              // Furniture casts onto the floor, but should not self-receive shadow-map samples.
-              // Complex GLBs often contain near-coplanar parts that produce fragmented acne.
-              child.castShadow = castsShadow;
-              child.receiveShadow = false;
-            }
-          })}
-        />
-      </group>
+      <primitive
+        object={clonedScene}
+        castShadow
+        onUpdate={(object) => object.traverse((child) => {
+          if (child.isMesh) {
+            // Furniture casts onto the floor, but should not self-receive shadow-map samples.
+            // Complex GLBs often contain near-coplanar parts that produce fragmented acne.
+            child.castShadow = castsShadow;
+            child.receiveShadow = false;
+          }
+        })}
+      />
 
       {/* Keep the selection guide just outside the model so it cannot z-fight with furniture surfaces. */}
       {isSelected && (
