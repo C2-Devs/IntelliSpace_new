@@ -2,6 +2,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Bounds, Center, Environment, useGLTF } from '@react-three/drei';
 import './App.css';
+import './styles/phase1-furniture.css';
 
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
@@ -227,7 +228,48 @@ function formatFurniturePrice(item, fallback) {
 }
 
 function FurnitureThumbnail({ item }) { const category = item.category.replace('-', ' '); const imageByCategory = { 'living-room': '/furniture-thumbnails/sofa.png', chairs: '/furniture-thumbnails/chair.png', tables: '/furniture-thumbnails/table.png', bedroom: '/furniture-thumbnails/bed.png' }; const image = imageByCategory[item.category]; return <div className={`furniture-thumb-preview furniture-thumb-${item.category}`} aria-label={`${item.name} preview`}><div className="furniture-thumb-object" aria-hidden="true">{image ? <img src={image} alt="" /> : <><span className="furniture-thumb-surface" /><span className="furniture-thumb-form" /></>}</div><div className="furniture-thumb-meta"><span>{category}</span><b>PREVIEW</b></div></div>; }
-function FurnitureContent() { const { items: catalogItems, status: catalogStatus } = useCatalog(); const addFurniture = useStore((s) => s.addFurniture); const favorites = useStore((s) => s.favorites); const toggleFavorite = useStore((s) => s.toggleFavorite); const selectedCategory = useStore((s) => s.selectedCategory); const setSelectedCategory = useStore((s) => s.setSelectedCategory); const [query,setQuery]=useState(''); const [previewItem,setPreviewItem]=useState(null); const categoryLabels={all:'All','living-room':'Sofas',bedroom:'Beds',chairs:'Chairs',tables:'Tables',storage:'Storage',lighting:'Lighting',decor:'Decor'}; const category = categoryLabels[selectedCategory] || 'All'; const categories=['All','Sofas','Chairs','Tables','Beds','Storage','Lighting','Decor']; const categoryKeys={Sofas:'living-room',Chairs:'chairs',Tables:'tables',Beds:'bedroom',Storage:'storage',Lighting:'lighting',Decor:'decor'}; const categoryKey=categoryKeys[category]; const filtered=catalogItems.filter((item)=>{ const matchesQuery=item.name.toLowerCase().includes(query.toLowerCase()); const matchesCategory=category==='All'||item.category===categoryKey; return matchesQuery&&matchesCategory; }).slice(0,16); const prices=['$2,400','$1,250','$980','$2,800','$4,200','$3,600','$850','$620','$1,450','$1,800','$120','$980']; const activePreview=previewItem || filtered[0]; const previewImage=activePreview ? ({'living-room':'/furniture-thumbnails/sofa.png',chairs:'/furniture-thumbnails/chair.png',tables:'/furniture-thumbnails/table.png',bedroom:'/furniture-thumbnails/bed.png'})[activePreview.category] : null; return <div className="furniture-content"><header className="furniture-heading"><div><h3>Furniture</h3><p>Find the perfect pieces for your space</p></div><button aria-label="Close furniture"><X size={19}/></button></header><div className="furniture-search"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search furniture, e.g. sofa, chair, table..."/><button aria-label="Filter furniture"><SlidersHorizontal size={16}/></button><button aria-label="Show favorites" className="furniture-favorite-filter"><Heart size={17}/></button></div><div className="furniture-categories">{categories.map(item=><button key={item} className={category===item?'is-active':''} onClick={()=>setSelectedCategory(categoryKeys[item] || 'all')}>{item}</button>)}</div>{activePreview&&<section className="furniture-object-preview" aria-live="polite"><ActualFurniturePreview item={activePreview} /><div className="furniture-object-preview-copy"><span>SELECTED PREVIEW</span><strong>{activePreview.name}</strong><small>Review this piece before adding it to your room.</small></div></section>}<section className="furniture-hero"><div><small>FEATURED</small><h4>Modern Living</h4><p>Timeless pieces for contemporary spaces.</p><button>Explore Collection <ChevronRight size={14}/></button></div></section><p className="catalog-source-status" role="status">{catalogStatus === 'live' ? `Live catalog · ${catalogItems.length} items` : catalogStatus === 'loading' ? 'Connecting to live catalog…' : 'Live catalog unavailable; showing local items'}</p><div className="furniture-grid">{filtered.map((item,index)=><article className="furniture-product" key={item.id} onClick={()=>addFurniture(item.id,[0,0,0])}><button className={`furniture-heart ${favorites.includes(item.id)?'is-favorite':''}`} aria-label={`Favorite ${item.name}`} onClick={e=>{e.stopPropagation();toggleFavorite(item.id)}}><Heart size={15} fill={favorites.includes(item.id)?'currentColor':'none'}/></button><div className="furniture-thumb"><FurnitureThumbnail item={item}/></div><div className="furniture-product-copy"><strong>{item.name}</strong><span>{formatFurniturePrice(item, prices[index%prices.length])}</span></div><button className="furniture-add" aria-label={`Add ${item.name}`} onClick={e=>{e.stopPropagation();addFurniture(item.id,[0,0,0])}}><Plus size={15}/></button></article>)}</div></div> }
+function FurnitureContent() {
+  const { items: catalogItems, status: catalogStatus } = useCatalog();
+  const addFurniture = useStore((s) => s.addFurniture);
+  const favorites = useStore((s) => s.favorites);
+  const toggleFavorite = useStore((s) => s.toggleFavorite);
+  const selectedCategory = useStore((s) => s.selectedCategory);
+  const setSelectedCategory = useStore((s) => s.setSelectedCategory);
+  const [query, setQuery] = useState('');
+  const [previewItem, setPreviewItem] = useState(null);
+  const categoryLabels = { all: 'All', 'living-room': 'Sofas', bedroom: 'Beds', chairs: 'Chairs', tables: 'Tables', storage: 'Storage', lighting: 'Lighting', decor: 'Decor' };
+  const category = categoryLabels[selectedCategory] || 'All';
+  const categories = ['All', 'Sofas', 'Chairs', 'Tables', 'Beds', 'Storage', 'Lighting', 'Decor'];
+  const categoryKeys = { Sofas: 'living-room', Chairs: 'chairs', Tables: 'tables', Beds: 'bedroom', Storage: 'storage', Lighting: 'lighting', Decor: 'decor' };
+  const categoryKey = categoryKeys[category];
+  const filtered = catalogItems.filter((item) => item.name.toLowerCase().includes(query.toLowerCase()) && (category === 'All' || item.category === categoryKey)).slice(0, 16);
+  const prices = ['$2,400', '$1,250', '$980', '$2,800', '$4,200', '$3,600', '$850', '$620', '$1,450', '$1,800', '$120', '$980'];
+  const activePreview = previewItem || filtered[0];
+  const formatDimensions = (item) => {
+    const dimensions = item.dimensions || item.normalization?.measuredDimensions;
+    if (!dimensions) return 'Dimensions on request';
+    const values = Array.isArray(dimensions) ? dimensions : [dimensions.width, dimensions.height, dimensions.depth];
+    return `${values.map((value) => Number(value).toFixed(2)).join(' × ')} m`;
+  };
+  const addItem = (item) => addFurniture(item.id, [0, 0, 0]);
+  return <div className="furniture-content">
+    <header className="furniture-heading">
+      <div><span className="furniture-eyebrow">Catalog / curated collection</span><h3>Furniture</h3><p>Build your room with pieces sized for the space.</p></div>
+      <button className="furniture-close" aria-label="Close furniture" type="button" onClick={() => window.dispatchEvent(new CustomEvent('intelli:close-config'))}><X size={18} /></button>
+    </header>
+    <div className="furniture-search" role="search">
+      <Search size={16} aria-hidden="true" /><input aria-label="Search furniture catalog" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by name or style..." />
+      {query && <button className="furniture-clear" type="button" aria-label="Clear furniture search" onClick={() => setQuery('')}><X size={13} /></button>}
+      <button aria-label="Filter furniture" type="button"><SlidersHorizontal size={16} /></button>
+    </div>
+    <div className="furniture-categories" role="tablist" aria-label="Furniture categories">{categories.map((item) => <button type="button" role="tab" aria-selected={category === item} key={item} className={category === item ? 'is-active' : ''} onClick={() => setSelectedCategory(categoryKeys[item] || 'all')}>{item}</button>)}</div>
+    <div className="furniture-result-bar"><span>{filtered.length} {filtered.length === 1 ? 'piece' : 'pieces'} available</span><span className="furniture-hint">Click to add · drag to place</span></div>
+    {catalogStatus === 'loading' && <div className="furniture-state" role="status"><span className="furniture-state-spinner" /><strong>Loading catalog</strong><small>Preparing furniture for your room.</small></div>}
+    {catalogStatus === 'error' && <div className="furniture-state is-error" role="alert"><strong>Catalog unavailable</strong><small>Showing saved local pieces instead.</small></div>}
+    {activePreview && <section className="furniture-object-preview" aria-live="polite"><ActualFurniturePreview item={activePreview} /><div className="furniture-object-preview-copy"><span>READY TO PLACE</span><strong>{activePreview.name}</strong><small>{formatDimensions(activePreview)} · {activePreview.category.replace('-', ' ')}</small><button type="button" onClick={() => addItem(activePreview)}><Plus size={14} /> Add to room</button></div></section>}
+    {filtered.length === 0 && catalogStatus !== 'loading' ? <div className="furniture-state"><Search size={22} /><strong>No pieces match your search</strong><small>Try another name or choose a different category.</small><button type="button" onClick={() => { setQuery(''); setSelectedCategory('all'); }}>Clear filters</button></div> : <div className="furniture-grid">{filtered.map((item, index) => <article className={`furniture-product ${activePreview?.id === item.id ? 'is-previewed' : ''}`} key={item.id} onMouseEnter={() => setPreviewItem(item)} onFocus={() => setPreviewItem(item)} onClick={() => addItem(item)} tabIndex={0} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); addItem(item); } }}><button className={`furniture-heart ${favorites.includes(item.id) ? 'is-favorite' : ''}`} type="button" aria-label={`${favorites.includes(item.id) ? 'Remove' : 'Add'} ${item.name} ${favorites.includes(item.id) ? 'from' : 'to'} favorites`} onClick={(event) => { event.stopPropagation(); toggleFavorite(item.id); }}><Heart size={15} fill={favorites.includes(item.id) ? 'currentColor' : 'none'} /></button><div className="furniture-thumb"><FurnitureThumbnail item={item} /></div><div className="furniture-product-copy"><strong>{item.name}</strong><span>{formatDimensions(item)}</span><small>{formatFurniturePrice(item, prices[index % prices.length])}</small></div><button className="furniture-add" type="button" aria-label={`Add ${item.name} to room`} onClick={(event) => { event.stopPropagation(); addItem(item); }}><Plus size={15} /></button></article>)}</div>}
+  </div>;
+}
 
 function ConfigurationPanel() {
   const selectedIds = useStore((s) => s.selectedIds);
@@ -241,8 +283,10 @@ function ConfigurationPanel() {
   const resizeState = React.useRef(null);
   useEffect(() => {
     const openSection = (event) => { setActiveSection(event.detail?.section || 'Layout'); setIsOpen(true); };
+    const closeConfig = () => setIsOpen(false);
     window.addEventListener('intelli:open-config', openSection);
-    return () => window.removeEventListener('intelli:open-config', openSection);
+    window.addEventListener('intelli:close-config', closeConfig);
+    return () => { window.removeEventListener('intelli:open-config', openSection); window.removeEventListener('intelli:close-config', closeConfig); };
   }, []);
   const beginResize = (event) => { event.preventDefault(); resizeState.current = { startX: event.clientX, startWidth: panelWidth }; let latestWidth = panelWidth; const move = (moveEvent) => { latestWidth = Math.min(640, Math.max(330, resizeState.current.startWidth + resizeState.current.startX - moveEvent.clientX)); setPanelWidth(latestWidth); }; const stop = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', stop); }; window.addEventListener('pointermove', move); window.addEventListener('pointerup', stop); };
 
