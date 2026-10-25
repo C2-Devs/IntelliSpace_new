@@ -17,6 +17,7 @@ const REGISTRY = [
     defaultScale: [1, 1, 1],
     defaultRotation: [0, 0, 0],
     snapHeight: 0,
+    normalization: { measuredDimensions: [5.475492, 2.106440, 1.992289] },
   },
   {
     id: 'couch-medium',
@@ -107,6 +108,7 @@ const REGISTRY = [
     defaultScale: [1, 1, 1],
     defaultRotation: [0, 0, 0],
     snapHeight: 0,
+    normalization: { measuredDimensions: [1.579876, 0.579666, 1.579876] },
   },
   {
     id: 'fireplace',
@@ -174,6 +176,7 @@ const REGISTRY = [
     defaultScale: [1, 1, 1],
     defaultRotation: [0, 0, 0],
     snapHeight: 0,
+    normalization: { measuredDimensions: [3.064128, 1.214583, 3.952844] },
   },
   {
     id: 'bed-single',
@@ -358,6 +361,7 @@ const REGISTRY = [
     defaultScale: [1, 1, 1],
     defaultRotation: [0, 0, 0],
     snapHeight: 0.75,
+    normalization: { measuredDimensions: [0.648653, 0.476482, 0.208351] },
   },
 
   // ═══════════════════════════════════════════════
@@ -470,6 +474,7 @@ const REGISTRY = [
     defaultScale: [1, 1, 1],
     defaultRotation: [0, 0, 0],
     snapHeight: 0,
+    normalization: { measuredDimensions: [0.937069, 1.789506, 0.736597] },
   },
   {
     id: 'double-door-upper-cabinet',
@@ -596,6 +601,7 @@ const REGISTRY = [
     defaultScale: [1, 1, 1],
     defaultRotation: [0, 0, 0],
     snapHeight: 0,
+    normalization: { measuredDimensions: [2.251505, 0.496269, 0.569563] },
   },
   {
     id: 'wood-kitchen-table',
@@ -676,6 +682,7 @@ const REGISTRY = [
     defaultScale: [1, 1, 1],
     defaultRotation: [0, 0, 0],
     snapHeight: 0,
+    normalization: { measuredDimensions: [0.250551, 0.384892, 0.250551] },
   },
   {
     id: 'houseplant-tall',
@@ -743,6 +750,7 @@ const REGISTRY = [
     defaultScale: [1, 1, 1],
     defaultRotation: [0, 0, 0],
     snapHeight: 0,
+    normalization: { measuredDimensions: [2.131230, 0.036658, 3.093209] },
   },
   {
     id: 'round-rug',
@@ -909,6 +917,7 @@ const REGISTRY = [
     defaultScale: [1, 1, 1],
     defaultRotation: [0, 0, 0],
     snapHeight: 0.75,
+    normalization: { measuredDimensions: [0.296798, 0.460898, 0.312072] },
   },
   {
     id: 'table-lamp-modern',
@@ -918,6 +927,7 @@ const REGISTRY = [
     defaultScale: [1, 1, 1],
     defaultRotation: [0, 0, 0],
     snapHeight: 0.75,
+    normalization: { measuredDimensions: [0.350733, 0.763150, 0.350733] },
   },
   {
     id: 'light-cube',
