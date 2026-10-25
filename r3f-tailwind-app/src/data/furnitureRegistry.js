@@ -18,6 +18,7 @@ const REGISTRY = [
     defaultRotation: [0, 0, 0],
     snapHeight: 0,
     normalization: { measuredDimensions: [5.475492, 2.106440, 1.992289] },
+    contactSurface: 'floor',
   },
   {
     id: 'couch-medium',
@@ -109,6 +110,7 @@ const REGISTRY = [
     defaultRotation: [0, 0, 0],
     snapHeight: 0,
     normalization: { measuredDimensions: [1.579876, 0.579666, 1.579876] },
+    contactSurface: 'floor',
   },
   {
     id: 'fireplace',
@@ -177,6 +179,7 @@ const REGISTRY = [
     defaultRotation: [0, 0, 0],
     snapHeight: 0,
     normalization: { measuredDimensions: [3.064128, 1.214583, 3.952844] },
+    contactSurface: 'floor',
   },
   {
     id: 'bed-single',
@@ -280,7 +283,7 @@ const REGISTRY = [
 
   // ═══════════════════════════════════════════════
   // OFFICE
-  // ══════════════════════════════════��════════════
+  // ═══════════════════════════════════════════════
   {
     id: 'computer-desk',
     name: 'Computer Desk',
@@ -475,6 +478,7 @@ const REGISTRY = [
     defaultRotation: [0, 0, 0],
     snapHeight: 0,
     normalization: { measuredDimensions: [0.937069, 1.789506, 0.736597] },
+    contactSurface: 'floor',
   },
   {
     id: 'double-door-upper-cabinet',
@@ -751,6 +755,7 @@ const REGISTRY = [
     defaultRotation: [0, 0, 0],
     snapHeight: 0,
     normalization: { measuredDimensions: [2.131230, 0.036658, 3.093209] },
+    contactSurface: 'floor',
   },
   {
     id: 'round-rug',

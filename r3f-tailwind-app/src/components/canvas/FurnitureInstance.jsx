@@ -10,6 +10,7 @@ import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import useStore from '../../store/useStore';
 import { getFurnitureById } from '../../data/furnitureRegistry';
+import { getContactOffsetY } from '../../utils/snapUtils';
 
 export default function FurnitureInstance({ item }) {
   const definition = useMemo(
@@ -70,6 +71,15 @@ function LoadedFurnitureInstance({ item, definition }) {
     return { size, center };
   }, [scene]);
 
+  const contactOffsetY = useMemo(() => {
+    if (definition.contactSurface !== 'floor') return 0;
+    const bounds = {
+      min: modelBounds.center.clone().sub(modelBounds.size.clone().multiplyScalar(0.5)),
+      max: modelBounds.center.clone().add(modelBounds.size.clone().multiplyScalar(0.5)),
+    };
+    return getContactOffsetY(bounds, item.rotation, item.scale, 0);
+  }, [definition.contactSurface, item.rotation, item.scale, modelBounds]);
+
   const clonedScene = useMemo(() => {
     const clone = scene.clone(true);
     clone.traverse((child) => {
@@ -100,7 +110,7 @@ function LoadedFurnitureInstance({ item, definition }) {
     <group
       ref={ref}
       userData={{ furnitureId: item.id, collisionProxy: true, modelBounds: { size: modelBounds.size.toArray(), center: modelBounds.center.toArray() } }}
-      position={item.position}
+      position={[item.position[0], item.position[1] + contactOffsetY, item.position[2]]}
       rotation={item.rotation}
       scale={item.scale}
       onPointerDown={handlePointerDown}

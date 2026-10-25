@@ -1,6 +1,7 @@
 /**
  * Snap Utilities — grid snapping, rotation snapping, wall/floor snapping.
  */
+import * as THREE from 'three';
 
 /**
  * Snap a value to the nearest grid increment.
@@ -34,6 +35,33 @@ export function snapRotation(angle, snapAngle) {
  */
 export function snapToFloor(position, snapHeight = 0) {
   return [position[0], Math.max(snapHeight, position[1]), position[2]];
+}
+
+/**
+ * Return the Y translation needed to place a transformed local bounds box on
+ * a support plane. The input bounds are local to the furniture group, so the
+ * result is stable across re-renders and never mutates the stored position.
+ */
+export function getContactOffsetY(bounds, rotation = [0, 0, 0], scale = [1, 1, 1], supportY = 0) {
+  if (!bounds?.min || !bounds?.max) return 0;
+
+  const quaternion = new THREE.Quaternion().setFromEuler(
+    new THREE.Euler(rotation[0] || 0, rotation[1] || 0, rotation[2] || 0),
+  );
+  const transformed = new THREE.Vector3();
+  let minY = Infinity;
+
+  for (const x of [bounds.min.x, bounds.max.x]) {
+    for (const y of [bounds.min.y, bounds.max.y]) {
+      for (const z of [bounds.min.z, bounds.max.z]) {
+        transformed.set(x * (scale[0] ?? 1), y * (scale[1] ?? 1), z * (scale[2] ?? 1));
+        transformed.applyQuaternion(quaternion);
+        minY = Math.min(minY, transformed.y);
+      }
+    }
+  }
+
+  return Number.isFinite(minY) ? supportY - minY : 0;
 }
 
 /**
