@@ -31,12 +31,13 @@ async function parseResponse(response) {
   try { return JSON.parse(text) } catch { return { message: text } }
 }
 
-function errorMessage(payload, status) {
+function errorMessage(payload, status, path = '') {
   if (typeof payload?.message === 'string') return payload.message
   if (typeof payload?.error === 'string') return payload.error
   if (typeof payload?.detail === 'string') return payload.detail
   if (status === 401) return 'Invalid email or password.'
-  if (status === 409) return 'An account with this email already exists.'
+  if (status === 409 && path.startsWith('/api/auth/register')) return 'An account with this email already exists.'
+  if (status === 409) return 'This workspace was changed elsewhere. Reload it before saving again.'
   return 'The request could not be completed. Please try again.'
 }
 
@@ -49,7 +50,7 @@ export async function request(path, options = {}) {
   const payload = await parseResponse(response)
   if (!response.ok) {
     if (response.status === 401) clearSession()
-    const error = new Error(errorMessage(payload, response.status))
+    const error = new Error(errorMessage(payload, response.status, path))
     error.status = response.status
     error.payload = payload
     throw error
@@ -63,6 +64,22 @@ export function registerUser({ email, password, displayName }) {
 
 export function loginUser({ email, password }) {
   return request('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) })
+}
+
+export function listWorkspaces() {
+  return request('/api/workspaces')
+}
+
+export function createWorkspace(workspace) {
+  return request('/api/workspaces', { method: 'POST', body: JSON.stringify(workspace) })
+}
+
+export function getWorkspace(workspaceId) {
+  return request(`/api/workspaces/${encodeURIComponent(workspaceId)}`)
+}
+
+export function updateWorkspace(workspaceId, update) {
+  return request(`/api/workspaces/${encodeURIComponent(workspaceId)}`, { method: 'PATCH', body: JSON.stringify(update) })
 }
 
 export { DEFAULT_API_BASE_URL, SESSION_KEY }

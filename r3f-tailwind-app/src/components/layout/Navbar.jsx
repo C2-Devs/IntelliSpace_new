@@ -10,6 +10,7 @@ import useStore from '../../store/useStore';
 import { TEMPLATE_LIST } from '../../data/roomTemplates';
 import REGISTRY from '../../data/furnitureRegistry';
 import SaveIndicator from '../ui/SaveIndicator';
+import WorkspaceManager from './WorkspaceManager.jsx';
 import { motion } from 'framer-motion';
 import { Box, ChevronDown, Magnet, Grid3x3, Map as MapIcon, Ruler, Undo2, Redo2 } from 'lucide-react';
 import Button from '../ui/Button';
@@ -141,6 +142,8 @@ export default function Navbar() {
         ))}
       </div>
 
+      {/* Save Indicator */}
+      <WorkspaceManager />
       <SaveIndicator />
 
       <div className="flex items-center gap-1 pl-3 border-l border-border">
