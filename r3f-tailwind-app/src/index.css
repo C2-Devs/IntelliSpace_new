@@ -817,9 +817,15 @@ button:disabled {
   border-color: var(--color-accent-400);
 }
 
-.wall-card-grid, .floor-card-grid, .ceiling-card-grid {
+.wall-card-grid, .floor-card-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+.ceiling-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
   margin-top: 12px;
 }
@@ -1114,6 +1120,65 @@ button:disabled {
   font-size: 10px;
   color: var(--color-text-tertiary);
   font-family: var(--font-mono);
+}
+
+/* Furniture thumbnail inner preview (inside .furniture-thumb) */
+.furniture-thumb-preview {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.furniture-thumb-object {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.furniture-thumb-object img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.furniture-thumb-surface,
+.furniture-thumb-form {
+  position: absolute;
+  inset: 0;
+}
+.furniture-thumb-meta {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 6px;
+  background: rgba(12, 12, 12, 0.65);
+  backdrop-filter: blur(4px);
+}
+.furniture-thumb-meta span {
+  font-size: 8px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.furniture-thumb-meta b {
+  font-size: 7px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-accent-300);
+  flex: none;
 }
 
 /* Reopen Tab Button */
