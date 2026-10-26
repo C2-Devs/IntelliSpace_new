@@ -1,17 +1,26 @@
 /**
  * Navbar — top navigation bar.
  *
- * Contains: logo, template selector, camera mode, light preset,
- * save indicator, undo/redo, export/import, settings toggles.
+ * Contains: logo, template selector, live price metrics, camera/grid
+ * toggles, save indicator, undo/redo. All store wiring is unchanged
+ * from the previous version — this is a presentation-only rewrite.
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import useStore from '../../store/useStore';
 import { TEMPLATE_LIST } from '../../data/roomTemplates';
 import REGISTRY from '../../data/furnitureRegistry';
 import SaveIndicator from '../ui/SaveIndicator';
 import { motion } from 'framer-motion';
-import { Magnet, Grid, Map as MapIcon, Ruler, Undo, Redo, ArrowDown, Sparkles } from 'lucide-react';
-import { useMemo } from 'react';
+import { Box, ChevronDown, Magnet, Grid3x3, Map as MapIcon, Ruler, Undo2, Redo2 } from 'lucide-react';
+import Button from '../ui/Button';
+import Tooltip from '../ui/Tooltip';
+
+const TOGGLES = [
+  { key: 'snapEnabled', toggle: 'toggleSnap', icon: Magnet, label: 'Snap to grid' },
+  { key: 'showGrid', toggle: 'toggleGrid', icon: Grid3x3, label: 'Show grid' },
+  { key: 'showMinimap', toggle: 'toggleMinimap', icon: MapIcon, label: 'Show minimap' },
+  { key: 'showMeasurements', toggle: 'toggleMeasurements', icon: Ruler, label: 'Show measurements' },
+];
 
 export default function Navbar() {
   const currentTemplate = useStore((s) => s.currentTemplate);
@@ -30,120 +39,135 @@ export default function Navbar() {
   const toggleMinimap = useStore((s) => s.toggleMinimap);
   const showMeasurements = useStore((s) => s.showMeasurements);
   const toggleMeasurements = useStore((s) => s.toggleMeasurements);
+
+  const toggleState = { snapEnabled, showGrid, showMinimap, showMeasurements };
+  const toggleAction = { toggleSnap, toggleGrid, toggleMinimap, toggleMeasurements };
+
   const metrics = useMemo(() => {
     const area = Math.max(0, Number(room.width || 0) * Number(room.depth || 0));
     const flooring = Number(room.floorMaterial ? 1800 : 0);
-    const furnishing = furniture.reduce((sum, item) => sum + (REGISTRY.find((entry) => entry.id === item.catalogItemId)?.price || 5000), 0);
+    const furnishing = furniture.reduce(
+      (sum, item) => sum + (REGISTRY.find((entry) => entry.id === item.catalogItemId)?.price || 5000),
+      0
+    );
     const base = Math.round(area * 18000 + flooring + furnishing);
     return { area, base, total: Math.round(base * 1.135) };
   }, [room.width, room.depth, room.floorMaterial, furniture]);
   const formatCurrency = (value) => `₹${value.toLocaleString('en-IN')}`;
 
   return (
-    <motion.nav 
-      initial={{ y: -50, opacity: 0 }}
+    <motion.nav
+      initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className="flex-none flex items-center gap-3 px-4 bg-[#181918] border-b border-[#343631] z-50 h-14 shadow-[0_8px_24px_rgba(0,0,0,0.24)]" 
+      transition={{ duration: 0.25, ease: 'easeOut' }}
+      className="flex-none flex items-center gap-4 h-14 px-4 bg-surface border-b border-border shadow-sm z-50"
       id="main-navbar"
     >
-      {/* Logo & Title */}
-      <div className="intelli-brand" aria-label="IntelliSpace editor">
-        <motion.div whileHover={{ scale: 1.04 }} className="intelli-brand-mark" aria-hidden="true"><span /><span /><i /></motion.div>
-        <div className="intelli-brand-copy"><h1>INTELLI<span>SPACE</span></h1><span>Spatial design studio</span></div>
+      {/* Brand */}
+      <div className="flex items-center gap-2.5 min-w-fit pr-1" aria-label="IntelliSpace editor">
+        <div className="grid place-items-center h-8 w-8 rounded-md border border-accent-600/50 bg-gradient-to-br from-surface-raised to-bg-0 shadow-sm">
+          <Box size={16} className="text-accent-300" aria-hidden="true" />
+        </div>
+        <div className="flex flex-col leading-none">
+          <h1 className="font-heading text-sm font-medium tracking-wide text-text-primary">
+            Intelli<span className="text-accent-400">space</span>
+          </h1>
+          <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-text-tertiary">
+            Spatial design studio
+          </span>
+        </div>
       </div>
 
-      {/* Template Selector */}
-      <div className="intelli-project-picker">
-        <span className="intelli-project-label">Project</span>
-        <div className="intelli-project-select-wrap"><select
-          className="intelli-project-select"
-          value={currentTemplate}
-          onChange={(e) => setTemplate(e.target.value)}
-          id="template-selector"
-          aria-label="Select project template"
-        >
-          {TEMPLATE_LIST.map((t) => (
-            <option key={t.id} value={t.id} className="bg-[#16191c] text-[#eee9df] font-medium">{t.name}</option>
-          ))}
-        </select><ArrowDown className="intelli-project-chevron" size={13} aria-hidden="true" /></div>
+      {/* Template selector */}
+      <div className="flex items-center gap-2">
+        <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-text-tertiary hidden lg:block">
+          Project
+        </span>
+        <div className="relative">
+          <select
+            className="h-9 min-w-[160px] appearance-none rounded-md border border-border bg-bg-0 pl-3 pr-8 text-xs font-medium text-text-primary outline-none transition-colors hover:border-border-strong focus:border-accent-400"
+            value={currentTemplate}
+            onChange={(e) => setTemplate(e.target.value)}
+            id="template-selector"
+            aria-label="Select project template"
+          >
+            {TEMPLATE_LIST.map((t) => (
+              <option key={t.id} value={t.id} className="bg-bg-0 text-text-primary">
+                {t.name}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            size={13}
+            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-text-tertiary"
+            aria-hidden="true"
+          />
+        </div>
       </div>
 
-      <div className="intelli-header-divider" />
+      <div className="w-px h-7 bg-border hidden md:block" />
 
-      <div className="intelli-metrics" aria-label="Live project totals">
-        <div><span>Total Area</span><strong>{metrics.area.toFixed(1)} m²</strong></div>
-        <div><span>Base Price</span><strong>{formatCurrency(metrics.base)}</strong></div>
-        <div className="intelli-total"><span>Total Price</span><strong>{formatCurrency(metrics.total)}</strong></div>
+      {/* Live metrics */}
+      <div className="hidden md:flex items-stretch gap-5" aria-label="Live project totals">
+        <div className="flex flex-col justify-center gap-0.5">
+          <span className="text-[9px] font-semibold uppercase tracking-[0.1em] text-text-tertiary">Total area</span>
+          <strong className="tabular text-[13px] font-medium text-text-primary">{metrics.area.toFixed(1)} m²</strong>
+        </div>
+        <div className="flex flex-col justify-center gap-0.5">
+          <span className="text-[9px] font-semibold uppercase tracking-[0.1em] text-text-tertiary">Base price</span>
+          <strong className="tabular text-[13px] font-medium text-text-primary">{formatCurrency(metrics.base)}</strong>
+        </div>
+        <div className="flex flex-col justify-center gap-0.5 rounded-md border border-accent-600/50 bg-accent-tint px-3 py-0.5 text-center">
+          <span className="text-[9px] font-semibold uppercase tracking-[0.1em] text-accent-300">Total price</span>
+          <strong className="tabular text-sm font-semibold text-accent-200">{formatCurrency(metrics.total)}</strong>
+        </div>
       </div>
 
-      {/* Toggles */}
-      <div className="flex gap-0.5 bg-[#121313] border border-[#343631] rounded-md p-0.5 shadow-[0_6px_18px_rgba(0,0,0,0.18)] ml-auto">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${snapEnabled ? 'bg-[#c7a66a]/15 text-[#c7a66a] border border-[#c7a66a]/40 shadow-sm' : 'text-[#9a9a90] hover:bg-[#232421] hover:text-[#eee9df] border border-transparent'}`}
-          onClick={toggleSnap}
-          title="Toggle Snap"
-        >
-          <span className="text-sm">🧲</span>
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${showGrid ? 'bg-[#c7a66a]/15 text-[#c7a66a] border border-[#c7a66a]/40 shadow-sm' : 'text-[#9a9a90] hover:bg-[#232421] hover:text-[#eee9df] border border-transparent'}`}
-          onClick={toggleGrid}
-          title="Toggle Grid"
-        >
-          <span className="text-sm">📏</span>
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${showMinimap ? 'bg-[#c7a66a]/15 text-[#c7a66a] border border-[#c7a66a]/40 shadow-sm' : 'text-[#9a9a90] hover:bg-[#232421] hover:text-[#eee9df] border border-transparent'}`}
-          onClick={toggleMinimap}
-          title="Toggle Minimap"
-        >
-          <span className="text-sm">🗺️</span>
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${showMeasurements ? 'bg-[#c7a66a]/15 text-[#c7a66a] border border-[#c7a66a]/40 shadow-sm' : 'text-[#9a9a90] hover:bg-[#232421] hover:text-[#eee9df] border border-transparent'}`}
-          onClick={toggleMeasurements}
-          title="Toggle Measurements"
-        >
-          <span className="text-sm">📐</span>
-        </motion.button>
+      {/* View toggles */}
+      <div className="flex gap-0.5 rounded-md border border-border bg-bg-0 p-0.5 ml-auto">
+        {TOGGLES.map(({ key, toggle, icon, label }) => (
+          <Tooltip key={key} label={label}>
+            <Button
+              variant="ghost"
+              size="icon"
+              icon={icon}
+              active={toggleState[key]}
+              onClick={toggleAction[toggle]}
+              aria-label={label}
+              aria-pressed={toggleState[key]}
+              className="h-7 w-7"
+            />
+          </Tooltip>
+        ))}
       </div>
 
-      {/* Save Indicator */}
       <SaveIndicator />
 
-      {/* Actions */}
-      <div className="flex items-center gap-1 ml-2 border-l border-[#343631] pl-3">
-        <motion.button
-          whileHover={history.length > 0 ? { scale: 1.05 } : {}}
-          whileTap={history.length > 0 ? { scale: 0.95 } : {}}
-          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${history.length > 0 ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm cursor-pointer' : 'bg-transparent border border-transparent text-slate-400 opacity-40 cursor-not-allowed'}`}
-          onClick={undo}
-          disabled={history.length === 0}
-          title="Undo (Ctrl+Z)"
-          id="btn-undo"
-        >
-          <span className="text-sm">↩</span>
-        </motion.button>
-        <motion.button
-          whileHover={future.length > 0 ? { scale: 1.05 } : {}}
-          whileTap={future.length > 0 ? { scale: 0.95 } : {}}
-          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${future.length > 0 ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm cursor-pointer' : 'bg-transparent border border-transparent text-slate-400 opacity-40 cursor-not-allowed'}`}
-          onClick={redo}
-          disabled={future.length === 0}
-          title="Redo (Ctrl+Y)"
-          id="btn-redo"
-        >
-          <span className="text-sm">↪</span>
-        </motion.button>
+      <div className="flex items-center gap-1 pl-3 border-l border-border">
+        <Tooltip label="Undo" shortcut="Ctrl+Z">
+          <Button
+            variant="ghost"
+            size="icon"
+            icon={Undo2}
+            onClick={undo}
+            disabled={history.length === 0}
+            aria-label="Undo"
+            id="btn-undo"
+            className="h-7 w-7"
+          />
+        </Tooltip>
+        <Tooltip label="Redo" shortcut="Ctrl+Y">
+          <Button
+            variant="ghost"
+            size="icon"
+            icon={Redo2}
+            onClick={redo}
+            disabled={future.length === 0}
+            aria-label="Redo"
+            id="btn-redo"
+            className="h-7 w-7"
+          />
+        </Tooltip>
       </div>
     </motion.nav>
   );
