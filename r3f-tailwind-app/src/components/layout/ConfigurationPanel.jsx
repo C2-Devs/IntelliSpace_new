@@ -19,6 +19,7 @@ import {
   getFloorMaterialColor,
 } from '../../data/flooringCatalog';
 import useCatalog from '../../hooks/useCatalog';
+import { getCachedThumbnail, requestFurnitureThumbnail } from '../../utils/furnitureThumbnailService';
 import {
   Box,
   ChevronRight,
@@ -153,12 +154,12 @@ function FlooringContent({ room, setRoomAppearance }) {
 
 const CEILING_MATERIALS = [['Matte White','#d7d5ce','$8/m²','Painted'],['Warm White','#e4d5c1','$10/m²','Painted'],['Off White','#d8d5ce','$10/m²','Painted'],['Light Grey','#b9bdba','$12/m²','Painted'],['Concrete Finish','#777875','$18/m²','Concrete'],['Wood Panel','#b48557','$22/m²','Wood'],['Slatted Wood','#986238','$26/m²','Wood'],['Gypsum Board','#c9c7c2','$14/m²','Gypsum'],['Acoustic Panel','#ded8ce','$28/m²','Specialty'],['Plaster Finish','#b9b6ae','$16/m²','Specialty'],['Metallic Finish','#5d5e61','$32/m²','Specialty'],['Custom Texture','#4f5659','Upload / Select','Specialty']];
 const CEILING_DESIGNS = [['Flat','Simple & clean'],['Tray','Elegant & modern'],['Coffered','Classic & luxurious'],['Recessed','Minimal & sleek'],['Slatted','Modern & stylish'],['Beam','Rustic & bold'],['Suspended','Contemporary'],['Vaulted','Spacious & grand'],['Curved','Soft & modern'],['Geometric','Unique & artistic'],['Acoustic','Functional & modern'],['Custom Design','Upload / Create']];
-function CeilingContent({ room, setRoomAppearance }) { const [tab,setTab]=useState('Materials'); const [material,setMaterial]=useState(room.ceilingMaterial || 'Matte White'); const [design,setDesign]=useState(room.ceilingDesign || 'Tray'); const [query,setQuery]=useState(''); const [category,setCategory]=useState('All'); const [height,setHeight]=useState(Number(room.ceilingHeight || room.height || 2.7)); const [depth,setDepth]=useState(Number(room.ceilingDepth || .15)); const [border,setBorder]=useState(Number(room.ceilingBorder || .2)); const [layers,setLayers]=useState(Number(room.ceilingLayers || 2)); const [lighting,setLighting]=useState(room.ceilingLighting !== false); const [applied,setApplied]=useState(false); const apply=(updates={})=>{setRoomAppearance({ceilingMaterial:material,ceilingDesign:design,ceilingHeight:height,ceilingDepth:depth,ceilingBorder:border,ceilingLayers:layers,ceilingLighting:lighting,...updates});setApplied(true);window.setTimeout(()=>setApplied(false),1400)}; useEffect(()=>{setRoomAppearance({ceilingMaterial:material,ceilingDesign:design,ceilingHeight:height,ceilingDepth:depth,ceilingBorder:border,ceilingLayers:layers,ceilingLighting:lighting})},[material,design,height,depth,border,layers,lighting]); const visible=CEILING_MATERIALS.filter(([name,,,group])=>(category==='All'||group===category)&&name.toLowerCase().includes(query.toLowerCase())); return <div className="ceiling-content"><div className="ceiling-heading"><h3>Ceiling</h3><p>Choose the perfect ceiling for your space</p></div><div className="intelli-tabs ceiling-tabs">{['Materials','Designs','Properties'].map(item=><button key={item} className={tab===item?'is-active':''} onClick={()=>setTab(item)}>{item}</button>)}</div>{tab==='Materials'&&<><div className="ceiling-filters">{['All','Painted','Gypsum','Wood','Concrete','Specialty'].map(item=><button key={item} className={category===item?'is-active':''} onClick={()=>setCategory(item)}>{item}</button>)}</div><input className="wall-search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search ceiling materials..."/><div className="ceiling-card-grid">{visible.map(([name,color,price])=><button key={name} className={ceiling-card } onClick={()=>{setMaterial(name);apply({ceilingMaterial:name,ceilingColor:color})}}><span style={{background:color}}/><strong>{name}</strong><small>{price}</small>{material===name&&<b>✓</b>}</button>)}</div><div className="ceiling-feature"><span style={{background:CEILING_MATERIALS.find(([n])=>n===material)?.[1]||'#d7d5ce'}}/><div><strong>{material}</strong><small>Clean, modern and timeless</small></div><button>View Details →</button></div></>}{tab==='Designs'&&<><div className="ceiling-design-grid">{CEILING_DESIGNS.map(([name,caption],i)=><button key={name} className={design===name?'is-selected':''} onClick={()=>{setDesign(name);apply({ceilingDesign:name})}}><span className={`ceiling-design-art ceiling-art-${i}`}/><strong>{name}</strong><small>{caption}</small>{design===name&&<b>✓</b>}</button>)}</div><div className="ceiling-settings"><h4>Design Settings</h4><CeilingRange label="Ceiling Height" value={height} min="2.4" max="3.6" step=".1" suffix="m" onChange={setHeight}/><CeilingRange label="Recessed Depth" value={depth} min="0" max=".5" step=".01" suffix="m" onChange={setDepth}/><CeilingRange label="Border Width" value={border} min="0" max="1" step=".01" suffix="m" onChange={setBorder}/><div className="ceiling-layer-row"><span>Layer Count</span><button onClick={()=>setLayers(Math.max(1,layers-1))}>−</button><strong>{layers}</strong><button onClick={()=>setLayers(Math.min(4,layers+1))}>+</button></div><div className="ceiling-light-row"><span>Lighting Integration</span><button className={`intelli-switch ${lighting?'is-on':''}`} onClick={()=>setLighting(!lighting)}><span/></button></div></div></>}{tab==='Properties'&&<><div className="selected-ceiling"><span className="ceiling-property-art"/><div><strong>{design} Ceiling</strong><small>{material} | Painted White</small><button onClick={()=>setTab('Designs')}>Change Design →</button></div></div><div className="ceiling-settings"><h4>Dimensions</h4><CeilingRange label="Ceiling Height" value={height} min="2.4" max="3.6" step=".1" suffix="m" onChange={setHeight}/><CeilingRange label="Recessed Depth" value={depth} min="0" max=".5" step=".01" suffix="m" onChange={setDepth}/><CeilingRange label="Border Width" value={border} min="0" max="1" step=".01" suffix="m" onChange={setBorder}/><h4>Material &amp; Finish</h4><label className="ceiling-select-label">Material<select value={material} onChange={e=>setMaterial(e.target.value)}>{CEILING_MATERIALS.map(([name])=><option key={name}>{name}</option>)}</select></label><label className="ceiling-select-label">Finish<select><option>Matte White</option><option>Eggshell</option><option>Satin</option></select></label><div className="ceiling-color-row"><span>Color</span><i style={{background:CEILING_MATERIALS.find(([name])=>name===material)?.[1]}}/><input value={CEILING_MATERIALS.find(([name])=>name===material)?.[1]||'#D7D5CE'} readOnly/></div><div className="ceiling-layer-row"><span>Layer Count</span><button onClick={()=>setLayers(Math.max(1,layers-1))}>−</button><strong>{layers}</strong><button onClick={()=>setLayers(Math.min(4,layers+1))}>+</button></div><div className="ceiling-light-row"><span>Lighting Integration</span><button className={`intelli-switch ${lighting?'is-on':''}`} onClick={()=>setLighting(!lighting)}><span/></button></div></div></> }<div className="ceiling-actions"><button className="intelli-apply" onClick={()=>apply()}>{applied?'Applied':tab==='Materials'?'Apply Material':tab==='Designs'?'Apply Design':'Apply Changes'}</button><button onClick={()=>{setHeight(2.7);setDepth(.15);setBorder(.2);setLayers(2);setLighting(true)}}>{tab==='Materials'?'◈':'Reset'}</button></div></div> }
+function CeilingContent({ room, setRoomAppearance }) { const [tab,setTab]=useState('Materials'); const [material,setMaterial]=useState(room.ceilingMaterial || 'Matte White'); const [design,setDesign]=useState(room.ceilingDesign || 'Tray'); const [query,setQuery]=useState(''); const [category,setCategory]=useState('All'); const [height,setHeight]=useState(Number(room.ceilingHeight || room.height || 2.7)); const [depth,setDepth]=useState(Number(room.ceilingDepth || .15)); const [border,setBorder]=useState(Number(room.ceilingBorder || .2)); const [layers,setLayers]=useState(Number(room.ceilingLayers || 2)); const [lighting,setLighting]=useState(room.ceilingLighting !== false); const [applied,setApplied]=useState(false); const apply=(updates={})=>{setRoomAppearance({ceilingMaterial:material,ceilingDesign:design,ceilingHeight:height,ceilingDepth:depth,ceilingBorder:border,ceilingLayers:layers,ceilingLighting:lighting,...updates});setApplied(true);window.setTimeout(()=>setApplied(false),1400)}; useEffect(()=>{setRoomAppearance({ceilingMaterial:material,ceilingDesign:design,ceilingHeight:height,ceilingDepth:depth,ceilingBorder:border,ceilingLayers:layers,ceilingLighting:lighting})},[material,design,height,depth,border,layers,lighting]); const visible=CEILING_MATERIALS.filter(([name,,,group])=>(category==='All'||group===category)&&name.toLowerCase().includes(query.toLowerCase())); return <div className="ceiling-content"><div className="ceiling-heading"><h3>Ceiling</h3><p>Choose the perfect ceiling for your space</p></div><div className="intelli-tabs ceiling-tabs">{['Materials','Designs','Properties'].map(item=><button key={item} className={tab===item?'is-active':''} onClick={()=>setTab(item)}>{item}</button>)}</div>{tab==='Materials'&&<><div className="ceiling-filters">{['All','Painted','Gypsum','Wood','Concrete','Specialty'].map(item=><button key={item} className={category===item?'is-active':''} onClick={()=>setCategory(item)}>{item}</button>)}</div><input className="wall-search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search ceiling materials..."/><div className="ceiling-card-grid">{visible.map(([name,color,price])=><button key={name} className={`ceiling-card ${material===name?'is-selected':''}`} onClick={()=>{setMaterial(name);apply({ceilingMaterial:name,ceilingColor:color})}}><span style={{background:color}}/><strong>{name}</strong><small>{price}</small>{material===name&&<b>✓</b>}</button>)}</div><div className="ceiling-feature"><span style={{background:CEILING_MATERIALS.find(([n])=>n===material)?.[1]||'#d7d5ce'}}/><div><strong>{material}</strong><small>Clean, modern and timeless</small></div><button>View Details →</button></div></>}{tab==='Designs'&&<><div className="ceiling-design-grid">{CEILING_DESIGNS.map(([name,caption],i)=><button key={name} className={design===name?'is-selected':''} onClick={()=>{setDesign(name);apply({ceilingDesign:name})}}><span className={`ceiling-design-art ceiling-art-${i}`}/><strong>{name}</strong><small>{caption}</small>{design===name&&<b>✓</b>}</button>)}</div><div className="ceiling-settings"><h4>Design Settings</h4><CeilingRange label="Ceiling Height" value={height} min="2.4" max="3.6" step=".1" suffix="m" onChange={setHeight}/><CeilingRange label="Recessed Depth" value={depth} min="0" max=".5" step=".01" suffix="m" onChange={setDepth}/><CeilingRange label="Border Width" value={border} min="0" max="1" step=".01" suffix="m" onChange={setBorder}/><div className="ceiling-layer-row"><span>Layer Count</span><button onClick={()=>setLayers(Math.max(1,layers-1))}>−</button><strong>{layers}</strong><button onClick={()=>setLayers(Math.min(4,layers+1))}>+</button></div><div className="ceiling-light-row"><span>Lighting Integration</span><button className={`intelli-switch ${lighting?'is-on':''}`} onClick={()=>setLighting(!lighting)}><span/></button></div></div></>}{tab==='Properties'&&<><div className="selected-ceiling"><span className="ceiling-property-art"/><div><strong>{design} Ceiling</strong><small>{material} | Painted White</small><button onClick={()=>setTab('Designs')}>Change Design →</button></div></div><div className="ceiling-settings"><h4>Dimensions</h4><CeilingRange label="Ceiling Height" value={height} min="2.4" max="3.6" step=".1" suffix="m" onChange={setHeight}/><CeilingRange label="Recessed Depth" value={depth} min="0" max=".5" step=".01" suffix="m" onChange={setDepth}/><CeilingRange label="Border Width" value={border} min="0" max="1" step=".01" suffix="m" onChange={setBorder}/><h4>Material &amp; Finish</h4><label className="ceiling-select-label">Material<select value={material} onChange={e=>setMaterial(e.target.value)}>{CEILING_MATERIALS.map(([name])=><option key={name}>{name}</option>)}</select></label><label className="ceiling-select-label">Finish<select><option>Matte White</option><option>Eggshell</option><option>Satin</option></select></label><div className="ceiling-color-row"><span>Color</span><i style={{background:CEILING_MATERIALS.find(([name])=>name===material)?.[1]}}/><input value={CEILING_MATERIALS.find(([name])=>name===material)?.[1]||'#D7D5CE'} readOnly/></div><div className="ceiling-layer-row"><span>Layer Count</span><button onClick={()=>setLayers(Math.max(1,layers-1))}>−</button><strong>{layers}</strong><button onClick={()=>setLayers(Math.min(4,layers+1))}>+</button></div><div className="ceiling-light-row"><span>Lighting Integration</span><button className={`intelli-switch ${lighting?'is-on':''}`} onClick={()=>setLighting(!lighting)}><span/></button></div></div></> }<div className="ceiling-actions"><button className="intelli-apply" onClick={()=>apply()}>{applied?'Applied':tab==='Materials'?'Apply Material':tab==='Designs'?'Apply Design':'Apply Changes'}</button><button onClick={()=>{setHeight(2.7);setDepth(.15);setBorder(.2);setLayers(2);setLighting(true)}}>{tab==='Materials'?'◈':'Reset'}</button></div></div> }
 function CeilingRange({label,value,min,max,step,suffix,onChange}) { return <label className="ceiling-range"><span>{label}<strong>{Number(value).toFixed(2)} {suffix}</strong></span><input type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))}/></label> }
 
 const WINDOW_LIBRARY = [['Sliding Window','Modern & space-saving'],['Casement Window','Classic & versatile'],['Fixed Window','Panoramic view'],['Bay Window','Adds space & light'],['Awning Window','Top-hinged ventilation'],['Tilt & Turn Window','Flexible & secure'],['French Window','Elegant double panel'],['Floor-to-Ceiling','Maximum natural light'],['Custom Window','Upload / Design']];
 const WINDOW_STYLES = [['Minimal','Clean & modern'],['Modern','Contemporary look'],['Classic','Timeless design'],['Industrial','Bold & edgy'],['Scandinavian','Simple & natural'],['Traditional','Elegant & detailed'],['Frameless','Maximum view'],['Wooden Frame','Warm & natural'],['Aluminium','Durable & sleek']];
-function WindowsContent({ room, setRoomAppearance }) { const addWindow = useStore((state) => state.addWindow); const updateWindow = useStore((state) => state.updateWindow); const storeSelectedWindowId = useStore((state) => state.selectedWindowId); const selectWindow = useStore((state) => state.selectWindow); const selectedWindowId = storeSelectedWindowId; const selectedWindow=useStore((state)=>state.windows.find((item)=>item.id===selectedWindowId)); useEffect(()=>{if(!selectedWindow)return; setWall(selectedWindow.wall); setPosition(selectedWindow.position); setWidth(selectedWindow.width); setHeight(selectedWindow.height); setSill(selectedWindow.sillHeight); setSelected(selectedWindow.type);},[selectedWindowId]); const [tab,setTab]=useState('Library'); const [selected,setSelected]=useState('Sliding Window'); const [style,setStyle]=useState('Minimal'); const [query,setQuery]=useState(''); const [category,setCategory]=useState('All'); const [wall,setWall]=useState('back'); const [position,setPosition]=useState(0.5); const [width,setWidth]=useState(2.4); const [height,setHeight]=useState(1.8); const [sill,setSill]=useState(0); const [panels,setPanels]=useState('2'); const [opening,setOpening]=useState('Sliding'); const [direction,setDirection]=useState('Left → Right'); const [lockable,setLockable]=useState(true); const [uv,setUv]=useState(true); const [sound,setSound]=useState(true); const [frosted,setFrosted]=useState(false); const [applied,setApplied]=useState(false); const apply=(updates={})=>{setRoomAppearance({windowType:selected,windowStyle:style,windowWidth:width,windowHeight:height,windowSill:sill,windowPanels:panels,windowOpening:opening,windowDirection:direction,windowLockable:lockable,windowUv:uv,windowSound:sound,windowFrosted:frosted,...updates});setApplied(true);window.setTimeout(()=>setApplied(false),1400)}; const categoryMatchers={Sliding:'Sliding',Casement:'Casement',Fixed:'Fixed',Bay:'Bay',Specialty:'Awning|Tilt|French|Floor|Custom'}; const cards=(tab==='Styles'?WINDOW_STYLES:WINDOW_LIBRARY).filter(([name])=>name.toLowerCase().includes(query.toLowerCase())&&(tab!=='Library'||category==='All'||new RegExp(categoryMatchers[category],'i').test(name))); return <div className="windows-content"><div className="windows-heading"><h3>Windows</h3><p>{tab==='Properties'?'Adjust dimensions, materials and behavior':tab==='Styles'?'Choose a style that matches your design aesthetic':'Choose from a wide range of window types for your space'}</p></div>{tab==='Library'&&<div className="window-placement-controls"><label><span>Wall</span><select value={wall} onChange={e=>setWall(e.target.value)}><option value="back">Back wall</option><option value="front">Front wall</option><option value="left">Left wall</option><option value="right">Right wall</option></select></label><label className="window-range"><span>Position<strong>{Math.round(position*100)}%</strong></span><input type="range" min="0.12" max="0.88" step="0.01" value={position} onChange={e=>{const value=Number(e.target.value); setPosition(value); if(selectedWindowId) updateWindow(selectedWindowId,{position:value});}}/></label><label className="window-range"><span>Width<strong>{width.toFixed(1)} m</strong></span><input type="range" min="0.6" max="4.8" step="0.1" value={width} onChange={e=>{const value=Number(e.target.value); setWidth(value); if(selectedWindowId) updateWindow(selectedWindowId,{width:value});}}/></label><label className="window-range"><span>Height<strong>{height.toFixed(1)} m</strong></span><input type="range" min="0.6" max="2.8" step="0.1" value={height} onChange={e=>{const value=Number(e.target.value); setHeight(value); if(selectedWindowId) updateWindow(selectedWindowId,{height:value});}}/></label></div>}<div className="intelli-tabs windows-tabs">{['Library','Styles','Properties'].map(item=><button key={item} className={tab===item?'is-active':''} onClick={()=>setTab(item)}>{item}</button>)}</div>{tab!=='Properties'&&<><input className="wall-search" value={query} onChange={e=>setQuery(e.target.value)} placeholder={tab==='Styles'?'Search styles...':'Search windows...'}/><div className="window-filters">{(tab==='Styles'?['All','Modern','Minimal','Classic','Industrial','Scandinavian']:['All','Sliding','Casement','Fixed','Bay','Specialty']).map(item=><button key={item}>{item}</button>)}</div><div className="window-card-grid">{cards.map(([name,caption],i)=><button key={name} className={(tab==='Styles'?style:selected)===name?'is-selected':''} onClick={()=>{tab==='Styles'?setStyle(name):setSelected(name); if (tab === 'Library') { if(selectedWindowId) { updateWindow(selectedWindowId,{type:name}); } else { const id=addWindow({ type: name, style, wall, position, width, height, sillHeight: sill, panels, opening }); selectWindow(id); } }; if (tab === 'Library') addWindow({ type: name, style, wall, position, width, height, sillHeight: sill, panels, opening });apply(tab==='Styles'?{windowStyle:name}:{windowType:name})}}><span className={`window-card-art window-art-${i%9}`}/><strong>{name}</strong><small>{caption}</small>{(tab==='Styles'?style:selected)===name&&<b>✓</b>}</button>)}</div><div className="window-feature"><span className={`window-feature-art ${tab==='Styles'?'window-style-feature':''}`}/><div><strong>{tab==='Styles'?style:selected}</strong><small>{tab==='Styles'?'Clean lines, slim frames and a modern look':'Windows that make your space feel bigger, brighter and more alive.'}</small></div></div></>}{tab==='Properties'&&<><div className="selected-window"><span className="window-property-art"/><div><strong>{selected}</strong><small>Style: {style} | Minimal Black</small><button onClick={()=>setTab('Library')}>Change Window →</button></div></div><div className="window-property-grid"><div><h4>Dimensions</h4><WindowRange label="Width" value={width} min=".5" max="4" step=".1" suffix="m" onChange={setWidth}/><WindowRange label="Height" value={height} min=".5" max="3" step=".1" suffix="m" onChange={setHeight}/><WindowRange label="Sill Height" value={sill} min="0" max="1.5" step=".1" suffix="m" onChange={setSill}/><h4>Frame &amp; Material</h4><label>Frame Material<select><option>Aluminium</option><option>Wood</option><option>uPVC</option></select></label><label>Frame Color<select><option>Black</option><option>White</option><option>Bronze</option></select></label><label>Frame Finish<select><option>Matte</option><option>Gloss</option></select></label><h4>Glass Options</h4><label>Glass Type<select><option>Double Glazed (Insulated)</option><option>Triple Glazed</option><option>Single Glazed</option></select></label><label>Tint<select><option>Clear</option><option>Smoke</option><option>Blue</option></select></label><WindowToggle label="UV Protection" value={uv} onChange={setUv}/><WindowToggle label="Sound Insulation" value={sound} onChange={setSound}/><WindowToggle label="Frosted" value={frosted} onChange={setFrosted}/></div><div><h4>Opening &amp; Behavior</h4><label>Opening Type<select value={opening} onChange={e=>setOpening(e.target.value)}><option>Sliding</option><option>Casement</option><option>Awning</option><option>Fixed</option></select></label><label>Opening Direction<select value={direction} onChange={e=>setDirection(e.target.value)}><option>Left → Right</option><option>Right → Left</option><option>Top → Bottom</option></select></label><label>Number of Panels<select value={panels} onChange={e=>setPanels(e.target.value)}><option>1</option><option>2</option><option>3</option><option>4</option></select></label><WindowToggle label="Lockable" value={lockable} onChange={setLockable}/><h4>Positioning</h4><WindowRange label="Distance from Left Wall" value={1.2} min="0" max="5" step=".1" suffix="m" onChange={()=>{}}/><WindowRange label="Distance from Floor" value={sill} min="0" max="2" step=".1" suffix="m" onChange={setSill}/><WindowToggle label="Show in 2D Plan" value={true} onChange={()=>{}}/><WindowToggle label="Apply to Similar Windows" value={false} onChange={()=>{}}/></div></div></>}<div className="window-actions"><button className="intelli-apply" onClick={()=>apply()}>{applied?'Applied':tab==='Library'?'Add Window to Room →':tab==='Styles'?'Apply Style →':'Apply Changes'}</button><button onClick={()=>{setWidth(2.4);setHeight(1.8);setSill(0);setPanels('2');setLockable(true);setUv(true);setSound(true);setFrosted(false)}}>{tab==='Library'?'◈':'Reset'}</button></div></div> }
+function WindowsContent({ room, setRoomAppearance }) { const addWindow = useStore((state) => state.addWindow); const updateWindow = useStore((state) => state.updateWindow); const storeSelectedWindowId = useStore((state) => state.selectedWindowId); const selectWindow = useStore((state) => state.selectWindow); const selectedWindowId = storeSelectedWindowId; const selectedWindow=useStore((state)=>state.windows.find((item)=>item.id===selectedWindowId)); useEffect(()=>{if(!selectedWindow)return; setWall(selectedWindow.wall); setPosition(selectedWindow.position); setWidth(selectedWindow.width); setHeight(selectedWindow.height); setSill(selectedWindow.sillHeight); setSelected(selectedWindow.type);},[selectedWindowId]); const [tab,setTab]=useState('Library'); const [selected,setSelected]=useState('Sliding Window'); const [style,setStyle]=useState('Minimal'); const [query,setQuery]=useState(''); const [category,setCategory]=useState('All'); const [wall,setWall]=useState('back'); const [position,setPosition]=useState(0.5); const [width,setWidth]=useState(2.4); const [height,setHeight]=useState(1.8); const [sill,setSill]=useState(0); const [panels,setPanels]=useState('2'); const [opening,setOpening]=useState('Sliding'); const [direction,setDirection]=useState('Left → Right'); const [lockable,setLockable]=useState(true); const [uv,setUv]=useState(true); const [sound,setSound]=useState(true); const [frosted,setFrosted]=useState(false); const [applied,setApplied]=useState(false); const apply=(updates={})=>{setRoomAppearance({windowType:selected,windowStyle:style,windowWidth:width,windowHeight:height,windowSill:sill,windowPanels:panels,windowOpening:opening,windowDirection:direction,windowLockable:lockable,windowUv:uv,windowSound:sound,windowFrosted:frosted,...updates});setApplied(true);window.setTimeout(()=>setApplied(false),1400)}; const categoryMatchers={Sliding:'Sliding',Casement:'Casement',Fixed:'Fixed',Bay:'Bay',Specialty:'Awning|Tilt|French|Floor|Custom'}; const cards=(tab==='Styles'?WINDOW_STYLES:WINDOW_LIBRARY).filter(([name])=>name.toLowerCase().includes(query.toLowerCase())&&(tab!=='Library'||category==='All'||new RegExp(categoryMatchers[category],'i').test(name))); return <div className="windows-content"><div className="windows-heading"><h3>Windows</h3><p>{tab==='Properties'?'Adjust dimensions, materials and behavior':tab==='Styles'?'Choose a style that matches your design aesthetic':'Choose from a wide range of window types for your space'}</p></div>{tab==='Library'&&<div className="window-placement-controls"><label><span>Wall</span><select value={wall} onChange={e=>setWall(e.target.value)}><option value="back">Back wall</option><option value="front">Front wall</option><option value="left">Left wall</option><option value="right">Right wall</option></select></label><label className="window-range"><span>Position<strong>{Math.round(position*100)}%</strong></span><input type="range" min="0.12" max="0.88" step="0.01" value={position} onChange={e=>{const value=Number(e.target.value); setPosition(value); if(selectedWindowId) updateWindow(selectedWindowId,{position:value});}}/></label><label className="window-range"><span>Width<strong>{width.toFixed(1)} m</strong></span><input type="range" min="0.6" max="4.8" step="0.1" value={width} onChange={e=>{const value=Number(e.target.value); setWidth(value); if(selectedWindowId) updateWindow(selectedWindowId,{width:value});}}/></label><label className="window-range"><span>Height<strong>{height.toFixed(1)} m</strong></span><input type="range" min="0.6" max="2.8" step="0.1" value={height} onChange={e=>{const value=Number(e.target.value); setHeight(value); if(selectedWindowId) updateWindow(selectedWindowId,{height:value});}}/></label></div>}<div className="intelli-tabs windows-tabs">{['Library','Styles','Properties'].map(item=><button key={item} className={tab===item?'is-active':''} onClick={()=>setTab(item)}>{item}</button>)}</div>{tab!=='Properties'&&<><input className="wall-search" value={query} onChange={e=>setQuery(e.target.value)} placeholder={tab==='Styles'?'Search styles...':'Search windows...'}/><div className="window-filters">{(tab==='Styles'?['All','Modern','Minimal','Classic','Industrial','Scandinavian']:['All','Sliding','Casement','Fixed','Bay','Specialty']).map(item=><button key={item}>{item}</button>)}</div><div className="window-card-grid">{cards.map(([name,caption],i)=><button key={name} className={`window-card ${(tab==='Styles'?style:selected)===name?'is-selected':''}`} onClick={()=>{tab==='Styles'?setStyle(name):setSelected(name); if (tab === 'Library') { if(selectedWindowId) { updateWindow(selectedWindowId,{type:name}); } else { const id=addWindow({ type: name, style, wall, position, width, height, sillHeight: sill, panels, opening }); selectWindow(id); } }; if (tab === 'Library') addWindow({ type: name, style, wall, position, width, height, sillHeight: sill, panels, opening });apply(tab==='Styles'?{windowStyle:name}:{windowType:name})}}><span className={`window-card-art window-art-${i%9}`}/><strong>{name}</strong><small>{caption}</small>{(tab==='Styles'?style:selected)===name&&<b>✓</b>}</button>)}</div><div className="window-feature"><span className={`window-feature-art ${tab==='Styles'?'window-style-feature':''}`}/><div><strong>{tab==='Styles'?style:selected}</strong><small>{tab==='Styles'?'Clean lines, slim frames and a modern look':'Windows that make your space feel bigger, brighter and more alive.'}</small></div></div></>}{tab==='Properties'&&<><div className="selected-window"><span className="window-property-art"/><div><strong>{selected}</strong><small>Style: {style} | Minimal Black</small><button onClick={()=>setTab('Library')}>Change Window →</button></div></div><div className="window-property-grid"><div><h4>Dimensions</h4><WindowRange label="Width" value={width} min=".5" max="4" step=".1" suffix="m" onChange={setWidth}/><WindowRange label="Height" value={height} min=".5" max="3" step=".1" suffix="m" onChange={setHeight}/><WindowRange label="Sill Height" value={sill} min="0" max="1.5" step=".1" suffix="m" onChange={setSill}/><h4>Frame &amp; Material</h4><label>Frame Material<select><option>Aluminium</option><option>Wood</option><option>uPVC</option></select></label><label>Frame Color<select><option>Black</option><option>White</option><option>Bronze</option></select></label><label>Frame Finish<select><option>Matte</option><option>Gloss</option></select></label><h4>Glass Options</h4><label>Glass Type<select><option>Double Glazed (Insulated)</option><option>Triple Glazed</option><option>Single Glazed</option></select></label><label>Tint<select><option>Clear</option><option>Smoke</option><option>Blue</option></select></label><WindowToggle label="UV Protection" value={uv} onChange={setUv}/><WindowToggle label="Sound Insulation" value={sound} onChange={setSound}/><WindowToggle label="Frosted" value={frosted} onChange={setFrosted}/></div><div><h4>Opening &amp; Behavior</h4><label>Opening Type<select value={opening} onChange={e=>setOpening(e.target.value)}><option>Sliding</option><option>Casement</option><option>Awning</option><option>Fixed</option></select></label><label>Opening Direction<select value={direction} onChange={e=>setDirection(e.target.value)}><option>Left → Right</option><option>Right → Left</option><option>Top → Bottom</option></select></label><label>Number of Panels<select value={panels} onChange={e=>setPanels(e.target.value)}><option>1</option><option>2</option><option>3</option><option>4</option></select></label><WindowToggle label="Lockable" value={lockable} onChange={setLockable}/><h4>Positioning</h4><WindowRange label="Distance from Left Wall" value={1.2} min="0" max="5" step=".1" suffix="m" onChange={()=>{}}/><WindowRange label="Distance from Floor" value={sill} min="0" max="2" step=".1" suffix="m" onChange={setSill}/><WindowToggle label="Show in 2D Plan" value={true} onChange={()=>{}}/><WindowToggle label="Apply to Similar Windows" value={false} onChange={()=>{}}/></div></div></>}<div className="window-actions"><button className="intelli-apply" onClick={()=>apply()}>{applied?'Applied':tab==='Library'?'Add Window to Room →':tab==='Styles'?'Apply Style →':'Apply Changes'}</button><button onClick={()=>{setWidth(2.4);setHeight(1.8);setSill(0);setPanels('2');setLockable(true);setUv(true);setSound(true);setFrosted(false)}}>{tab==='Library'?'◈':'Reset'}</button></div></div> }
 function WindowRange({label,value,min,max,step,suffix,onChange}){return <label className="window-range"><span>{label}<strong>{Number(value).toFixed(2)} {suffix}</strong></span><input type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))}/></label>}
 function WindowToggle({label,value,onChange}){return <div className="window-toggle"><span>{label}</span><button className={`intelli-switch ${value?'is-on':''}`} onClick={()=>onChange(!value)}><span/></button></div>}
 
@@ -214,8 +215,43 @@ function LightRange({label,value,min,max,suffix,onChange}){return <label classNa
 function LightToggle({label,value,onChange}){return <div className="light-toggle"><span>{label}</span><button className={`intelli-switch ${value?'is-on':''}`} onClick={()=>onChange(!value)}><span/></button></div>}
 
 function ActualFurnitureModel({ item }) { const { scene } = useGLTF(item.modelPath); return <Center><primitive object={scene.clone()} scale={item.defaultScale || [1, 1, 1]} rotation={item.defaultRotation || [0, 0, 0]} /></Center>; }
-class ActualPreviewBoundary extends React.Component { state = { failed: false }; static getDerivedStateFromError() { return { failed: true }; } render() { return this.state.failed ? <FurnitureThumbnail item={this.props.item} /> : this.props.children; } }
-function ActualFurniturePreview({ item }) { return <ActualPreviewBoundary item={item}><div className="furniture-object-preview-art"><Canvas camera={{ position: [2.8, 2, 2.8], fov: 35 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: true }}><ambientLight intensity={1.5} /><directionalLight position={[3, 4, 2]} intensity={2.2} /><Suspense fallback={null}><Bounds fit clip observe margin={1.25}><ActualFurnitureModel item={item} /></Bounds><Environment preset="studio" /></Suspense></Canvas></div></ActualPreviewBoundary>; }
+class ActualPreviewBoundary extends React.Component {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  componentDidCatch(err) { console.warn('Preview fallback:', err); }
+  render() {
+    if (this.state.failed) {
+      return (
+        <div className="furniture-preview-fallback">
+          <Box size={28} style={{ opacity: 0.35 }} />
+          <span>3D model preview</span>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function ActualFurniturePreview({ item }) {
+  if (!item || !item.modelPath) return null;
+  return (
+    <ActualPreviewBoundary item={item}>
+      <div className="furniture-object-preview-art">
+        <Canvas camera={{ position: [2.8, 2, 2.8], fov: 35 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: true }}>
+          <ambientLight intensity={1.6} />
+          <directionalLight position={[3, 4, 2]} intensity={2.2} />
+          <Suspense fallback={null}>
+            <Bounds fit clip observe margin={1.25}>
+              <ActualFurnitureModel item={item} />
+            </Bounds>
+            <Environment preset="studio" />
+          </Suspense>
+        </Canvas>
+      </div>
+    </ActualPreviewBoundary>
+  );
+}
+
 function formatFurniturePrice(item, fallback) {
   if (item.price == null || !Number.isFinite(Number(item.price))) return fallback;
   const currency = /^[A-Z]{3}$/.test(item.currency || '') ? item.currency : 'INR';
@@ -230,8 +266,211 @@ function formatFurniturePrice(item, fallback) {
   }
 }
 
-function FurnitureThumbnail({ item }) { const category = item.category.replace('-', ' '); const imageByCategory = { 'living-room': '/furniture-thumbnails/sofa.png', chairs: '/furniture-thumbnails/chair.png', tables: '/furniture-thumbnails/table.png', bedroom: '/furniture-thumbnails/bed.png' }; const image = imageByCategory[item.category]; return <div className={`furniture-thumb-preview furniture-thumb-${item.category}`} aria-label={`${item.name} preview`}><div className="furniture-thumb-object" aria-hidden="true">{image ? <img src={image} alt="" /> : <><span className="furniture-thumb-surface" /><span className="furniture-thumb-form" /></>}</div><div className="furniture-thumb-meta"><span>{category}</span><b>PREVIEW</b></div></div>; }
-function FurnitureContent() { const { items: catalogItems, status: catalogStatus } = useCatalog(); const addFurniture = useStore((s) => s.addFurniture); const favorites = useStore((s) => s.favorites); const toggleFavorite = useStore((s) => s.toggleFavorite); const selectedCategory = useStore((s) => s.selectedCategory); const setSelectedCategory = useStore((s) => s.setSelectedCategory); const [query,setQuery]=useState(''); const [previewItem,setPreviewItem]=useState(null); const categoryLabels={all:'All','living-room':'Sofas',bedroom:'Beds',chairs:'Chairs',tables:'Tables',storage:'Storage',lighting:'Lighting',decor:'Decor'}; const category = categoryLabels[selectedCategory] || 'All'; const categories=['All','Sofas','Chairs','Tables','Beds','Storage','Lighting','Decor']; const categoryKeys={Sofas:'living-room',Chairs:'chairs',Tables:'tables',Beds:'bedroom',Storage:'storage',Lighting:'lighting',Decor:'decor'}; const categoryKey=categoryKeys[category]; const filtered=catalogItems.filter((item)=>{ const matchesQuery=item.name.toLowerCase().includes(query.toLowerCase()); const matchesCategory=category==='All'||item.category===categoryKey; return matchesQuery&&matchesCategory; }).slice(0,16); const prices=['$2,400','$1,250','$980','$2,800','$4,200','$3,600','$850','$620','$1,450','$1,800','$120','$980']; const activePreview=previewItem || filtered[0]; const previewImage=activePreview ? ({'living-room':'/furniture-thumbnails/sofa.png',chairs:'/furniture-thumbnails/chair.png',tables:'/furniture-thumbnails/table.png',bedroom:'/furniture-thumbnails/bed.png'})[activePreview.category] : null; return <div className="furniture-content"><header className="furniture-heading"><div><h3>Furniture</h3><p>Find the perfect pieces for your space</p></div><button aria-label="Close furniture"><X size={19}/></button></header><div className="furniture-search"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search furniture, e.g. sofa, chair, table..."/><button aria-label="Filter furniture"><SlidersHorizontal size={16}/></button><button aria-label="Show favorites" className="furniture-favorite-filter"><Heart size={17}/></button></div><div className="furniture-categories">{categories.map(item=><button key={item} className={category===item?'is-active':''} onClick={()=>setSelectedCategory(categoryKeys[item] || 'all')}>{item}</button>)}</div>{activePreview&&<section className="furniture-object-preview" aria-live="polite"><ActualFurniturePreview item={activePreview} /><div className="furniture-object-preview-copy"><span>SELECTED PREVIEW</span><strong>{activePreview.name}</strong><small>Review this piece before adding it to your room.</small></div></section>}<section className="furniture-hero"><div><small>FEATURED</small><h4>Modern Living</h4><p>Timeless pieces for contemporary spaces.</p><button>Explore Collection <ChevronRight size={14}/></button></div></section><p className="catalog-source-status" role="status">{catalogStatus === 'live' ? `Live catalog · ${catalogItems.length} items` : catalogStatus === 'loading' ? 'Connecting to live catalog…' : 'Live catalog unavailable; showing local items'}</p><div className="furniture-grid">{filtered.map((item,index)=><article className="furniture-product" key={item.id} onClick={()=>addFurniture(item.id,[0,0,0])}><button className={`furniture-heart ${favorites.includes(item.id)?'is-favorite':''}`} aria-label={`Favorite ${item.name}`} onClick={e=>{e.stopPropagation();toggleFavorite(item.id)}}><Heart size={15} fill={favorites.includes(item.id)?'currentColor':'none'}/></button><div className="furniture-thumb"><FurnitureThumbnail item={item}/></div><div className="furniture-product-copy"><strong>{item.name}</strong><span>{formatFurniturePrice(item, prices[index%prices.length])}</span></div><button className="furniture-add" aria-label={`Add ${item.name}`} onClick={e=>{e.stopPropagation();addFurniture(item.id,[0,0,0])}}><Plus size={15}/></button></article>)}</div></div> }
+function FurnitureThumbnail({ item }) {
+  const [thumbUrl, setThumbUrl] = useState(() => getCachedThumbnail(item.id));
+
+  useEffect(() => {
+    let active = true;
+    const unsub = requestFurnitureThumbnail(item, (url) => {
+      if (active) setThumbUrl(url);
+    });
+    return () => {
+      active = false;
+      unsub();
+    };
+  }, [item.id, item.modelPath]);
+
+  const fallbackCategoryImages = {
+    'living-room': '/furniture-thumbnails/sofa.png',
+    chairs: '/furniture-thumbnails/chair.png',
+    tables: '/furniture-thumbnails/table.png',
+    bedroom: '/furniture-thumbnails/bed.png',
+  };
+  const categoryFallback = fallbackCategoryImages[item.category];
+
+  return (
+    <div className="furniture-thumb-3d">
+      {thumbUrl ? (
+        <img src={thumbUrl} alt={item.name} className="furniture-thumb-img is-loaded" loading="lazy" />
+      ) : categoryFallback ? (
+        <img src={categoryFallback} alt={item.name} className="furniture-thumb-img is-fallback" />
+      ) : (
+        <div className="furniture-thumb-placeholder">
+          <span className="furniture-thumb-pulse" />
+          <Box size={22} style={{ opacity: 0.3 }} />
+        </div>
+      )}
+      <div className="furniture-preview-pill">
+        <span>{(item.category || 'MODEL').toUpperCase()}</span>
+        <b>PREVIEW</b>
+      </div>
+    </div>
+  );
+}
+
+function FurnitureContent() {
+  const { items: catalogItems, status: catalogStatus } = useCatalog();
+  const addFurniture = useStore((s) => s.addFurniture);
+  const favorites = useStore((s) => s.favorites);
+  const toggleFavorite = useStore((s) => s.toggleFavorite);
+  const selectedCategory = useStore((s) => s.selectedCategory);
+  const setSelectedCategory = useStore((s) => s.setSelectedCategory);
+  const [query, setQuery] = useState('');
+  const [previewItem, setPreviewItem] = useState(null);
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+
+  const categoryLabels = {
+    all: 'All',
+    'living-room': 'Sofas',
+    bedroom: 'Beds',
+    chairs: 'Chairs',
+    tables: 'Tables',
+    storage: 'Storage',
+    lighting: 'Lighting',
+    decor: 'Decor',
+  };
+  const category = categoryLabels[selectedCategory] || 'All';
+  const categories = ['All', 'Sofas', 'Chairs', 'Tables', 'Beds', 'Storage', 'Lighting', 'Decor'];
+  const categoryKeys = {
+    Sofas: 'living-room',
+    Chairs: 'chairs',
+    Tables: 'tables',
+    Beds: 'bedroom',
+    Storage: 'storage',
+    Lighting: 'lighting',
+    Decor: 'decor',
+  };
+  const categoryKey = categoryKeys[category];
+
+  const filtered = catalogItems.filter((item) => {
+    const matchesQuery = item.name.toLowerCase().includes(query.toLowerCase());
+    const matchesCategory = category === 'All' || item.category === categoryKey;
+    const matchesFavorite = !showOnlyFavorites || favorites.includes(item.id);
+    return matchesQuery && matchesCategory && matchesFavorite;
+  }).slice(0, 24);
+
+  const prices = ['$2,400', '$1,250', '$980', '$2,800', '$4,200', '$3,600', '$850', '$620', '$1,450', '$1,800', '$120', '$980'];
+  const activePreview = previewItem || filtered[0] || catalogItems[0];
+
+  return (
+    <div className="furniture-content">
+      <header className="furniture-heading">
+        <div>
+          <h3>Furniture</h3>
+          <p>Find the perfect pieces for your space</p>
+        </div>
+        <button aria-label="Close furniture" className="furniture-close-btn"><X size={18} /></button>
+      </header>
+
+      <div className="furniture-search">
+        <Search size={16} className="furniture-search-icon" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search furniture, e.g. sofa, chair, table..."
+        />
+        <button
+          aria-label="Filter furniture"
+          className="furniture-filter-btn"
+          onClick={() => setSelectedCategory('all')}
+        >
+          <SlidersHorizontal size={15} />
+        </button>
+        <button
+          aria-label="Show favorites"
+          className={`furniture-favorite-filter ${showOnlyFavorites ? 'is-active' : ''}`}
+          onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+        >
+          <Heart size={16} fill={showOnlyFavorites ? 'currentColor' : 'none'} />
+        </button>
+      </div>
+
+      <div className="furniture-categories">
+        {categories.map((item) => (
+          <button
+            key={item}
+            className={category === item ? 'is-active' : ''}
+            onClick={() => setSelectedCategory(categoryKeys[item] || 'all')}
+          >
+            {item}
+          </button>
+        ))}
+      </div>
+
+      {activePreview && (
+        <section className="furniture-object-preview" aria-live="polite">
+          <ActualFurniturePreview item={activePreview} />
+          <div className="furniture-object-preview-copy">
+            <span>SELECTED PREVIEW</span>
+            <strong>{activePreview.name}</strong>
+            <small>Review this piece before adding it to your room.</small>
+          </div>
+        </section>
+      )}
+
+      <section className="furniture-hero">
+        <div>
+          <small>FEATURED</small>
+          <h4>Modern Living</h4>
+          <p>Timeless pieces for contemporary spaces.</p>
+          <button onClick={() => setSelectedCategory('living-room')}>
+            Explore Collection <ChevronRight size={14} />
+          </button>
+        </div>
+      </section>
+
+      <p className="catalog-source-status" role="status">
+        {catalogStatus === 'live'
+          ? `Live catalog · ${catalogItems.length} items`
+          : catalogStatus === 'loading'
+          ? 'Connecting to live catalog…'
+          : `Local catalog · ${catalogItems.length} items`}
+      </p>
+
+      <div className="furniture-grid">
+        {filtered.map((item, index) => (
+          <article
+            className={`furniture-product ${activePreview?.id === item.id ? 'is-previewed' : ''}`}
+            key={item.id}
+            onMouseEnter={() => setPreviewItem(item)}
+            onClick={() => {
+              setPreviewItem(item);
+              addFurniture(item.id, [0, 0, 0]);
+            }}
+          >
+            <button
+              className={`furniture-heart ${favorites.includes(item.id) ? 'is-favorite' : ''}`}
+              aria-label={`Favorite ${item.name}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFavorite(item.id);
+              }}
+            >
+              <Heart size={15} fill={favorites.includes(item.id) ? 'currentColor' : 'none'} />
+            </button>
+            <div className="furniture-thumb">
+              <FurnitureThumbnail item={item} />
+            </div>
+            <div className="furniture-product-copy">
+              <strong>{item.name}</strong>
+              <span>{formatFurniturePrice(item, prices[index % prices.length])}</span>
+            </div>
+            <button
+              className="furniture-add"
+              aria-label={`Add ${item.name}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                addFurniture(item.id, [0, 0, 0]);
+              }}
+            >
+              <Plus size={15} />
+            </button>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function ConfigurationPanel() {
   const selectedIds = useStore((s) => s.selectedIds);
