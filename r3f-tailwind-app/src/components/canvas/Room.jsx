@@ -165,16 +165,14 @@ export default function Room() {
   const { camera } = useThree();
   const floorGroup = useRef();
   const ceilingGroup = useRef();
-  const { width, depth, height, wallColor, floorColor, ceilingColor, wallThickness, ceilingMaterial, ceilingDesign, ceilingDepth, ceilingBorder, ceilingLayers, ceilingLighting } = room;
-  const effectiveCeilingHeight = Number(room.ceilingHeight || height || 2.7);
-
   useFrame(() => {
-    if (floorGroup.current) floorGroup.current.visible = true;
-    if (ceilingGroup.current) {
-      // Ceiling is visible when camera is inside the room or looking from eye level/below ceiling
-      ceilingGroup.current.visible = camera.position.y < effectiveCeilingHeight * 1.05;
-    }
+    const lookingFromAbove = camera.position.y >= effectiveCeilingHeight / 2;
+    if (floorGroup.current) floorGroup.current.visible = lookingFromAbove;
+    if (ceilingGroup.current) ceilingGroup.current.visible = !lookingFromAbove;
   });
+
+  const { width, depth, height, wallColor, floorColor, ceilingColor, wallThickness, ceilingMaterial, ceilingDesign, ceilingDepth, ceilingBorder, ceilingLayers, ceilingLighting } = room;
+  const effectiveCeilingHeight = Number(room.ceilingHeight || height);
   const ceilingPalette = { 'Matte White': '#d7d5ce', 'Warm White': '#e4d5c1', 'Off White': '#d8d5ce', 'Light Grey': '#b9bdba', 'Concrete Finish': '#777875', 'Wood Panel': '#b48557', 'Slatted Wood': '#986238', 'Gypsum Board': '#c9c7c2', 'Acoustic Panel': '#ded8ce', 'Plaster Finish': '#b9b6ae', 'Metallic Finish': '#5d5e61', 'Custom Texture': '#4f5659' };
   const resolvedCeilingColor = ceilingPalette[ceilingMaterial] || ceilingColor;
   const floorMaterial = FLOORING_MATERIALS[room.floorMaterial] || FLOORING_MATERIALS.oakNatural;
@@ -331,7 +329,7 @@ export default function Room() {
       <group ref={ceilingGroup}>
       <mesh position={[0, effectiveCeilingHeight, 0]} rotation={[Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial color={resolvedCeilingColor} roughness={ceilingMaterial === 'Metallic Finish' ? 0.38 : 0.85} metalness={ceilingMaterial === 'Metallic Finish' ? 0.62 : 0.02} side={THREE.FrontSide} />
+        <meshStandardMaterial color={resolvedCeilingColor} roughness={ceilingMaterial === 'Metallic Finish' ? 0.38 : 0.85} metalness={ceilingMaterial === 'Metallic Finish' ? 0.62 : 0.02} side={THREE.DoubleSide} />
       </mesh>
       <group position={[0, effectiveCeilingHeight - 0.025, 0]} visible={ceilingLighting !== false}>
         {[-0.32, 0, 0.32].map((x) => (

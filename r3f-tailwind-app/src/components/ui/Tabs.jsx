@@ -79,11 +79,11 @@ export default function Tabs({
             onClick={() => onChange(item.id)}
             onKeyDown={(e) => handleKeyDown(e, index)}
             className={[
-              'flex items-center justify-center gap-1.5 rounded-sm px-3 font-medium transition-all duration-150',
+              'flex items-center justify-center gap-1.5 rounded-sm px-3 font-medium transition-colors duration-150',
               padY,
               isActive
-                ? 'bg-accent-500/90 text-bg-0 shadow-sm ring-1 ring-accent-400/60 font-semibold'
-                : 'text-text-tertiary hover:text-text-secondary hover:bg-surface-raised',
+                ? 'bg-surface-raised text-text-primary shadow-sm ring-1 ring-accent-500/50'
+                : 'text-text-tertiary hover:text-text-secondary',
             ].join(' ')}
           >
             {Icon && <Icon size={size === 'sm' ? 13 : 14} aria-hidden="true" />}
