@@ -81,8 +81,20 @@
 .fabric-boucle { background: radial-gradient(#c8c0b4 1px, #eee8dc 1.5px); background-size: 5px 5px; }
 .metal-steel { background: repeating-linear-gradient(90deg, #747c7d 0 2px, #c5c9c6 2px 4px); }
 .metal-black { background: #292d2c; }
-.metal-brass { background: linear-gradient(135deg, #d0ae69, #876331); }
-.floor-oak { background: repeating-linear-gradient(0deg, #b88959 0 4px, #d0a06b 4px 6px); }
+ .metal-brass { background: linear-gradient(135deg, #d0ae69, #876331); }
+ .leather-saddle { background: repeating-linear-gradient(8deg, #a76540 0 3px, #81452f 3px 5px); }
+ .leather-cognac { background: linear-gradient(135deg, #d1935d, #9b5d3b); }
+ .leather-black { background: linear-gradient(135deg, #3e3b37, #171615); }
+ .stone-marble { background: linear-gradient(135deg, #f0eee8, #aaa9a2 48%, #e1ded5 50%, #c4c1b8); }
+ .stone-slate { background: linear-gradient(145deg, #69706d, #343b3a); }
+ .stone-travertine { background: radial-gradient(#a78e70 1px, transparent 2px), #c6ad8e; background-size: 8px 8px; }
+ .glass-clear { background: linear-gradient(135deg, rgb(214 239 235 / .9), rgb(112 165 163 / .55)); }
+ .glass-smoke { background: linear-gradient(135deg, #768b8a, #394b4b); }
+ .glass-amber { background: linear-gradient(135deg, #e0aa5c, #98632f); }
+ .ceramic-white { background: linear-gradient(135deg, #f9f7f2, #d2cec5); }
+ .ceramic-terracotta { background: linear-gradient(135deg, #d08768, #9d503c); }
+ .ceramic-cobalt { background: linear-gradient(135deg, #4d7ea4, #234766); }
+ .floor-oak { background: repeating-linear-gradient(0deg, #b88959 0 4px, #d0a06b 4px 6px); }
 .floor-concrete { background: radial-gradient(#b5b5ad 1px, #969893 2px); background-size: 6px 6px; }
 .floor-terrazzo { background: radial-gradient(circle at 20% 30%, #9f8772 0 2px, transparent 3px), #d8d2c6; background-size: 14px 12px; }
 .wall-warm { background: #d7c6ad; }

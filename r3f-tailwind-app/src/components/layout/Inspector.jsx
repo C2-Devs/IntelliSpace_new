@@ -14,24 +14,34 @@ const MATERIAL_LIBRARIES = {
     { name: 'Velvet', texture: 'Velvet', color: '#6e4b62', swatch: 'fabric-velvet' },
     { name: 'Bouclé', texture: 'Bouclé', color: '#e4ded3', swatch: 'fabric-boucle' },
   ],
+  leather: [
+    { name: 'Saddle Leather', texture: 'Saddle Leather', color: '#9b5d3b', swatch: 'leather-saddle' },
+    { name: 'Cognac Leather', texture: 'Cognac Leather', color: '#b87948', swatch: 'leather-cognac' },
+    { name: 'Black Leather', texture: 'Black Leather', color: '#242321', swatch: 'leather-black' },
+  ],
   metal: [
     { name: 'Brushed Steel', texture: 'Brushed Steel', color: '#aeb4b2', swatch: 'metal-steel' },
     { name: 'Matte Black', texture: 'Matte Black', color: '#292d2c', swatch: 'metal-black' },
     { name: 'Brass', texture: 'Brass', color: '#b18a4f', swatch: 'metal-brass' },
   ],
-  floor: [
-    { name: 'Warm Oak', texture: 'Warm Oak Floor', color: '#b88b5d', swatch: 'floor-oak' },
-    { name: 'Concrete', texture: 'Concrete', color: '#969893', swatch: 'floor-concrete' },
-    { name: 'Terrazzo', texture: 'Terrazzo', color: '#c8c3b8', swatch: 'floor-terrazzo' },
+  stone: [
+    { name: 'White Marble', texture: 'White Marble', color: '#d9d5cc', swatch: 'stone-marble' },
+    { name: 'Dark Slate', texture: 'Dark Slate', color: '#4d5250', swatch: 'stone-slate' },
+    { name: 'Travertine', texture: 'Travertine', color: '#c6ad8e', swatch: 'stone-travertine' },
   ],
-  wall: [
-    { name: 'Warm Paint', texture: 'Warm Paint', color: '#d7c6ad', swatch: 'wall-warm' },
-    { name: 'Sage Paint', texture: 'Sage Paint', color: '#9cae9b', swatch: 'wall-sage' },
-    { name: 'Plaster', texture: 'Plaster', color: '#eee9df', swatch: 'wall-plaster' },
+  glass: [
+    { name: 'Clear Glass', texture: 'Clear Glass', color: '#b9d4d1', swatch: 'glass-clear' },
+    { name: 'Smoke Glass', texture: 'Smoke Glass', color: '#526464', swatch: 'glass-smoke' },
+    { name: 'Amber Glass', texture: 'Amber Glass', color: '#c58d4b', swatch: 'glass-amber' },
+  ],
+  ceramic: [
+    { name: 'Matte White', texture: 'Matte White Ceramic', color: '#e8e4dc', swatch: 'ceramic-white' },
+    { name: 'Terracotta', texture: 'Terracotta', color: '#b9684d', swatch: 'ceramic-terracotta' },
+    { name: 'Cobalt Glaze', texture: 'Cobalt Glaze', color: '#315b7d', swatch: 'ceramic-cobalt' },
   ],
 };
 
-const MATERIAL_CATEGORY_LABELS = { wood: 'Wood', fabric: 'Fabric', metal: 'Metal', floor: 'Floor', wall: 'Wall' };
+const MATERIAL_CATEGORY_LABELS = { wood: 'Wood', fabric: 'Fabric', leather: 'Leather', metal: 'Metal', stone: 'Stone', glass: 'Glass', ceramic: 'Ceramic' };
 
 function NumberField({ label, value, onChange, disabled = false }) {
   return <label className="intelli-transform-field"><span>{label}</span><input type="number" step="0.01" value={Number(value ?? 0).toFixed(2)} disabled={disabled} onChange={(event) => onChange(Number(event.target.value))} /></label>;
