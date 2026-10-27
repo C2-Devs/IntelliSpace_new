@@ -7,6 +7,7 @@
 import React, { Suspense } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
+import { Environment } from '@react-three/drei';
 import Room from './Room';
 import FurnitureManager from './FurnitureManager';
 import InteriorStructures from './InteriorStructures';
@@ -68,7 +69,7 @@ export default function SceneCanvas() {
       gl={{
         antialias: true,
         toneMapping: THREE.ACESFilmicToneMapping,
-        toneMappingExposure: 1.08,
+        toneMappingExposure: 0.92,
         outputColorSpace: THREE.SRGBColorSpace,
       }}
       shadows={{ type: THREE.PCFSoftShadowMap }}
@@ -82,6 +83,7 @@ export default function SceneCanvas() {
       <SceneErrorBoundary>
         <Suspense fallback={<SceneFallback />}>
         <EnvironmentBackdrop />
+        <Environment preset="apartment" background={false} environmentIntensity={0.4} />
         <SceneLayer><SceneLighting /></SceneLayer>
         <SceneLayer fallback={<RoomFallback />}><Room /></SceneLayer>
         <SceneLayer><FurnitureManager /></SceneLayer>
@@ -100,3 +102,5 @@ export default function SceneCanvas() {
     </Canvas>
   );
 }
+
+
