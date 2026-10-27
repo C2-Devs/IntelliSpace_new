@@ -21,6 +21,7 @@ import { Heart, Plus, Search, SlidersHorizontal } from 'lucide-react';
 import LandingPage from './pages/LandingPage.jsx';
 import AuthPlaceholder from './pages/AuthPlaceholder.jsx';
 import useAuthStore from './store/useAuthStore.js';
+import { useFurnitureThumbnail } from './utils/furnitureThumbnailService.js';
 import { Box, ChevronDown, ChevronLeft, ChevronRight, Download, Expand, Grid2X2, Home, Layers3, Lightbulb, MousePointer2, Move, RotateCw, Ruler, Save, Settings2, Sparkles, Sun, Undo2, Redo2, X } from 'lucide-react';
 
 const tools = [
@@ -210,7 +211,20 @@ function LightRange({label,value,min,max,suffix,onChange}){return <label classNa
 function LightToggle({label,value,onChange}){return <div className="light-toggle"><span>{label}</span><button className={`intelli-switch ${value?'is-on':''}`} onClick={()=>onChange(!value)}><span/></button></div>}
 
 function ActualFurnitureModel({ item }) { const { scene } = useGLTF(item.modelPath); return <Center><primitive object={scene.clone()} scale={item.defaultScale || [1, 1, 1]} rotation={item.defaultRotation || [0, 0, 0]} /></Center>; }
-class ActualPreviewBoundary extends React.Component { state = { failed: false }; static getDerivedStateFromError() { return { failed: true }; } render() { return this.state.failed ? <FurnitureThumbnail item={this.props.item} /> : this.props.children; } }
+class ActualPreviewBoundary extends React.Component {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() {
+    if (this.state.failed) {
+      return (
+        <div className="furniture-preview-fallback flex items-center justify-center h-full text-slate-400 text-xs">
+          <span>{this.props.item?.name || 'Preview unavailable'}</span>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 function ActualFurniturePreview({ item }) { return <ActualPreviewBoundary item={item}><div className="furniture-object-preview-art"><Canvas camera={{ position: [2.8, 2, 2.8], fov: 35 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: true }}><ambientLight intensity={1.5} /><directionalLight position={[3, 4, 2]} intensity={2.2} /><Suspense fallback={null}><Bounds fit clip observe margin={1.25}><ActualFurnitureModel item={item} /></Bounds><Environment preset="studio" /></Suspense></Canvas></div></ActualPreviewBoundary>; }
 function formatFurniturePrice(item, fallback) {
   if (item.price == null || !Number.isFinite(Number(item.price))) return fallback;
@@ -226,7 +240,22 @@ function formatFurniturePrice(item, fallback) {
   }
 }
 
-function FurnitureThumbnail({ item }) { const category = item.category.replace('-', ' '); const imageByCategory = { 'living-room': '/furniture-thumbnails/sofa.png', chairs: '/furniture-thumbnails/chair.png', tables: '/furniture-thumbnails/table.png', bedroom: '/furniture-thumbnails/bed.png' }; const image = imageByCategory[item.category]; return <div className={`furniture-thumb-preview furniture-thumb-${item.category}`} aria-label={`${item.name} preview`}><div className="furniture-thumb-object" aria-hidden="true">{image ? <img src={image} alt="" /> : <><span className="furniture-thumb-surface" /><span className="furniture-thumb-form" /></>}</div><div className="furniture-thumb-meta"><span>{category}</span><b>PREVIEW</b></div></div>; }
+function FurnitureThumbnail({ item }) {
+  const thumbnail = useFurnitureThumbnail(item);
+  const category = (item?.category || 'furniture').replace('-', ' ');
+  return (
+    <div className={`furniture-thumb-preview furniture-thumb-${item?.category}`} aria-label={`${item?.name} preview`}>
+      <div className="furniture-thumb-object" aria-hidden="true">
+        {thumbnail ? (
+          <img src={thumbnail} alt={item?.name || ''} />
+        ) : (
+          <><span className="furniture-thumb-surface" /><span className="furniture-thumb-form" /></>
+        )}
+      </div>
+      <div className="furniture-thumb-meta"><span>{category}</span><b>PREVIEW</b></div>
+    </div>
+  );
+}
 function FurnitureContent() { const { items: catalogItems, status: catalogStatus } = useCatalog(); const addFurniture = useStore((s) => s.addFurniture); const favorites = useStore((s) => s.favorites); const toggleFavorite = useStore((s) => s.toggleFavorite); const selectedCategory = useStore((s) => s.selectedCategory); const setSelectedCategory = useStore((s) => s.setSelectedCategory); const [query,setQuery]=useState(''); const [previewItem,setPreviewItem]=useState(null); const categoryLabels={all:'All','living-room':'Sofas',bedroom:'Beds',chairs:'Chairs',tables:'Tables',storage:'Storage',lighting:'Lighting',decor:'Decor'}; const category = categoryLabels[selectedCategory] || 'All'; const categories=['All','Sofas','Chairs','Tables','Beds','Storage','Lighting','Decor']; const categoryKeys={Sofas:'living-room',Chairs:'chairs',Tables:'tables',Beds:'bedroom',Storage:'storage',Lighting:'lighting',Decor:'decor'}; const categoryKey=categoryKeys[category]; const filtered=catalogItems.filter((item)=>{ const matchesQuery=item.name.toLowerCase().includes(query.toLowerCase()); const matchesCategory=category==='All'||item.category===categoryKey; return matchesQuery&&matchesCategory; }).slice(0,16); const prices=['$2,400','$1,250','$980','$2,800','$4,200','$3,600','$850','$620','$1,450','$1,800','$120','$980']; const activePreview=previewItem || filtered[0]; const previewImage=activePreview ? ({'living-room':'/furniture-thumbnails/sofa.png',chairs:'/furniture-thumbnails/chair.png',tables:'/furniture-thumbnails/table.png',bedroom:'/furniture-thumbnails/bed.png'})[activePreview.category] : null; return <div className="furniture-content"><header className="furniture-heading"><div><h3>Furniture</h3><p>Find the perfect pieces for your space</p></div><button aria-label="Close furniture"><X size={19}/></button></header><div className="furniture-search"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search furniture, e.g. sofa, chair, table..."/><button aria-label="Filter furniture"><SlidersHorizontal size={16}/></button><button aria-label="Show favorites" className="furniture-favorite-filter"><Heart size={17}/></button></div><div className="furniture-categories">{categories.map(item=><button key={item} className={category===item?'is-active':''} onClick={()=>setSelectedCategory(categoryKeys[item] || 'all')}>{item}</button>)}</div>{activePreview&&<section className="furniture-object-preview" aria-live="polite"><ActualFurniturePreview item={activePreview} /><div className="furniture-object-preview-copy"><span>SELECTED PREVIEW</span><strong>{activePreview.name}</strong><small>Review this piece before adding it to your room.</small></div></section>}<section className="furniture-hero"><div><small>FEATURED</small><h4>Modern Living</h4><p>Timeless pieces for contemporary spaces.</p><button>Explore Collection <ChevronRight size={14}/></button></div></section><p className="catalog-source-status" role="status">{catalogStatus === 'live' ? `Live catalog · ${catalogItems.length} items` : catalogStatus === 'loading' ? 'Connecting to live catalog…' : 'Live catalog unavailable; showing local items'}</p><div className="furniture-grid">{filtered.map((item,index)=><article className="furniture-product" key={item.id} onClick={()=>addFurniture(item.id,[0,0,0])}><button className={`furniture-heart ${favorites.includes(item.id)?'is-favorite':''}`} aria-label={`Favorite ${item.name}`} onClick={e=>{e.stopPropagation();toggleFavorite(item.id)}}><Heart size={15} fill={favorites.includes(item.id)?'currentColor':'none'}/></button><div className="furniture-thumb"><FurnitureThumbnail item={item}/></div><div className="furniture-product-copy"><strong>{item.name}</strong><span>{formatFurniturePrice(item, prices[index%prices.length])}</span></div><button className="furniture-add" aria-label={`Add ${item.name}`} onClick={e=>{e.stopPropagation();addFurniture(item.id,[0,0,0])}}><Plus size={15}/></button></article>)}</div></div> }
 
 function ConfigurationPanel() {
