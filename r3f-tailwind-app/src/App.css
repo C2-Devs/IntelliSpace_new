@@ -48,3 +48,10 @@
 .workspace-manager-spinning { animation: workspace-manager-spin 1s linear infinite; }
 @keyframes workspace-manager-spin { to { transform: rotate(360deg); } }
 @media (max-width: 760px) { .workspace-manager-trigger span { display: none; } .workspace-manager-trigger { padding: .45rem; } }
+
+.furniture-material-section { border-top: 1px solid rgb(255 255 255 / .08); padding-top: .8rem; }
+.material-color-field { display: flex; align-items: center; justify-content: space-between; gap: .75rem; color: #b8beb5; font-size: .75rem; }
+.material-color-field input { width: 2.5rem; height: 1.8rem; padding: .1rem; border: 1px solid #505750; border-radius: .35rem; background: #1d211e; cursor: pointer; }
+.material-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4rem; margin-top: .65rem; }
+.material-choice-grid button { border: 1px solid #3e463e; border-radius: .4rem; background: #202520; color: #cbd0c8; padding: .45rem .35rem; font-size: .68rem; cursor: pointer; }
+.material-choice-grid button:hover, .material-choice-grid button.is-selected { border-color: #b7c6ad; background: #354035; color: #f3f5ef; }

@@ -42,14 +42,45 @@ function LoadedFurnitureInstance({ item, definition }) {
   const clonedScene = useMemo(() => {
     const clone = scene.clone(true);
     clone.traverse((child) => {
-      if (child.isMesh) {
-        if (child.material) {
-          child.material = child.material.clone();
-        }
-      }
+      if (child.isMesh && child.material) child.material = child.material.clone();
     });
     return clone;
   }, [scene]);
+
+  const materialTexture = useMemo(() => {
+    if (!item.materialTexture || item.materialTexture === 'Solid') return null;
+    if (typeof document === 'undefined') return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 128;
+    const context = canvas.getContext('2d');
+    const base = item.materialColor || '#b98b62';
+    context.fillStyle = base;
+    context.fillRect(0, 0, 128, 128);
+    context.globalAlpha = 0.24;
+    if (item.materialTexture === 'Wood grain') {
+      for (let y = -128; y < 256; y += 9) { context.strokeStyle = y % 18 ? '#4c2d1c' : '#f2c58f'; context.beginPath(); context.moveTo(0, y); context.bezierCurveTo(34, y + 8, 86, y - 7, 128, y + 3); context.stroke(); }
+    } else if (item.materialTexture === 'Linen') {
+      context.strokeStyle = '#fff'; for (let i = 0; i < 128; i += 4) { context.beginPath(); context.moveTo(i, 0); context.lineTo(i, 128); context.moveTo(0, i); context.lineTo(128, i); context.stroke(); }
+    } else if (item.materialTexture === 'Velvet') {
+      for (let i = -128; i < 256; i += 12) { context.strokeStyle = '#fff'; context.lineWidth = 3; context.beginPath(); context.moveTo(i, 0); context.lineTo(i + 128, 128); context.stroke(); }
+    } else {
+      for (let i = 0; i < 700; i += 1) { context.fillStyle = i % 2 ? '#fff' : '#211b17'; context.fillRect(Math.random() * 128, Math.random() * 128, 1, 1); }
+    }
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(3, 3);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    return texture;
+  }, [item.materialColor, item.materialTexture]);
+
+  useEffect(() => {
+    clonedScene.traverse((child) => {
+      if (!child.isMesh || !child.material) return;
+      child.material.color.set(item.materialColor || '#ffffff');
+      child.material.map = materialTexture;
+      child.material.needsUpdate = true;
+    });
+  }, [clonedScene, item.materialColor, materialTexture]);
 
   // Highlight on hover/select
   useEffect(() => {
