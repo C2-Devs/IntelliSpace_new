@@ -301,7 +301,32 @@ function ConfigurationPanel() {
   );
 }
 
-function WorkspaceOverlay() {
+function FloorPlanView({ mode }) {
+  const room = useStore((s) => s.room);
+  const furniture = useStore((s) => s.furniture);
+  const width = Math.max(1, Number(room.width || 5));
+  const depth = Math.max(1, Number(room.depth || 4));
+
+  return (
+    <div className="intelli-plan-view" role="img" aria-label={`${mode} of the current room`}>
+      <div className="intelli-plan-card">
+        <div className="intelli-plan-title">{mode}</div>
+        <div className="intelli-plan-room" style={{ aspectRatio: `${width} / ${depth}` }}>
+          {furniture.map((item, index) => {
+            const position = item.position || item.transform?.position || [0, 0, 0];
+            const x = ((Number(position[0]) + width / 2) / width) * 100;
+            const y = ((Number(position[2] ?? position[1]) + depth / 2) / depth) * 100;
+            return <div key={item.id || index} className="intelli-plan-furniture" style={{ left: `${Math.max(4, Math.min(96, x))}%`, top: `${Math.max(4, Math.min(96, y))}%` }} />;
+          })}
+          <span className="intelli-plan-dimension horizontal">{width.toFixed(2)} m</span>
+          <span className="intelli-plan-dimension vertical">{depth.toFixed(2)} m</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WorkspaceOverlay({ view, setView }) {
   const selectedIds = useStore((s) => s.selectedIds);
   const cameraMode = useStore((s) => s.cameraMode);
   const setCameraMode = useStore((s) => s.setCameraMode);
@@ -313,7 +338,6 @@ function WorkspaceOverlay() {
   const undo = useStore((s) => s.undo);
   const redo = useStore((s) => s.redo);
   const setLightPreset = useStore((s) => s.setLightPreset);
-  const [view, setView] = useState('3D View');
   const openConfig = (section) => window.dispatchEvent(new CustomEvent('intelli:open-config', { detail: { section } }));
   const cycleCamera = () => { const modes = Object.keys(CAMERA_MODES); setCameraMode(modes[(modes.indexOf(cameraMode) + 1) % modes.length]); };
   return <>
@@ -330,12 +354,15 @@ function EditorApp() {
   useCatalog();
   useAutosave();
   const dropTargetProps = useDropTarget();
+  const [view, setView] = useState('3D View');
   return <div className="intelli-app">
     <Navbar />
     <main className="intelli-workspace">
       <Sidebar />
       <section className="intelli-viewport" {...dropTargetProps}>
-        <div className="intelli-viewport-glow" aria-hidden="true" /><SceneCanvas /><Minimap /><WorkspaceOverlay />
+        <div className="intelli-viewport-glow" aria-hidden="true" />
+        {view === '3D View' ? <><SceneCanvas /><Minimap /></> : <FloorPlanView mode={view} />}
+        <WorkspaceOverlay view={view} setView={setView} />
       </section>
       <ConfigurationPanel />
       <Inspector />
