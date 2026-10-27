@@ -55,3 +55,11 @@
 .material-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4rem; margin-top: .65rem; }
 .material-choice-grid button { border: 1px solid #3e463e; border-radius: .4rem; background: #202520; color: #cbd0c8; padding: .45rem .35rem; font-size: .68rem; cursor: pointer; }
 .material-choice-grid button:hover, .material-choice-grid button.is-selected { border-color: #b7c6ad; background: #354035; color: #f3f5ef; }
+.material-choice-grid button { display: grid; grid-template-columns: 2rem 1fr; align-items: center; gap: .45rem; text-align: left; min-height: 2.25rem; }
+.material-choice-grid button::before { content: ''; display: block; width: 1.75rem; height: 1.75rem; border: 1px solid rgb(255 255 255 / .22); border-radius: .3rem; box-shadow: inset 0 0 0 1px rgb(0 0 0 / .16); }
+.material-choice-grid button:nth-child(1)::before { background: #b98b62; }
+.material-choice-grid button:nth-child(2)::before { background: repeating-linear-gradient(90deg, #d5b27e 0 4px, #aa7952 4px 7px); }
+.material-choice-grid button:nth-child(3)::before { background: radial-gradient(circle at 30% 30%, #eee 0 8%, transparent 9%), linear-gradient(135deg, #d8d8d3 25%, #b6b6b0 25% 50%, #d8d8d3 50% 75%, #b6b6b0 75%); background-size: .55rem .55rem; }
+.material-choice-grid button:nth-child(4)::before { background: repeating-linear-gradient(0deg, #647064 0 3px, #87917f 3px 5px); }
+.material-choice-grid button:nth-child(5)::before { background: radial-gradient(circle, #c8a582 0 20%, #9a7458 21% 36%, #c8a582 37%); background-size: .55rem .55rem; }
+.material-choice-grid button:nth-child(6)::before { background: linear-gradient(135deg, #252a29 25%, #4d5550 25% 50%, #252a29 50% 75%, #4d5550 75%); background-size: .6rem .6rem; }
