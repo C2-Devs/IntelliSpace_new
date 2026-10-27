@@ -122,7 +122,7 @@ export default function SceneLighting() {
           <pointLight
             key={`window-bounce-${index}`}
             position={[side[0], y, side[2]]}
-            intensity={Math.min(window.width * window.height, 4) * (config.directional.intensity * 0.045)}
+            intensity={Math.min(window.width * window.height, 4) * (config.directional.intensity * 0.02)}
             distance={Math.max(roomWidth, roomDepth) * 0.9}
             decay={2}
             color={config.directional.color}

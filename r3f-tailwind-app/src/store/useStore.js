@@ -191,7 +191,30 @@ lightPreset: template.lightPreset || 'midday',
     if (!trimmedName) return null;
     const id = `custom-room-${generateId()}`;
     const baseRoom = { ...get().room, width: 6, depth: 5, height: 2.7, wallThickness: 0.2 };
-    const customTemplate = { id, name: trimmedName, room: baseRoom, windows: [], doors: [], furniture: [], structures: [], lightPreset: 'day' };
+    const customTemplate = { id, name: trimmedName, room: baseRoom, windows: [
+    {
+      id: 'win-default-1',
+      wall: 'back',
+      position: 0.5,
+      width: 2.0,
+      height: 1.4,
+      sillHeight: 0.85,
+      type: 'Sliding Window',
+      panels: '2',
+      opening: 'Sliding',
+    },
+    {
+      id: 'win-default-2',
+      wall: 'right',
+      position: 0.5,
+      width: 1.4,
+      height: 1.2,
+      sillHeight: 0.9,
+      type: 'Fixed Window',
+      panels: '1',
+      opening: 'Fixed',
+    },
+  ], doors: [], furniture: [], structures: [], lightPreset: 'day' };
     set((state) => ({ customTemplates: [...state.customTemplates, customTemplate] }));
     get().setTemplate(id);
     return id;

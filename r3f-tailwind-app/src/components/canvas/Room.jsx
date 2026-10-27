@@ -73,50 +73,99 @@ function Wall({ position, size, color, rotation = [0, 0, 0], material = {} }) {
   );
 }
 
-/** Create a window opening */
+/** Create a realistic window opening with hollow frame, transparent glass, and mullions */
 function WindowPanel({ id, position, size, thickness, rotation = [0, 0, 0], type = 'Sliding Window', panels = '2', opening = 'Sliding' }) {
   const selectWindow = useStore((state) => state.selectWindow);
   const selectedWindowId = useStore((state) => state.selectedWindowId);
   const depth = thickness + 0.05;
   const selected = selectedWindowId === id;
+  const frameW = 0.06;
+  const w = size[0];
+  const h = size[1];
+
   return (
-    <group position={position} rotation={rotation} onPointerDown={(event) => { event.stopPropagation(); selectWindow(id); }}> 
-      <mesh position={[0, 0, 0.045]}><planeGeometry args={[size[0] + 0.16, size[1] + 0.16]} /><meshBasicMaterial transparent opacity={selected ? 0.18 : 0} color="#f4c46b" /></mesh>
-      {/* Window frame */}
-      <mesh >
-        <boxGeometry args={[size[0] + 0.08, size[1] + 0.08, depth]} />
-        <meshStandardMaterial color={selected ? '#f4c46b' : '#d7d9d6'} roughness={0.28} metalness={0.35} />
+    <group position={position} rotation={rotation} onPointerDown={(event) => { event.stopPropagation(); selectWindow(id); }}>
+      {/* Selection highlight border */}
+      {selected && (
+        <mesh position={[0, 0, 0.035]}>
+          <planeGeometry args={[w + 0.18, h + 0.18]} />
+          <meshBasicMaterial transparent opacity={0.2} color="#f4c46b" />
+        </mesh>
+      )}
+
+      {/* Frame: Top jamb */}
+      <mesh position={[0, h / 2 - frameW / 2, 0]}>
+        <boxGeometry args={[w + 0.04, frameW, depth]} />
+        <meshStandardMaterial color={selected ? '#f4c46b' : '#334155'} roughness={0.32} metalness={0.4} />
       </mesh>
-      {/* Exterior reveal keeps the glazing from reading as a black placeholder. */}
-      <mesh position={[0, 0, -0.01]}>
-        <planeGeometry args={[size[0], size[1]]} />
-        <meshStandardMaterial color="#707b82" roughness={0.86} metalness={0.02} />
+
+      {/* Frame: Bottom sill */}
+      <mesh position={[0, -h / 2 + frameW / 2, 0.02]}>
+        <boxGeometry args={[w + 0.12, frameW + 0.02, depth + 0.04]} />
+        <meshStandardMaterial color={selected ? '#f4c46b' : '#1e293b'} roughness={0.35} metalness={0.35} />
       </mesh>
-      {/* Glass catches the environment while remaining visually quiet. */}
-      <mesh position={[0, 0, 0.01]}>
-        <boxGeometry args={[size[0], size[1], 0.018]} />
+
+      {/* Frame: Left jamb */}
+      <mesh position={[-w / 2 + frameW / 2, 0, 0]}>
+        <boxGeometry args={[frameW, h - frameW * 2, depth]} />
+        <meshStandardMaterial color={selected ? '#f4c46b' : '#334155'} roughness={0.32} metalness={0.4} />
+      </mesh>
+
+      {/* Frame: Right jamb */}
+      <mesh position={[w / 2 - frameW / 2, 0, 0]}>
+        <boxGeometry args={[frameW, h - frameW * 2, depth]} />
+        <meshStandardMaterial color={selected ? '#f4c46b' : '#334155'} roughness={0.32} metalness={0.4} />
+      </mesh>
+
+      {/* Center divider mullion for multi-panel windows */}
+      {['Sliding Window', 'French Window', 'Casement Window'].includes(type) && (
+        <mesh position={[0, 0, 0.005]}>
+          <boxGeometry args={[0.04, h - frameW * 2, depth * 0.75]} />
+          <meshStandardMaterial color={selected ? '#f4c46b' : '#475569'} roughness={0.32} metalness={0.4} />
+        </mesh>
+      )}
+
+      {/* Additional vertical mullions for French windows */}
+      {type === 'French Window' && (
+        <>
+          <mesh position={[-w * 0.25, 0, 0.005]}>
+            <boxGeometry args={[0.025, h - frameW * 2, depth * 0.6]} />
+            <meshStandardMaterial color="#475569" roughness={0.32} metalness={0.4} />
+          </mesh>
+          <mesh position={[w * 0.25, 0, 0.005]}>
+            <boxGeometry args={[0.025, h - frameW * 2, depth * 0.6]} />
+            <meshStandardMaterial color="#475569" roughness={0.32} metalness={0.4} />
+          </mesh>
+        </>
+      )}
+
+      {/* Horizontal glazing bar */}
+      <mesh position={[0, 0.05, 0.005]}>
+        <boxGeometry args={[w - frameW * 2, 0.025, depth * 0.5]} />
+        <meshStandardMaterial color="#475569" roughness={0.32} metalness={0.4} />
+      </mesh>
+
+      {/* Real Transparent Glass Pane */}
+      <mesh position={[0, 0, 0]}>
+        <boxGeometry args={[w - frameW * 1.5, h - frameW * 1.5, 0.015]} />
         <meshPhysicalMaterial
-          color="#c8d8dc"
+          color="#d8e8f0"
           transparent
-          opacity={0.28}
-          transmission={0.72}
+          opacity={0.32}
+          transmission={0.88}
           thickness={0.02}
-          ior={1.46}
-          roughness={0.08}
-          metalness={0.02}
-          envMapIntensity={0.9}
+          ior={1.5}
+          roughness={0.06}
+          metalness={0.05}
+          envMapIntensity={1.0}
         />
       </mesh>
-      {/* Soft interior light portal makes each window affect the room. */}
+
+      {/* Subtle interior daylight glow from window */}
       <mesh position={[0, 0, 0.035]}>
-        <planeGeometry args={[Math.max(size[0] - 0.08, 0.1), Math.max(size[1] - 0.08, 0.1)]} />
-        <meshBasicMaterial color="#f5d7ad" transparent opacity={0.08} />
+        <planeGeometry args={[Math.max(w - 0.1, 0.1), Math.max(h - 0.1, 0.1)]} />
+        <meshBasicMaterial color="#ffffff" transparent opacity={0.05} />
       </mesh>
-      {type === 'Sliding Window' && <><mesh position={[0, 0, 0.02]}><boxGeometry args={[0.045, size[1], 0.025]} /><meshStandardMaterial color="#8b9291" roughness={0.3} metalness={0.55} /></mesh><mesh position={[0, 0.08, 0.03]}><boxGeometry args={[size[0] * 0.84, 0.025, 0.025]} /><meshStandardMaterial color="#8b9291" roughness={0.3} metalness={0.55} /></mesh></>}
-      {type === 'French Window' && <><mesh position={[0, 0, 0.02]}><boxGeometry args={[0.045, size[1], 0.025]} /><meshStandardMaterial color="#8b9291" roughness={0.3} metalness={0.55} /></mesh><mesh position={[-size[0] * 0.25, 0, 0.02]}><boxGeometry args={[0.035, size[1], 0.025]} /><meshStandardMaterial color="#8b9291" roughness={0.3} metalness={0.55} /></mesh><mesh position={[size[0] * 0.25, 0, 0.02]}><boxGeometry args={[0.035, size[1], 0.025]} /><meshStandardMaterial color="#8b9291" roughness={0.3} metalness={0.55} /></mesh></>}
-      {['Casement Window', 'Tilt & Turn Window'].includes(type) && <mesh position={[size[0] * 0.18, 0, 0.026]} rotation={[0, 0, opening === 'Right' ? -0.12 : 0.12]}><boxGeometry args={[0.025, size[1] * 0.82, 0.025]} /><meshStandardMaterial color="#b9935a" metalness={0.35} roughness={0.38} /></mesh>}
-      {type === 'Casement Window' && <mesh position={[-size[0] * 0.18, 0, 0.026]} rotation={[0, 0, -0.12]}><boxGeometry args={[0.025, size[1] * 0.82, 0.025]} /><meshStandardMaterial color="#b9935a" metalness={0.35} roughness={0.38} /></mesh>}
-      {type === 'Tilt & Turn Window' && <mesh position={[0, 0, 0.027]}><boxGeometry args={[size[0] * 0.62, 0.025, 0.025]} /><meshStandardMaterial color="#b9935a" metalness={0.35} roughness={0.38} /></mesh>}
     </group>
   );
 }
