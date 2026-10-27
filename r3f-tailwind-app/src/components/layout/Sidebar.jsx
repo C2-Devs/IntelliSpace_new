@@ -15,7 +15,7 @@ import SearchBar from '../ui/SearchBar';
 import { useDragSource } from '../../hooks/useDragDrop';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Palette } from 'lucide-react';
-import { isCatalogAssetReady } from '../../utils/catalogUtils';
+import { getCatalogItem } from '../../utils/catalogUtils';
 import FurnitureThumbnail from './FurnitureThumbnail';
 
 /** Individual furniture card in the library grid. */
@@ -42,13 +42,7 @@ function FurnitureCard({ item, index }) {
       {...dragProps}
     >
       <div className="flex-1 flex items-center justify-center bg-[#e9e6df] relative overflow-hidden">
-        {isCatalogAssetReady(item) ? (
-          <FurnitureThumbnail item={item} />
-        ) : (
-          <span className="text-[28px] opacity-70" aria-label={`${item.name} catalog item`}>
-            {getCategoryIcon(item.category)}
-          </span>
-        )}
+        <FurnitureThumbnail item={getCatalogItem(item) ?? item} />
       </div>
       <div className="py-1.5 px-2 h-7 shrink-0 flex items-center justify-center bg-[#f4f1ea] border-t border-slate-200">
         <span className="text-[10px] font-medium text-slate-700 block overflow-hidden text-ellipsis whitespace-nowrap text-center w-full">{item.name}</span>

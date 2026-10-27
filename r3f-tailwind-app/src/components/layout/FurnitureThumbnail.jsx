@@ -1,6 +1,6 @@
 import { Suspense, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Center, Environment, OrbitControls, useGLTF } from '@react-three/drei';
+import { Bounds, Environment, OrbitControls, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 
 function ThumbnailModel({ modelPath }) {
@@ -8,9 +8,9 @@ function ThumbnailModel({ modelPath }) {
   const clonedScene = useMemo(() => scene.clone(true), [scene]);
 
   return (
-    <Center disableY={false} top>
+    <Bounds fit clip observe margin={1.25}>
       <primitive object={clonedScene} />
-    </Center>
+    </Bounds>
   );
 }
 
