@@ -48,3 +48,81 @@
 .workspace-manager-spinning { animation: workspace-manager-spin 1s linear infinite; }
 @keyframes workspace-manager-spin { to { transform: rotate(360deg); } }
 @media (max-width: 760px) { .workspace-manager-trigger span { display: none; } .workspace-manager-trigger { padding: .45rem; } }
+
+/* Workspace custom furniture upload */
+.custom-furniture-upload {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid var(--border-color, #343434);
+  border-radius: 12px;
+  background: var(--panel-background, #1c1c1c);
+  color: var(--text-color, #f4f0e9);
+}
+
+.custom-furniture-upload-heading h4 {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+
+.custom-furniture-upload-heading p,
+.custom-furniture-upload-notice,
+.custom-furniture-upload-message {
+  margin: 6px 0 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.8;
+}
+
+.custom-furniture-upload form {
+  display: grid;
+  gap: 12px;
+}
+
+.custom-furniture-upload label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.custom-furniture-upload input,
+.custom-furniture-upload select,
+.custom-furniture-upload textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid var(--border-color, #444);
+  border-radius: 7px;
+  background: var(--input-background, #111);
+  color: inherit;
+  font: inherit;
+}
+
+.custom-furniture-upload input[type="file"] {
+  font-size: 11px;
+}
+
+.custom-furniture-upload button[type="submit"] {
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #c7a66a;
+  color: #171512;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.custom-furniture-upload button[type="submit"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* Description shown for selected custom workspace furniture */
+.intelli-object-description {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #a5aab2;
+  overflow-wrap: anywhere;
+}
