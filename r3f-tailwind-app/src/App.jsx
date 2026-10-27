@@ -302,6 +302,7 @@ function ConfigurationPanel() {
 }
 
 function WorkspaceOverlay() {
+  const [view, setView] = useState('3D View');
   const selectedIds = useStore((s) => s.selectedIds);
   const cameraMode = useStore((s) => s.cameraMode);
   const setCameraMode = useStore((s) => s.setCameraMode);
