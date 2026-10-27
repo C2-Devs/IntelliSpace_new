@@ -225,8 +225,14 @@ lightPreset: template.lightPreset || 'midday',
   // Furniture Actions
   // ═══════════════════════════════════════════════
 
-  addFurniture: (registryId, position = [0, 0, 0]) => {
-    const definition = getFurnitureById(registryId);
+  addFurniture: (catalogItem, position = [0, 0, 0]) => {
+    const suppliedDefinition =
+      catalogItem && typeof catalogItem === 'object' ? catalogItem : null;
+    const registryId = suppliedDefinition?.id ?? catalogItem;
+    const definition =
+      getFurnitureById(registryId) ??
+      (suppliedDefinition?.modelPath ? suppliedDefinition : null);
+
     if (!definition) return;
     get()._pushHistory();
 
@@ -234,19 +240,32 @@ lightPreset: template.lightPreset || 'midday',
       id: generateId(),
       catalogItemId: registryId,
       registryId,
-      backendCatalogItemId: getBackendCatalogItemId(registryId),
+      backendCatalogItemId:
+        suppliedDefinition?.backendCatalogItemId ??
+        getBackendCatalogItemId(registryId),
       position: [...position],
-      rotation: [...definition.defaultRotation],
-      scale: [...definition.defaultScale],
-      bounds: getCatalogFootprint(definition, definition.defaultScale),
+      rotation: [...(definition.defaultRotation ?? [0, 0, 0])],
+      scale: [...(definition.defaultScale ?? [1, 1, 1])],
+      bounds: getCatalogFootprint(
+        definition,
+        definition.defaultScale ?? [1, 1, 1],
+      ),
       isLocked: false,
       isVisible: true,
       isColliding: false,
+      custom: Boolean(suppliedDefinition?.custom),
+      name: suppliedDefinition?.name ?? definition.name,
+      category: suppliedDefinition?.category ?? definition.category,
+      modelPath: suppliedDefinition?.modelPath ?? definition.modelPath ?? null,
+      thumbnailPath: suppliedDefinition?.thumbnailPath ?? null,
+      workspaceId: suppliedDefinition?.workspaceId ?? null,
+      dimensions: suppliedDefinition?.dimensions ?? definition.dimensions,
+      defaultScale: [...(definition.defaultScale ?? [1, 1, 1])],
+      defaultRotation: [...(definition.defaultRotation ?? [0, 0, 0])],
     };
 
-    // Apply snapHeight
-    if (definition.snapHeight > 0) {
-      newItem.position[1] = definition.snapHeight;
+    if (Number(definition.snapHeight) > 0) {
+      newItem.position[1] = Number(definition.snapHeight);
     }
 
     set((state) => ({

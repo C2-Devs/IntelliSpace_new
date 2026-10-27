@@ -4,15 +4,36 @@ import { normalizeCatalogItem } from '../data/furnitureRegistry';
 let catalogPromise = null;
 let backendIdsBySlug = new Map();
 let localSlugsByBackendId = new Map();
+let modelPathsBySlug = new Map();
+
+const HF_ASSET_URL_PATTERN =
+  /^https:\/\/huggingface\.co\/datasets\/varad12345\/compressed-3d-assets\/resolve\/[a-f0-9]{40}\/models\/[a-z0-9-]+\/v1\/model\.glb$/i;
+
+export function isApprovedHuggingFaceModelUrl(value) {
+  return typeof value === 'string' && HF_ASSET_URL_PATTERN.test(value);
+}
+
+export function getModelPathForRegistryId(registryId, fallbackPath = null) {
+  const candidate = modelPathsBySlug.get(registryId);
+  return isApprovedHuggingFaceModelUrl(candidate) ? candidate : fallbackPath;
+}
 
 function registerCatalogMappings(items) {
   backendIdsBySlug = new Map();
   localSlugsByBackendId = new Map();
+  modelPathsBySlug = new Map();
 
   for (const item of items) {
-    if (!item?.slug || !item?.backendCatalogItemId) continue;
-    backendIdsBySlug.set(item.slug, item.backendCatalogItemId);
-    localSlugsByBackendId.set(item.backendCatalogItemId, item.slug);
+    if (!item?.slug) continue;
+
+    if (item.backendCatalogItemId) {
+      backendIdsBySlug.set(item.slug, item.backendCatalogItemId);
+      localSlugsByBackendId.set(item.backendCatalogItemId, item.slug);
+    }
+
+    if (typeof item.modelPath === 'string') {
+      modelPathsBySlug.set(item.slug, item.modelPath);
+    }
   }
 }
 
