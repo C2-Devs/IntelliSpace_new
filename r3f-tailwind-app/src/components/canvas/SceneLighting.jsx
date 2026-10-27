@@ -48,7 +48,7 @@ export default function SceneLighting() {
   const roomWidth = room?.width || 8;
   const roomDepth = room?.depth || 6;
   const roomHeight = room?.height || 3;
-  useEffect(() => { gl.toneMappingExposure = environmentSettings.exposure ?? 1.08; }, [gl, environmentSettings.exposure]);
+  useEffect(() => { gl.toneMappingExposure = environmentSettings.exposure ?? 0.82; }, [gl, environmentSettings.exposure]);
 
   const sunPosition = useMemo(() => {
     const { azimuth = 218, elevation = 62 } = { ...config.directional, azimuth: environmentSettings.azimuth, elevation: environmentSettings.elevation };
@@ -100,7 +100,7 @@ export default function SceneLighting() {
 
       {/* Hemisphere light for natural sky/ground color blending */}
       <hemisphereLight
-        args={['#d9e4ec', '#7a7a7a', 0.18]}
+        args={['#c8d8e8', '#2a2a2a', 0.15]}
       />
 
       {/* Architectural layer: ceiling wash and quiet perimeter illumination. */}

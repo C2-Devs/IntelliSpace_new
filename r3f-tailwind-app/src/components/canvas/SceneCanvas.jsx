@@ -83,7 +83,7 @@ export default function SceneCanvas() {
       <SceneErrorBoundary>
         <Suspense fallback={<SceneFallback />}>
         <EnvironmentBackdrop />
-        <Environment preset="apartment" background={false} environmentIntensity={0.4} />
+        <Environment preset="apartment" background={false} environmentIntensity={0.22} />
         <SceneLayer><SceneLighting /></SceneLayer>
         <SceneLayer fallback={<RoomFallback />}><Room /></SceneLayer>
         <SceneLayer><FurnitureManager /></SceneLayer>

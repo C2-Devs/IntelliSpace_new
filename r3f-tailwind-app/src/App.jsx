@@ -256,7 +256,7 @@ function FurnitureThumbnail({ item }) {
     </div>
   );
 }
-function FurnitureContent() { const { items: catalogItems, status: catalogStatus } = useCatalog(); const addFurniture = useStore((s) => s.addFurniture); const favorites = useStore((s) => s.favorites); const toggleFavorite = useStore((s) => s.toggleFavorite); const selectedCategory = useStore((s) => s.selectedCategory); const setSelectedCategory = useStore((s) => s.setSelectedCategory); const [query,setQuery]=useState(''); const [previewItem,setPreviewItem]=useState(null); const categoryLabels={all:'All','living-room':'Sofas',bedroom:'Beds',chairs:'Chairs',tables:'Tables',storage:'Storage',lighting:'Lighting',decor:'Decor'}; const category = categoryLabels[selectedCategory] || 'All'; const categories=['All','Sofas','Chairs','Tables','Beds','Storage','Lighting','Decor']; const categoryKeys={Sofas:'living-room',Chairs:'chairs',Tables:'tables',Beds:'bedroom',Storage:'storage',Lighting:'lighting',Decor:'decor'}; const categoryKey=categoryKeys[category]; const filtered=catalogItems.filter((item)=>{ const matchesQuery=item.name.toLowerCase().includes(query.toLowerCase()); const matchesCategory=category==='All'||item.category===categoryKey; return matchesQuery&&matchesCategory; }).slice(0,16); const prices=['$2,400','$1,250','$980','$2,800','$4,200','$3,600','$850','$620','$1,450','$1,800','$120','$980']; const activePreview=previewItem || filtered[0]; const previewImage=activePreview ? ({'living-room':'/furniture-thumbnails/sofa.png',chairs:'/furniture-thumbnails/chair.png',tables:'/furniture-thumbnails/table.png',bedroom:'/furniture-thumbnails/bed.png'})[activePreview.category] : null; return <div className="furniture-content"><header className="furniture-heading"><div><h3>Furniture</h3><p>Find the perfect pieces for your space</p></div><button aria-label="Close furniture"><X size={19}/></button></header><div className="furniture-search"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search furniture, e.g. sofa, chair, table..."/><button aria-label="Filter furniture"><SlidersHorizontal size={16}/></button><button aria-label="Show favorites" className="furniture-favorite-filter"><Heart size={17}/></button></div><div className="furniture-categories">{categories.map(item=><button key={item} className={category===item?'is-active':''} onClick={()=>setSelectedCategory(categoryKeys[item] || 'all')}>{item}</button>)}</div>{activePreview&&<section className="furniture-object-preview" aria-live="polite"><ActualFurniturePreview item={activePreview} /><div className="furniture-object-preview-copy"><span>SELECTED PREVIEW</span><strong>{activePreview.name}</strong><small>Review this piece before adding it to your room.</small></div></section>}<section className="furniture-hero"><div><small>FEATURED</small><h4>Modern Living</h4><p>Timeless pieces for contemporary spaces.</p><button>Explore Collection <ChevronRight size={14}/></button></div></section><p className="catalog-source-status" role="status">{catalogStatus === 'live' ? `Live catalog · ${catalogItems.length} items` : catalogStatus === 'loading' ? 'Connecting to live catalog…' : 'Live catalog unavailable; showing local items'}</p><div className="furniture-grid">{filtered.map((item,index)=><article className="furniture-product" key={item.id} onClick={()=>addFurniture(item.id,[0,0,0])}><button className={`furniture-heart ${favorites.includes(item.id)?'is-favorite':''}`} aria-label={`Favorite ${item.name}`} onClick={e=>{e.stopPropagation();toggleFavorite(item.id)}}><Heart size={15} fill={favorites.includes(item.id)?'currentColor':'none'}/></button><div className="furniture-thumb"><FurnitureThumbnail item={item}/></div><div className="furniture-product-copy"><strong>{item.name}</strong><span>{formatFurniturePrice(item, prices[index%prices.length])}</span></div><button className="furniture-add" aria-label={`Add ${item.name}`} onClick={e=>{e.stopPropagation();addFurniture(item.id,[0,0,0])}}><Plus size={15}/></button></article>)}</div></div> }
+function FurnitureContent() { const { items: catalogItems, status: catalogStatus } = useCatalog(); const addFurniture = useStore((s) => s.addFurniture); const favorites = useStore((s) => s.favorites); const toggleFavorite = useStore((s) => s.toggleFavorite); const selectedCategory = useStore((s) => s.selectedCategory); const setSelectedCategory = useStore((s) => s.setSelectedCategory); const [query,setQuery]=useState(''); const [previewItem,setPreviewItem]=useState(null); const categoryLabels={all:'All','living-room':'Sofas',bedroom:'Beds',chairs:'Chairs',tables:'Tables',storage:'Storage',lighting:'Lighting',decor:'Decor'}; const category = categoryLabels[selectedCategory] || 'All'; const categories=['All','Sofas','Chairs','Tables','Beds','Storage','Lighting','Decor']; const categoryKeys={Sofas:'living-room',Chairs:'chairs',Tables:'tables',Beds:'bedroom',Storage:'storage',Lighting:'lighting',Decor:'decor'}; const categoryKey=categoryKeys[category]; const filtered=catalogItems.filter((item)=>{ const matchesQuery=item.name.toLowerCase().includes(query.toLowerCase()); const matchesCategory=category==='All'||item.category===categoryKey; return matchesQuery&&matchesCategory; }).slice(0,16); const prices=['$2,400','$1,250','$980','$2,800','$4,200','$3,600','$850','$620','$1,450','$1,800','$120','$980']; const activePreview=previewItem || filtered[0]; const previewImage=activePreview ? ({'living-room':'/furniture-thumbnails/sofa.png',chairs:'/furniture-thumbnails/chair.png',tables:'/furniture-thumbnails/table.png',bedroom:'/furniture-thumbnails/bed.png'})[activePreview.category] : null; return <div className="furniture-content"><header className="furniture-heading"><div><h3>Furniture</h3><p>Find the perfect pieces for your space</p></div><button aria-label="Close furniture"><X size={19}/></button></header><div className="furniture-search"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search furniture, e.g. sofa, chair, table..."/><button aria-label="Filter furniture"><SlidersHorizontal size={16}/></button><button aria-label="Show favorites" className="furniture-favorite-filter"><Heart size={17}/></button></div><div className="furniture-categories">{categories.map(item=><button key={item} className={category===item?'is-active':''} onClick={()=>setSelectedCategory(categoryKeys[item] || 'all')}>{item}</button>)}</div>{activePreview&&<section className="furniture-object-preview" aria-live="polite"><ActualFurniturePreview item={activePreview} /><div className="furniture-object-preview-copy"><span>SELECTED PREVIEW</span><strong>{activePreview.name}</strong><small>Review this piece before adding it to your room.</small></div></section>}<section className="furniture-hero"><div><small>FEATURED</small><h4>Modern Living</h4><p>Timeless pieces for contemporary spaces.</p><button>Explore Collection <ChevronRight size={14}/></button></div></section><p className="catalog-source-status" role="status">{catalogStatus === 'live' ? `Live catalog · ${catalogItems.length} items` : catalogStatus === 'loading' ? 'Connecting to live catalog…' : 'Live catalog unavailable; showing local items'}</p><div className="furniture-grid">{filtered.map((item,index)=><article className="furniture-product" key={item.id} draggable onDragStart={(e) => { e.dataTransfer.setData('text/plain', item.id); e.dataTransfer.effectAllowed = 'copy'; }} onClick={()=>addFurniture(item.id,[0,0,0])}><button className={`furniture-heart ${favorites.includes(item.id)?'is-favorite':''}`} aria-label={`Favorite ${item.name}`} onClick={e=>{e.stopPropagation();toggleFavorite(item.id)}}><Heart size={15} fill={favorites.includes(item.id)?'currentColor':'none'}/></button><div className="furniture-thumb"><FurnitureThumbnail item={item}/></div><div className="furniture-product-copy"><strong>{item.name}</strong><span>{formatFurniturePrice(item, prices[index%prices.length])}</span></div><button className="furniture-add" aria-label={`Add ${item.name}`} onClick={e=>{e.stopPropagation();addFurniture(item.id,[0,0,0])}}><Plus size={15}/></button></article>)}</div></div> }
 
 function ConfigurationPanel() {
   const selectedIds = useStore((s) => s.selectedIds);
@@ -330,6 +330,87 @@ function ConfigurationPanel() {
   );
 }
 
+function PlanView({ view, room, furniture, onClose }) {
+  const canvasRef = React.useRef(null);
+  const isApartment = view === 'Apartment Plan';
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const rW = (room && room.width) || 6, rD = (room && room.depth) || 5;
+    const scale = Math.min((W - 80) / rW, (H - 80) / rD);
+    const ox = (W - rW * scale) / 2, oy = (H - rD * scale) / 2;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0f1117';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x < W; x += 30) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 0; y < H; y += 30) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    ctx.fillStyle = isApartment ? 'rgba(180,160,120,0.12)' : 'rgba(100,120,255,0.08)';
+    ctx.fillRect(ox, oy, rW * scale, rD * scale);
+    ctx.strokeStyle = isApartment ? '#c9a96e' : '#6c8cf5';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(ox, oy, rW * scale, rD * scale);
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.font = 'bold 12px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('N', W / 2, oy - 8);
+    ctx.fillText('S', W / 2, oy + rD * scale + 18);
+    ctx.fillText('W', ox - 12, oy + rD * scale / 2 + 4);
+    ctx.fillText('E', ox + rW * scale + 14, oy + rD * scale / 2 + 4);
+    ctx.fillStyle = 'rgba(255,255,255,0.32)';
+    ctx.font = '11px Inter, sans-serif';
+    ctx.fillText(rW + 'm', ox + rW * scale / 2, oy - 20);
+    ctx.textAlign = 'right';
+    ctx.fillText(rD + 'm', ox - 18, oy + rD * scale / 2 + 4);
+    ctx.textAlign = 'center';
+    (furniture || []).forEach(function(item) {
+      if (!item.position) return;
+      const fx = item.position[0], fz = item.position[2];
+      const fw = item.width || 1.2, fd = item.depth || 0.8;
+      const px = ox + (fx + rW / 2 - fw / 2) * scale;
+      const py = oy + (fz + rD / 2 - fd / 2) * scale;
+      ctx.fillStyle = 'rgba(108,140,245,0.35)';
+      ctx.fillRect(px, py, fw * scale, fd * scale);
+      ctx.strokeStyle = '#6c8cf5';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(px, py, fw * scale, fd * scale);
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.font = '9px Inter, sans-serif';
+      const label = (item.name || 'Item').substring(0, 8);
+      ctx.fillText(label, px + fw * scale / 2, py + fd * scale / 2 + 4);
+    });
+    const barW = 60;
+    const barM = (barW / scale).toFixed(1);
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(20, H - 20); ctx.lineTo(20 + barW, H - 20); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '10px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(barM + 'm', 24 + barW, H - 16);
+  }, [room, furniture, view, isApartment]);
+  return (
+    React.createElement('div', {
+      style: {
+        position: 'absolute', inset: 0, zIndex: 50,
+        background: 'linear-gradient(135deg, #0d1018 0%, #131928 100%)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+      }
+    },
+      React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
+        React.createElement('h2', { style: { color: '#e2c97e', fontFamily: 'Inter, sans-serif', fontSize: 18, fontWeight: 600, margin: 0 } }, view),
+        React.createElement('span', { style: { color: 'rgba(255,255,255,0.3)', fontSize: 12 } }, ((room && room.width) || 6) + 'm x ' + ((room && room.depth) || 5) + 'm'),
+        React.createElement('button', { onClick: onClose, style: { marginLeft: 'auto', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', padding: '4px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 12 } }, 'Close')
+      ),
+      React.createElement('canvas', { ref: canvasRef, width: 760, height: 520, style: { borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 80px rgba(0,0,0,0.6)' } }),
+      React.createElement('p', { style: { color: 'rgba(255,255,255,0.25)', fontSize: 11, marginTop: 12, fontFamily: 'Inter, sans-serif' } }, 'Top-down ' + view.toLowerCase() + ' — furniture footprints shown to scale')
+    )
+  );
+}
+
 function WorkspaceOverlay() {
   const [view, setView] = useState('3D View');
   const selectedIds = useStore((s) => s.selectedIds);
@@ -343,14 +424,17 @@ function WorkspaceOverlay() {
   const undo = useStore((s) => s.undo);
   const redo = useStore((s) => s.redo);
   const setLightPreset = useStore((s) => s.setLightPreset);
+  const room = useStore((s) => s.room);
+  const furniture = useStore((s) => s.furniture);
   const openConfig = (section) => window.dispatchEvent(new CustomEvent('intelli:open-config', { detail: { section } }));
   const cycleCamera = () => { const modes = Object.keys(CAMERA_MODES); setCameraMode(modes[(modes.indexOf(cameraMode) + 1) % modes.length]); };
   return <>
+    {(view === 'Floor Plan' || view === 'Apartment Plan') && <PlanView view={view} room={room} furniture={furniture} onClose={() => setView('3D View')} />}
     <div className="intelli-view-tabs"><button className={view === '3D View' ? 'is-active' : ''} onClick={() => setView('3D View')}>3D View</button><button className={view === 'Apartment Plan' ? 'is-active' : ''} onClick={() => setView('Apartment Plan')}>Apartment Plan</button><button className={view === 'Floor Plan' ? 'is-active' : ''} onClick={() => setView('Floor Plan')}>Floor Plan</button></div>
     <div className="intelli-canvas-actions"><button onClick={undo} disabled={!history.length} aria-label="Undo"><Undo2 size={17} /></button><button onClick={redo} disabled={!future.length} aria-label="Redo"><Redo2 size={17} /></button><button className="sun-action" onClick={() => setLightPreset(lightPreset === 'night' ? 'midday' : 'night')} aria-label="Toggle sunlight"><Sun size={18} /></button><button className="shadow-action">Shadows <ChevronDown size={14} /></button></div>
     <div className="intelli-tool-rail">{tools.map(({ label, icon: Icon }, index) => { const mode = label === 'Move' ? 'translate' : label === 'Rotate' ? 'rotate' : label === 'Scale' ? 'scale' : null; return <button key={label} className={(mode ? transformMode === mode : index === 0) ? 'is-active' : ''} onClick={() => mode && selectedIds.length === 1 && setTransformMode(mode)}><Icon size={20} strokeWidth={1.6} /><span>{label}</span></button>; })}</div>
     <div className="intelli-bottom-dock"><button className="is-active" onClick={() => openConfig('Lighting')}><Sun size={21} /><span>Sunlight</span></button><button onClick={cycleCamera} title={`Camera: ${CAMERA_MODES[cameraMode]?.label || 'Perspective'}`}><Box size={21} /><span>Camera</span></button><button onClick={() => openConfig('Environment')}><Lightbulb size={21} /><span>Environment</span></button><button onClick={() => openConfig('Flooring')}><Grid2X2 size={21} /><span>Materials</span></button><button onClick={() => setView(view === '3D View' ? 'Apartment Plan' : '3D View')}><Layers3 size={21} /><span>View Modes</span></button><button onClick={() => document.documentElement.requestFullscreen?.()}><Expand size={21} /><span>Presentation</span></button></div>
-    <div className="intelli-zoom"><button>−</button><span>90%</span><button>+</button></div><button className="intelli-fit"><Expand size={15} /> Fit to Screen</button><div className="intelli-view-toggle"><button>2D</button><button className="is-active">3D</button><button aria-label="Fullscreen"><Expand size={15} /></button></div>
+    <div className="intelli-zoom"><button>-</button><span>90%</span><button>+</button></div><button className="intelli-fit"><Expand size={15} /> Fit to Screen</button><div className="intelli-view-toggle"><button>2D</button><button className="is-active">3D</button><button aria-label="Fullscreen"><Expand size={15} /></button></div>
   </>;
 }
 
@@ -385,3 +469,4 @@ export default function App() {
   if (route === 'register') return <AuthPlaceholder mode="register" />;
   return <LandingPage />;
 }
+
