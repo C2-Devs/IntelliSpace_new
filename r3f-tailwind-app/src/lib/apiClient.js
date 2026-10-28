@@ -65,4 +65,23 @@ export function loginUser({ email, password }) {
   return request('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) })
 }
 
+export function listWorkspaces() {
+  return request('/api/workspaces')
+}
+
+export function getWorkspace(id) {
+  return request(`/api/workspaces/${encodeURIComponent(id)}`)
+}
+
+export function createWorkspace(payload) {
+  return request('/api/workspaces', { method: 'POST', body: JSON.stringify(payload) })
+}
+
+export function updateWorkspace(id, payload) {
+  return request(`/api/workspaces/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
 export { DEFAULT_API_BASE_URL, SESSION_KEY }
