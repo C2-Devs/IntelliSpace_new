@@ -11,10 +11,35 @@ export default function CollisionAdvisoryEngine() {
   const setCollisionStates = useStore((state) => state.setCollisionStates);
   const previousSignature = useRef('');
   const boxes = useRef(new Map());
+  const dirty = useRef(true);
+  const lastScan = useRef(0);
+  const overlapBox = useRef(new THREE.Box3());
+  const overlapSize = useRef(new THREE.Vector3());
 
-  useEffect(() => () => setCollisionStates([]), [setCollisionStates]);
+  useEffect(() => {
+    const unsubscribe = useStore.subscribe((state, previousState) => {
+      if (state.furniture !== previousState.furniture) {
+        dirty.current = true;
+      }
+    });
 
-  useFrame(() => {
+    return () => {
+      unsubscribe();
+      setCollisionStates([]);
+    };
+  }, [setCollisionStates]);
+
+  useFrame(({ clock }) => {
+    const now = clock.elapsedTime;
+    const timeSinceLastScan = now - lastScan.current;
+
+    // Limit collision scans to 12 per second during active changes.
+    // When idle, scan once per second to catch models that finish loading.
+    if (!dirty.current && timeSinceLastScan < 1) return;
+    if (timeSinceLastScan < 1 / 12) return;
+
+    lastScan.current = now;
+    dirty.current = false;
     const placedObjects = [];
     const activeIds = new Set();
     scene.traverse((object) => {
@@ -25,12 +50,19 @@ export default function CollisionAdvisoryEngine() {
         object.userData?.collisionProxy === false ||
         object.userData?.selectionOutline
       ) return;
-      const box = new THREE.Box3().setFromObject(object);
-      if (box.isEmpty()) return;
       const id = object.userData.furnitureId;
+      let box = boxes.current.get(id);
+
+      if (!box) {
+        box = new THREE.Box3();
+        boxes.current.set(id, box);
+      }
+
+      box.setFromObject(object);
+      if (box.isEmpty()) return;
+
       activeIds.add(id);
       placedObjects.push({ id, box });
-      boxes.current.set(id, box);
     });
 
     for (const id of boxes.current.keys()) {
@@ -43,8 +75,10 @@ export default function CollisionAdvisoryEngine() {
         const current = placedObjects[index];
         const other = placedObjects[otherIndex];
         if (!boxesIntersect(current.box, other.box)) continue;
-        const overlap = current.box.clone().intersect(other.box);
-        if (overlap.getSize(new THREE.Vector3()).length() > EPSILON) {
+        overlapBox.current.copy(current.box).intersect(other.box);
+        if (
+          overlapBox.current.getSize(overlapSize.current).length() > EPSILON
+        ) {
           collisionIds.add(current.id);
           collisionIds.add(other.id);
         }

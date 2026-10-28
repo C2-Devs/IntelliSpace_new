@@ -179,6 +179,7 @@ export default function SceneControls() {
       <OrbitControls
         ref={orbitRef}
         makeDefault
+        regress
         maxPolarAngle={Math.PI - 0.05}
         minDistance={1}
         maxDistance={40}
