@@ -1,10 +1,23 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import useStore from '../../store/useStore';
 import { getFurnitureById } from '../../data/furnitureRegistry';
 import { Copy, Lock, Move, Trash2, Unlock, X } from 'lucide-react';
 
 function NumberField({ label, value, onChange, disabled = false }) {
-  return <label className="intelli-transform-field"><span>{label}</span><input type="number" step="0.01" value={Number(value ?? 0).toFixed(2)} disabled={disabled} onChange={(event) => onChange(Number(event.target.value))} /></label>;
+  const [draft, setDraft] = useState(String(Number.isFinite(Number(value)) ? value : 0));
+  useEffect(() => {
+    if (document.activeElement?.type !== 'number') setDraft(String(Number.isFinite(Number(value)) ? value : 0));
+  }, [value]);
+  const commit = () => {
+    const parsed = Number(draft);
+    if (Number.isFinite(parsed)) {
+      onChange(parsed);
+      setDraft(String(parsed));
+    } else {
+      setDraft(String(Number.isFinite(Number(value)) ? value : 0));
+    }
+  };
+  return <label className="intelli-transform-field"><span>{label}</span><input type="number" inputMode="decimal" step="0.01" value={draft} disabled={disabled} onChange={(event) => setDraft(event.target.value)} onBlur={commit} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.blur(); } }} /></label>;
 }
 
 function StructureInspector({ item, selectedIds }) {
