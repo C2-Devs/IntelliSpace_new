@@ -64,19 +64,30 @@ export default function SceneControls() {
     obj.scale.set(...selectedItem.scale);
   }, [selectedItem]);
 
-  // Handle dragging-changed: disable orbit, commit transform on drop
-  useEffect(() => {
-    const controls = transformRef.current;
-    if (!controls) return;
+  const transformFrameRef = useRef(null);
+  const latestTransformRef = useRef(null);
 
-    const onDraggingChanged = (e) => {
-      if (orbitRef.current) orbitRef.current.enabled = !e.value;
-    };
+  const readTargetTransform = () => ({
+    position: [targetRef.current.position.x, targetRef.current.position.y, targetRef.current.position.z],
+    rotation: [targetRef.current.rotation.x, targetRef.current.rotation.y, targetRef.current.rotation.z],
+    scale: [targetRef.current.scale.x, targetRef.current.scale.y, targetRef.current.scale.z],
+  });
 
-    controls.addEventListener('dragging-changed', onDraggingChanged);
-    return () => {
-      controls.removeEventListener('dragging-changed', onDraggingChanged);
-    };
+  const flushTransform = () => {
+    transformFrameRef.current = null;
+    if (!selectedItem || selectedItem.isLocked || !latestTransformRef.current) return;
+    updateFurniture(selectedItem.id, latestTransformRef.current);
+  };
+
+  const scheduleTransformUpdate = () => {
+    latestTransformRef.current = readTargetTransform();
+    if (transformFrameRef.current === null) {
+      transformFrameRef.current = requestAnimationFrame(flushTransform);
+    }
+  };
+
+  useEffect(() => () => {
+    if (transformFrameRef.current !== null) cancelAnimationFrame(transformFrameRef.current);
   }, []);
 
   // Live-update store while gizmo is being dragged (with boundary clamping)
@@ -129,22 +140,20 @@ export default function SceneControls() {
       if (!selectedItem || selectedItem.isLocked) return;
       const obj = targetRef.current;
       constrainTarget(obj);
-      updateFurniture(selectedItem.id, {
-        position: [obj.position.x, obj.position.y, obj.position.z],
-        rotation: [obj.rotation.x, obj.rotation.y, obj.rotation.z],
-        scale: [obj.scale.x, obj.scale.y, obj.scale.z],
-      });
+      scheduleTransformUpdate();
     };
 
     const onMouseUp = () => {
       if (!selectedItem || selectedItem.isLocked) return;
       const obj = targetRef.current;
       constrainTarget(targetRef.current);
-      updateFurnitureWithHistory(selectedItem.id, {
-        position: [obj.position.x, obj.position.y, obj.position.z],
-        rotation: [obj.rotation.x, obj.rotation.y, obj.rotation.z],
-        scale: [obj.scale.x, obj.scale.y, obj.scale.z],
-      });
+      if (transformFrameRef.current !== null) {
+        cancelAnimationFrame(transformFrameRef.current);
+        transformFrameRef.current = null;
+      }
+      const finalTransform = readTargetTransform();
+      latestTransformRef.current = finalTransform;
+      updateFurnitureWithHistory(selectedItem.id, finalTransform);
     };
 
     controls.addEventListener('change', onChange);
@@ -181,6 +190,9 @@ export default function SceneControls() {
           translationSnap={translationSnap}
           rotationSnap={rotSnap}
           scaleSnap={scaleSnap}
+          onDraggingChange={(event) => {
+            if (orbitRef.current) orbitRef.current.enabled = !event.value;
+          }}
           size={0.7}
         />
       )}
