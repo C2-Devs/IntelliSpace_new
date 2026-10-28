@@ -8,9 +8,9 @@ import React, { Suspense } from 'react';
 import useStore from '../../store/useStore';
 import FurnitureInstance from './FurnitureInstance';
 
-function FurnitureFallback() {
+function FurnitureFallback({ item }) {
   return (
-    <mesh>
+    <mesh position={item.position} rotation={item.rotation} scale={item.scale}>
       <boxGeometry args={[0.3, 0.3, 0.3]} />
       <meshStandardMaterial color="#6366f1" wireframe opacity={0.5} transparent />
     </mesh>
@@ -24,7 +24,7 @@ export default function FurnitureManager() {
     <group>
       {furniture.map((item) =>
         item.isVisible !== false ? (
-          <Suspense key={item.id} fallback={<FurnitureFallback />}>
+          <Suspense key={item.id} fallback={<FurnitureFallback item={item} />}>
             <FurnitureInstance item={item} />
           </Suspense>
         ) : null

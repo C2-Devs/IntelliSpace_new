@@ -7,6 +7,7 @@
 import React, { Suspense } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
+import { AdaptiveDpr } from '@react-three/drei';
 import Room from './Room';
 import FurnitureManager from './FurnitureManager';
 import InteriorStructures from './InteriorStructures';
@@ -79,6 +80,7 @@ export default function SceneCanvas() {
       onPointerMissed={() => useStore.getState().clearSelection()}
       style={{ background: 'transparent' }}
     >
+      <AdaptiveDpr />
       <SceneErrorBoundary>
         <Suspense fallback={<SceneFallback />}>
         <EnvironmentBackdrop />
