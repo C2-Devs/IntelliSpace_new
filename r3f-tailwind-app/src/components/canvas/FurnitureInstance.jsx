@@ -210,6 +210,10 @@ function LoadedFurnitureInstance({ item, definition }) {
         child.receiveShadow = true;
         if (child.material) {
           child.material = child.material.clone();
+          if (!child.userData.origColor) {
+            child.userData.origColor = child.material.color ? child.material.color.clone() : new THREE.Color('#ffffff');
+            child.userData.origMap = child.material.map || null;
+          }
         }
       }
     });
@@ -248,13 +252,27 @@ function LoadedFurnitureInstance({ item, definition }) {
   }, [item.materialColor, item.materialTexture]);
 
   useEffect(() => {
+    if (!clonedScene) return;
+    const isCustom = Boolean(item.hasCustomMaterial && (item.materialColor || item.materialTexture));
+
     clonedScene.traverse((child) => {
       if (!child.isMesh || !child.material) return;
-      child.material.color.set(item.materialColor || '#ffffff');
-      child.material.map = materialTexture;
+      if (isCustom) {
+        if (item.materialColor) {
+          child.material.color.set(item.materialColor);
+        }
+        if (materialTexture) {
+          child.material.map = materialTexture;
+        }
+      } else {
+        if (child.userData.origColor) {
+          child.material.color.copy(child.userData.origColor);
+        }
+        child.material.map = child.userData.origMap || null;
+      }
       child.material.needsUpdate = true;
     });
-  }, [clonedScene, item.materialColor, materialTexture]);
+  }, [clonedScene, item.hasCustomMaterial, item.materialColor, item.materialTexture, materialTexture]);
 
   // Highlight on hover/select
   useEffect(() => {

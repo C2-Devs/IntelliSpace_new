@@ -165,7 +165,7 @@
 
 .material-choice-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 4px;
 }
 
@@ -195,4 +195,28 @@
   background: #c7a66a18;
   color: #c7a66a;
   border-color: #c7a66a55;
+}
+
+.material-color-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.material-reset-btn {
+  font-size: 10px;
+  color: #c7a66a;
+  background: transparent;
+  border: 1px solid #c7a66a55;
+  border-radius: 4px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.material-reset-btn:hover {
+  background: #c7a66a22;
+  color: #eee9df;
 }
