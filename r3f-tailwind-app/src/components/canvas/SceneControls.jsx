@@ -57,7 +57,7 @@ export default function SceneControls() {
 
   // Sync the target object's transform to match selected furniture
   useEffect(() => {
-    if (!selectedItem) return;
+    if (!selectedItem || isDraggingRef.current || transformFrameRef.current !== null) return;
     const obj = targetRef.current;
     obj.position.set(...selectedItem.position);
     obj.rotation.set(...selectedItem.rotation);
@@ -66,6 +66,9 @@ export default function SceneControls() {
 
   const transformFrameRef = useRef(null);
   const latestTransformRef = useRef(null);
+  const selectedItemRef = useRef(selectedItem);
+  const isDraggingRef = useRef(false);
+  selectedItemRef.current = selectedItem;
 
   const readTargetTransform = () => ({
     position: [targetRef.current.position.x, targetRef.current.position.y, targetRef.current.position.z],
@@ -137,14 +140,16 @@ export default function SceneControls() {
     if (!controls) return;
 
     const onChange = () => {
-      if (!selectedItem || selectedItem.isLocked) return;
+      const currentItem = selectedItemRef.current;
+      if (!currentItem || currentItem.isLocked) return;
       const obj = targetRef.current;
       constrainTarget(obj);
       scheduleTransformUpdate();
     };
 
     const onMouseUp = () => {
-      if (!selectedItem || selectedItem.isLocked) return;
+      const currentItem = selectedItemRef.current;
+      if (!currentItem || currentItem.isLocked) return;
       const obj = targetRef.current;
       constrainTarget(targetRef.current);
       if (transformFrameRef.current !== null) {
@@ -162,7 +167,7 @@ export default function SceneControls() {
       controls.removeEventListener('change', onChange);
       controls.removeEventListener('mouseUp', onMouseUp);
     };
-  }, [selectedItem, updateFurniture, updateFurnitureWithHistory, room, transformMode, snapEnabled, gridSize, selectedDefinition]);
+  }, [selectedItem?.id, updateFurniture, updateFurnitureWithHistory, room, transformMode, snapEnabled, gridSize, selectedDefinition?.id]);
 
   // Compute snap values
   const translationSnap = snapEnabled ? gridSize : null;
@@ -191,6 +196,13 @@ export default function SceneControls() {
           rotationSnap={rotSnap}
           scaleSnap={scaleSnap}
           onDraggingChange={(event) => {
+            isDraggingRef.current = event.value;
+            if (!event.value && transformFrameRef.current === null && selectedItemRef.current) {
+              const current = selectedItemRef.current;
+              targetRef.current.position.set(...current.position);
+              targetRef.current.rotation.set(...current.rotation);
+              targetRef.current.scale.set(...current.scale);
+            }
             if (orbitRef.current) orbitRef.current.enabled = !event.value;
           }}
           size={0.7}

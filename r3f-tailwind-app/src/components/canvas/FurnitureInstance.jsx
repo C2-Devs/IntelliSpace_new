@@ -280,34 +280,6 @@ function LoadedFurnitureInstance({ item, definition }) {
 
   const { gl } = useThree();
 
-  useEffect(() => {
-    let meshCount = 0;
-    scene.traverse((object) => {
-      if (object.isMesh) meshCount += 1;
-    });
-
-    const bounds = new THREE.Box3().setFromObject(scene);
-    const boundsSize = bounds.isEmpty()
-      ? null
-      : bounds.getSize(new THREE.Vector3()).toArray();
-
-    console.info('[IntelliSpace GLB] R3F loaded scene', {
-      furnitureInstanceId: item.id,
-      registryId: item.registryId ?? item.catalogItemId,
-      modelPath: definition.modelPath,
-      meshCount,
-      boundsSize,
-      webglContextLost: gl.getContext().isContextLost(),
-    });
-  }, [
-    scene,
-    definition.modelPath,
-    item.id,
-    item.registryId,
-    item.catalogItemId,
-    gl,
-  ]);
-
   useEffect(() => () => {
     if (gl.domElement.style.cursor === 'pointer') gl.domElement.style.cursor = 'auto';
   }, [gl]);
