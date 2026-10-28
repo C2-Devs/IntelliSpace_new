@@ -1,14 +1,14 @@
 /**
  * Minimap — 2D top-down room overview rendered in an HTML canvas.
  *
- * Shows room outline, furniture positions (colored rectangles),
+ * Shows room outline, furniture positions as scaled footprint rectangles,
  * and highlights selected items.
  */
 import React, { useRef, useEffect } from 'react';
 import useStore from '../../store/useStore';
 
 const MINIMAP_SIZE = 160;
-const PADDING = 12;
+const PADDING = 10;
 
 export default function Minimap() {
   const canvasRef = useRef(null);
@@ -22,70 +22,100 @@ export default function Minimap() {
     if (!canvas || !showMinimap) return;
 
     const ctx = canvas.getContext('2d');
-    const w = canvas.width;
-    const h = canvas.height;
+    const W = canvas.width;
+    const H = canvas.height;
 
-    // Clear
-    ctx.clearRect(0, 0, w, h);
+    ctx.clearRect(0, 0, W, H);
 
-    // Scale factor: map room to minimap
-    const scale = Math.min(
-      (w - PADDING * 2) / room.width,
-      (h - PADDING * 2) / room.depth
-    );
-    const offsetX = w / 2;
-    const offsetY = h / 2;
+    // Dark background
+    ctx.fillStyle = '#0e1118';
+    ctx.fillRect(0, 0, W, H);
 
-    // Room outline
-    ctx.strokeStyle = '#4f46e5'; // indigo-600
+    const rW = room.width || 6;
+    const rD = room.depth || 5;
+    const scale = Math.min((W - PADDING * 2) / rW, (H - PADDING * 2) / rD);
+    const ox = W / 2;
+    const oy = H / 2;
+
+    // Room floor fill
+    const rx = ox - (rW / 2) * scale;
+    const ry = oy - (rD / 2) * scale;
+    const rw = rW * scale;
+    const rh = rD * scale;
+
+    ctx.fillStyle = 'rgba(100, 120, 255, 0.06)';
+    ctx.fillRect(rx, ry, rw, rh);
+
+    // Room walls - thick border
+    ctx.strokeStyle = '#4f5de8';
     ctx.lineWidth = 2;
-    ctx.strokeRect(
-      offsetX - (room.width / 2) * scale,
-      offsetY - (room.depth / 2) * scale,
-      room.width * scale,
-      room.depth * scale
-    );
+    ctx.strokeRect(rx, ry, rw, rh);
 
-    // Floor fill
-    ctx.fillStyle = 'rgba(79, 70, 229, 0.05)'; // indigo-600 with low opacity
-    ctx.fillRect(
-      offsetX - (room.width / 2) * scale,
-      offsetY - (room.depth / 2) * scale,
-      room.width * scale,
-      room.depth * scale
-    );
+    // Subtle grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 0.5;
+    const gridStep = scale; // 1m grid
+    for (let gx = rx; gx <= rx + rw; gx += gridStep) {
+      ctx.beginPath(); ctx.moveTo(gx, ry); ctx.lineTo(gx, ry + rh); ctx.stroke();
+    }
+    for (let gy = ry; gy <= ry + rh; gy += gridStep) {
+      ctx.beginPath(); ctx.moveTo(rx, gy); ctx.lineTo(rx + rw, gy); ctx.stroke();
+    }
 
-    // Furniture dots
+    // Furniture as footprint rectangles
     furniture.forEach((item) => {
       if (item.isVisible === false) return;
-      const x = offsetX + item.position[0] * scale;
-      const y = offsetY + item.position[2] * scale;
+      const [fx, , fz] = item.position || [0, 0, 0];
+      const fw = (item.width || 1.0) * scale;
+      const fd = (item.depth || 0.7) * scale;
+      const px = ox + fx * scale - fw / 2;
+      const py = oy + fz * scale - fd / 2;
       const isSelected = selectedIds.includes(item.id);
 
-      ctx.beginPath();
-      ctx.arc(x, y, isSelected ? 4 : 3, 0, Math.PI * 2);
-      ctx.fillStyle = isSelected ? '#f59e0b' : '#64748b'; // amber-500 : slate-500
-      ctx.fill();
+      ctx.fillStyle = isSelected ? 'rgba(245,158,11,0.5)' : 'rgba(100,116,139,0.4)';
+      ctx.fillRect(px, py, fw, fd);
 
-      if (isSelected) {
-        ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-      }
+      ctx.strokeStyle = isSelected ? '#f59e0b' : 'rgba(148,163,184,0.6)';
+      ctx.lineWidth = isSelected ? 1.5 : 0.8;
+      ctx.strokeRect(px, py, fw, fd);
     });
+
+    // North indicator
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.font = 'bold 8px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('N', W / 2, ry - 2);
+
   }, [showMinimap, room, furniture, selectedIds]);
 
   if (!showMinimap) return null;
 
   return (
-    <div className="absolute top-4 right-4 z-30 flex flex-col items-end gap-1.5 pointer-events-none">
+    <div style={{
+      position: 'absolute', top: 16, right: 16, zIndex: 30,
+      display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4,
+      pointerEvents: 'none',
+    }}>
       <canvas
         ref={canvasRef}
         width={MINIMAP_SIZE}
         height={MINIMAP_SIZE}
-        className="bg-white/80 backdrop-blur-md border border-black/10 rounded-lg shadow-sm w-40 h-40"
+        style={{
+          width: MINIMAP_SIZE, height: MINIMAP_SIZE,
+          borderRadius: 8,
+          border: '1px solid rgba(255,255,255,0.1)',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+          background: '#0e1118',
+        }}
       />
-      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest bg-white/80 backdrop-blur-md py-0.5 px-1.5 rounded border border-black/10">Minimap</span>
+      <span style={{
+        fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.35)',
+        letterSpacing: '0.1em', fontFamily: 'Inter, sans-serif',
+        textTransform: 'uppercase',
+        background: 'rgba(0,0,0,0.4)',
+        padding: '2px 6px', borderRadius: 4,
+        border: '1px solid rgba(255,255,255,0.08)',
+      }}>Minimap</span>
     </div>
   );
 }

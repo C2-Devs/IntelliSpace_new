@@ -71,10 +71,6 @@ export function saveToLocalStorage(state) {
       showMinimap: state.showMinimap,
       showMeasurements: state.showMeasurements,
       showGrid: state.showGrid,
-      environmentPreset: state.environmentPreset,
-      environmentSettings: state.environmentSettings,
-      lightingSettings: state.lightingSettings,
-      lightingFixtures: state.lightingFixtures,
       savedAt: new Date().toISOString(),
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
