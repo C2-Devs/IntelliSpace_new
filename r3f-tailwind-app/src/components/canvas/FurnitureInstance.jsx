@@ -50,66 +50,61 @@ export default function FurnitureInstance({ item }) {
     ],
   );
 
-  const [resolution, setResolution] = useState({
-    registryId: null,
-    status: 'loading',
-    modelPath: null,
-  });
+  const initialModelPath = item.custom || item.workspaceId
+    ? item.modelPath ?? definition?.modelPath ?? null
+    : definition?.modelPath ?? item.modelPath ?? null;
+
+  const [resolution, setResolution] = useState(() => ({
+    registryId,
+    status: initialModelPath ? 'ready' : 'loading',
+    modelPath: initialModelPath,
+  }));
 
   useEffect(() => {
     let cancelled = false;
 
-    setResolution({
-      registryId,
-      status: 'loading',
-      modelPath: null,
-    });
+    const immediatePath = item.custom || item.workspaceId
+      ? item.modelPath ?? definition?.modelPath ?? null
+      : definition?.modelPath ?? item.modelPath ?? null;
+
+    if (immediatePath) {
+      setResolution({ registryId, status: 'ready', modelPath: immediatePath });
+      return () => { cancelled = true; };
+    }
+
+    // Custom models need their workspace-provided URL; do not query the
+    // built-in catalog repeatedly for them.
+    if (item.custom || item.workspaceId) {
+      setResolution({ registryId, status: 'ready', modelPath: null });
+      return () => { cancelled = true; };
+    }
+
+    setResolution({ registryId, status: 'loading', modelPath: null });
 
     async function resolveModelPath() {
       try {
-        let modelPath = null;
-
-        if (item.custom || item.workspaceId) {
-          // Reuse the signed URL supplied by the active workspace catalog.
-          // Do not request a new URL for every placed furniture instance.
-          modelPath = item.modelPath ?? definition?.modelPath ?? null;
-        } else {
-          const catalogItems = await loadCatalog();
-          const serverItem = catalogItems.find(
-            (entry) => entry.slug === registryId,
-          );
-
-          const remotePath = serverItem?.modelPath;
-          modelPath = isApprovedHuggingFaceModelUrl(remotePath)
-            ? remotePath
-            : definition?.modelPath ?? null;
-        }
+        const items = await loadCatalog();
+        const entry = items.find((catalogItem) => catalogItem.slug === registryId);
+        const remotePath = entry?.modelPath;
+        const modelPath = isApprovedHuggingFaceModelUrl(remotePath)
+          ? remotePath
+          : null;
 
         if (!cancelled) {
-          setResolution({
-            registryId,
-            status: 'ready',
-            modelPath,
-          });
+          setResolution({ registryId, status: 'ready', modelPath });
         }
       } catch (error) {
-        console.error('[IntelliSpace] Model URL resolution failed:', error);
-
+        if (import.meta.env.DEV) {
+          console.warn('[IntelliSpace] Catalog model lookup failed:', error);
+        }
         if (!cancelled) {
-          setResolution({
-            registryId,
-            status: 'ready',
-            modelPath: item.modelPath ?? definition?.modelPath ?? null,
-          });
+          setResolution({ registryId, status: 'ready', modelPath: null });
         }
       }
     }
 
     resolveModelPath();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [
     registryId,
     definition?.modelPath,
@@ -119,7 +114,7 @@ export default function FurnitureInstance({ item }) {
     item.modelPath,
   ]);
 
-  // Do not start loading a local GLB while the catalog request is pending.
+  // Render immediately whenever a usable local or signed URL exists.
   if (
     !definition ||
     resolution.registryId !== registryId ||
