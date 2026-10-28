@@ -216,6 +216,46 @@ function LoadedFurnitureInstance({ item, definition }) {
     return clone;
   }, [scene]);
 
+
+  const materialTexture = useMemo(() => {
+    if (!item.materialTexture || item.materialTexture === 'Solid') return null;
+    if (typeof document === 'undefined') return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    const base = item.materialColor || '#b98b62';
+    ctx.fillStyle = base;
+    ctx.fillRect(0, 0, 128, 128);
+    ctx.globalAlpha = 0.24;
+    if (item.materialTexture === 'Wood grain') {
+      for (let y = -128; y < 256; y += 9) {
+        ctx.strokeStyle = y % 18 ? '#4c2d1c' : '#f2c58f';
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.bezierCurveTo(34, y + 8, 86, y - 7, 128, y + 3); ctx.stroke();
+      }
+    } else if (item.materialTexture === 'Linen') {
+      ctx.strokeStyle = '#fff';
+      for (let i = 0; i < 128; i += 4) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 128); ctx.moveTo(0, i); ctx.lineTo(128, i); ctx.stroke(); }
+    } else if (item.materialTexture === 'Velvet') {
+      for (let i = -128; i < 256; i += 12) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i + 128, 128); ctx.stroke(); }
+    } else {
+      for (let i = 0; i < 700; i += 1) { ctx.fillStyle = i % 2 ? '#fff' : '#211b17'; ctx.fillRect(Math.random() * 128, Math.random() * 128, 1, 1); }
+    }
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(3, 3);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    return texture;
+  }, [item.materialColor, item.materialTexture]);
+
+  useEffect(() => {
+    clonedScene.traverse((child) => {
+      if (!child.isMesh || !child.material) return;
+      child.material.color.set(item.materialColor || '#ffffff');
+      child.material.map = materialTexture;
+      child.material.needsUpdate = true;
+    });
+  }, [clonedScene, item.materialColor, materialTexture]);
+
   // Highlight on hover/select
   useEffect(() => {
     if (!clonedScene) return;

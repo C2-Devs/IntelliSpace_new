@@ -49,6 +49,8 @@ function normalizeFurnitureItem(item) {
     scale,
     isLocked: Boolean(item.isLocked ?? item.is_locked ?? item.locked),
     isVisible: item.isVisible !== false && item.is_visible !== false && item.visible !== false,
+    materialColor: /^#[0-9a-f]{6}$/i.test(item.materialColor || '') ? item.materialColor : '#b98b62',
+    materialTexture: item.materialTexture || 'Solid',
     isColliding: false,
   };
 }
