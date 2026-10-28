@@ -1,9 +1,10 @@
 /**
- * MeasurementOverlay — room dimension labels rendered as 3D text sprites.
+ * MeasurementOverlay — room dimension labels rendered as subtle 3D CAD badges.
  *
- * Shows width and depth measurements along the room edges.
+ * Shows width, depth, and height measurements along the room edges in a clean,
+ * compact architectural style.
  */
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 
@@ -12,15 +13,18 @@ function MeasurementLabel({ position, text }) {
     <Html position={position} center style={{ pointerEvents: 'none' }}>
       <div
         style={{
-          background: 'rgba(99, 102, 241, 0.9)',
-          color: '#fff',
+          background: 'rgba(15, 23, 42, 0.82)',
+          color: 'rgba(255, 255, 255, 0.92)',
+          border: '1px solid rgba(255, 255, 255, 0.18)',
           padding: '2px 8px',
-          borderRadius: '4px',
-          fontSize: '11px',
+          borderRadius: '9999px',
+          fontSize: '10px',
           fontFamily: 'Inter, sans-serif',
           fontWeight: '600',
+          letterSpacing: '0.04em',
           whiteSpace: 'nowrap',
-          backdropFilter: 'blur(4px)',
+          backdropFilter: 'blur(8px)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.35)',
         }}
       >
         {text}
@@ -29,15 +33,7 @@ function MeasurementLabel({ position, text }) {
   );
 }
 
-function MeasurementLine({ start, end, color = '#6366f1' }) {
-  const points = useMemo(
-    () => [
-      start,
-      end,
-    ],
-    [start, end]
-  );
-
+function MeasurementLine({ start, end, color = 'rgba(148, 163, 184, 0.45)' }) {
   return (
     <line>
       <bufferGeometry>
@@ -48,7 +44,7 @@ function MeasurementLine({ start, end, color = '#6366f1' }) {
           itemSize={3}
         />
       </bufferGeometry>
-      <lineBasicMaterial color={color} linewidth={2} />
+      <lineBasicMaterial color={color} linewidth={1} transparent opacity={0.6} />
     </line>
   );
 }
@@ -67,27 +63,27 @@ export default function MeasurementOverlay() {
     <group>
       {/* Width measurement (along front edge) */}
       <MeasurementLabel
-        position={[0, 0.05, hd + 0.5]}
+        position={[0, 0.05, hd + 0.4]}
         text={`${(width * 100).toFixed(0)} cm`}
       />
       <MeasurementLine
-        start={[-hw, 0.05, hd + 0.3]}
-        end={[hw, 0.05, hd + 0.3]}
+        start={[-hw, 0.05, hd + 0.25]}
+        end={[hw, 0.05, hd + 0.25]}
       />
 
       {/* Depth measurement (along right edge) */}
       <MeasurementLabel
-        position={[hw + 0.5, 0.05, 0]}
+        position={[hw + 0.4, 0.05, 0]}
         text={`${(depth * 100).toFixed(0)} cm`}
       />
       <MeasurementLine
-        start={[hw + 0.3, 0.05, -hd]}
-        end={[hw + 0.3, 0.05, hd]}
+        start={[hw + 0.25, 0.05, -hd]}
+        end={[hw + 0.25, 0.05, hd]}
       />
 
       {/* Height measurement (vertical, at corner) */}
       <MeasurementLabel
-        position={[-hw - 0.5, height / 2, -hd]}
+        position={[-hw - 0.4, height / 2, -hd]}
         text={`${(height * 100).toFixed(0)} cm`}
       />
     </group>

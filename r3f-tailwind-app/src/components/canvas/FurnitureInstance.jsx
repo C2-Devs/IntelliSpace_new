@@ -206,6 +206,8 @@ function LoadedFurnitureInstance({ item, definition }) {
     const clone = scene.clone(true);
     clone.traverse((child) => {
       if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
         if (child.material) {
           child.material = child.material.clone();
         }
@@ -219,9 +221,9 @@ function LoadedFurnitureInstance({ item, definition }) {
     if (!clonedScene) return;
     clonedScene.traverse((child) => {
       if (child.isMesh && child.material) {
-        if (item.isColliding) {
-          child.material.emissive = new THREE.Color('#b96b55');
-          child.material.emissiveIntensity = 0.42;
+        if (item.isColliding && isSelected) {
+          child.material.emissive = new THREE.Color('#ef4444');
+          child.material.emissiveIntensity = 0.15;
         } else if (isSelected) {
           child.material.emissive = new THREE.Color('#c7a66a');
           child.material.emissiveIntensity = 0.1;

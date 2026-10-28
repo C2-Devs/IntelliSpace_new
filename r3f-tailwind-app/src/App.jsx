@@ -154,14 +154,520 @@ const CEILING_DESIGNS = [['Flat','Simple & clean'],['Tray','Elegant & modern'],[
 function CeilingContent({ room, setRoomAppearance }) { const [tab,setTab]=useState('Materials'); const [material,setMaterial]=useState(room.ceilingMaterial || 'Matte White'); const [design,setDesign]=useState(room.ceilingDesign || 'Tray'); const [query,setQuery]=useState(''); const [category,setCategory]=useState('All'); const [height,setHeight]=useState(Number(room.ceilingHeight || room.height || 2.7)); const [depth,setDepth]=useState(Number(room.ceilingDepth || .15)); const [border,setBorder]=useState(Number(room.ceilingBorder || .2)); const [layers,setLayers]=useState(Number(room.ceilingLayers || 2)); const [lighting,setLighting]=useState(room.ceilingLighting !== false); const [applied,setApplied]=useState(false); const apply=(updates={})=>{setRoomAppearance({ceilingMaterial:material,ceilingDesign:design,ceilingHeight:height,ceilingDepth:depth,ceilingBorder:border,ceilingLayers:layers,ceilingLighting:lighting,...updates});setApplied(true);window.setTimeout(()=>setApplied(false),1400)}; useEffect(()=>{setRoomAppearance({ceilingMaterial:material,ceilingDesign:design,ceilingHeight:height,ceilingDepth:depth,ceilingBorder:border,ceilingLayers:layers,ceilingLighting:lighting})},[material,design,height,depth,border,layers,lighting]); const visible=CEILING_MATERIALS.filter(([name,,,group])=>(category==='All'||group===category)&&name.toLowerCase().includes(query.toLowerCase())); return <div className="ceiling-content"><div className="ceiling-heading"><h3>Ceiling</h3><p>Choose the perfect ceiling for your space</p></div><div className="intelli-tabs ceiling-tabs">{['Materials','Designs','Properties'].map(item=><button key={item} className={tab===item?'is-active':''} onClick={()=>setTab(item)}>{item}</button>)}</div>{tab==='Materials'&&<><div className="ceiling-filters">{['All','Painted','Gypsum','Wood','Concrete','Specialty'].map(item=><button key={item} className={category===item?'is-active':''} onClick={()=>setCategory(item)}>{item}</button>)}</div><input className="wall-search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search ceiling materials..."/><div className="ceiling-card-grid">{visible.map(([name,color,price])=><button key={name} className={material===name?'is-selected':''} onClick={()=>{setMaterial(name);apply({ceilingMaterial:name,ceilingColor:color})}}><span style={{background:color}}/><strong>{name}</strong><small>{price}</small>{material===name&&<b>✓</b>}</button>)}</div><div className="ceiling-feature"><span/><div><strong>{material}</strong><small>Clean, modern and timeless</small></div><button>View Details →</button></div></>}{tab==='Designs'&&<><div className="ceiling-design-grid">{CEILING_DESIGNS.map(([name,caption],i)=><button key={name} className={design===name?'is-selected':''} onClick={()=>{setDesign(name);apply({ceilingDesign:name})}}><span className={`ceiling-design-art ceiling-art-${i}`}/><strong>{name}</strong><small>{caption}</small>{design===name&&<b>✓</b>}</button>)}</div><div className="ceiling-settings"><h4>Design Settings</h4><CeilingRange label="Ceiling Height" value={height} min="2.4" max="3.6" step=".1" suffix="m" onChange={setHeight}/><CeilingRange label="Recessed Depth" value={depth} min="0" max=".5" step=".01" suffix="m" onChange={setDepth}/><CeilingRange label="Border Width" value={border} min="0" max="1" step=".01" suffix="m" onChange={setBorder}/><div className="ceiling-layer-row"><span>Layer Count</span><button onClick={()=>setLayers(Math.max(1,layers-1))}>−</button><strong>{layers}</strong><button onClick={()=>setLayers(Math.min(4,layers+1))}>+</button></div><div className="ceiling-light-row"><span>Lighting Integration</span><button className={`intelli-switch ${lighting?'is-on':''}`} onClick={()=>setLighting(!lighting)}><span/></button></div></div></>}{tab==='Properties'&&<><div className="selected-ceiling"><span className="ceiling-property-art"/><div><strong>{design} Ceiling</strong><small>{material} | Painted White</small><button onClick={()=>setTab('Designs')}>Change Design →</button></div></div><div className="ceiling-settings"><h4>Dimensions</h4><CeilingRange label="Ceiling Height" value={height} min="2.4" max="3.6" step=".1" suffix="m" onChange={setHeight}/><CeilingRange label="Recessed Depth" value={depth} min="0" max=".5" step=".01" suffix="m" onChange={setDepth}/><CeilingRange label="Border Width" value={border} min="0" max="1" step=".01" suffix="m" onChange={setBorder}/><h4>Material &amp; Finish</h4><label className="ceiling-select-label">Material<select value={material} onChange={e=>setMaterial(e.target.value)}>{CEILING_MATERIALS.map(([name])=><option key={name}>{name}</option>)}</select></label><label className="ceiling-select-label">Finish<select><option>Matte White</option><option>Eggshell</option><option>Satin</option></select></label><div className="ceiling-color-row"><span>Color</span><i style={{background:CEILING_MATERIALS.find(([name])=>name===material)?.[1]}}/><input value={CEILING_MATERIALS.find(([name])=>name===material)?.[1]||'#D7D5CE'} readOnly/></div><div className="ceiling-layer-row"><span>Layer Count</span><button onClick={()=>setLayers(Math.max(1,layers-1))}>−</button><strong>{layers}</strong><button onClick={()=>setLayers(Math.min(4,layers+1))}>+</button></div><div className="ceiling-light-row"><span>Lighting Integration</span><button className={`intelli-switch ${lighting?'is-on':''}`} onClick={()=>setLighting(!lighting)}><span/></button></div></div></> }<div className="ceiling-actions"><button className="intelli-apply" onClick={()=>apply()}>{applied?'Applied':tab==='Materials'?'Apply Material':tab==='Designs'?'Apply Design':'Apply Changes'}</button><button onClick={()=>{setHeight(2.7);setDepth(.15);setBorder(.2);setLayers(2);setLighting(true)}}>{tab==='Materials'?'◈':'Reset'}</button></div></div> }
 function CeilingRange({label,value,min,max,step,suffix,onChange}) { return <label className="ceiling-range"><span>{label}<strong>{Number(value).toFixed(2)} {suffix}</strong></span><input type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))}/></label> }
 
-const WINDOW_LIBRARY = [['Sliding Window','Modern & space-saving'],['Casement Window','Classic & versatile'],['Fixed Window','Panoramic view'],['Bay Window','Adds space & light'],['Awning Window','Top-hinged ventilation'],['Tilt & Turn Window','Flexible & secure'],['French Window','Elegant double panel'],['Floor-to-Ceiling','Maximum natural light'],['Custom Window','Upload / Design']];
-const WINDOW_STYLES = [['Minimal','Clean & modern'],['Modern','Contemporary look'],['Classic','Timeless design'],['Industrial','Bold & edgy'],['Scandinavian','Simple & natural'],['Traditional','Elegant & detailed'],['Frameless','Maximum view'],['Wooden Frame','Warm & natural'],['Aluminium','Durable & sleek']];
-function WindowsContent({ room, setRoomAppearance }) { const addWindow = useStore((state) => state.addWindow); const updateWindow = useStore((state) => state.updateWindow); const storeSelectedWindowId = useStore((state) => state.selectedWindowId); const selectWindow = useStore((state) => state.selectWindow); const selectedWindowId = storeSelectedWindowId; const selectedWindow=useStore((state)=>state.windows.find((item)=>item.id===selectedWindowId)); useEffect(()=>{if(!selectedWindow)return; setWall(selectedWindow.wall); setPosition(selectedWindow.position); setWidth(selectedWindow.width); setHeight(selectedWindow.height); setSill(selectedWindow.sillHeight); setSelected(selectedWindow.type);},[selectedWindowId]); const [tab,setTab]=useState('Library'); const [selected,setSelected]=useState('Sliding Window'); const [style,setStyle]=useState('Minimal'); const [query,setQuery]=useState(''); const [category,setCategory]=useState('All'); const [wall,setWall]=useState('back'); const [position,setPosition]=useState(0.5); const [width,setWidth]=useState(2.4); const [height,setHeight]=useState(1.8); const [sill,setSill]=useState(0); const [panels,setPanels]=useState('2'); const [opening,setOpening]=useState('Sliding'); const [direction,setDirection]=useState('Left → Right'); const [lockable,setLockable]=useState(true); const [uv,setUv]=useState(true); const [sound,setSound]=useState(true); const [frosted,setFrosted]=useState(false); const [applied,setApplied]=useState(false); const apply=(updates={})=>{setRoomAppearance({windowType:selected,windowStyle:style,windowWidth:width,windowHeight:height,windowSill:sill,windowPanels:panels,windowOpening:opening,windowDirection:direction,windowLockable:lockable,windowUv:uv,windowSound:sound,windowFrosted:frosted,...updates});setApplied(true);window.setTimeout(()=>setApplied(false),1400)}; const categoryMatchers={Sliding:'Sliding',Casement:'Casement',Fixed:'Fixed',Bay:'Bay',Specialty:'Awning|Tilt|French|Floor|Custom'}; const cards=(tab==='Styles'?WINDOW_STYLES:WINDOW_LIBRARY).filter(([name])=>name.toLowerCase().includes(query.toLowerCase())&&(tab!=='Library'||category==='All'||new RegExp(categoryMatchers[category],'i').test(name))); return <div className="windows-content"><div className="windows-heading"><h3>Windows</h3><p>{tab==='Properties'?'Adjust dimensions, materials and behavior':tab==='Styles'?'Choose a style that matches your design aesthetic':'Choose from a wide range of window types for your space'}</p></div>{tab==='Library'&&<div className="window-placement-controls"><label><span>Wall</span><select value={wall} onChange={e=>setWall(e.target.value)}><option value="back">Back wall</option><option value="front">Front wall</option><option value="left">Left wall</option><option value="right">Right wall</option></select></label><label className="window-range"><span>Position<strong>{Math.round(position*100)}%</strong></span><input type="range" min="0.12" max="0.88" step="0.01" value={position} onChange={e=>{const value=Number(e.target.value); setPosition(value); if(selectedWindowId) updateWindow(selectedWindowId,{position:value});}}/></label><label className="window-range"><span>Width<strong>{width.toFixed(1)} m</strong></span><input type="range" min="0.6" max="4.8" step="0.1" value={width} onChange={e=>{const value=Number(e.target.value); setWidth(value); if(selectedWindowId) updateWindow(selectedWindowId,{width:value});}}/></label><label className="window-range"><span>Height<strong>{height.toFixed(1)} m</strong></span><input type="range" min="0.6" max="2.8" step="0.1" value={height} onChange={e=>{const value=Number(e.target.value); setHeight(value); if(selectedWindowId) updateWindow(selectedWindowId,{height:value});}}/></label></div>}<div className="intelli-tabs windows-tabs">{['Library','Styles','Properties'].map(item=><button key={item} className={tab===item?'is-active':''} onClick={()=>setTab(item)}>{item}</button>)}</div>{tab!=='Properties'&&<><input className="wall-search" value={query} onChange={e=>setQuery(e.target.value)} placeholder={tab==='Styles'?'Search styles...':'Search windows...'}/><div className="window-filters">{(tab==='Styles'?['All','Modern','Minimal','Classic','Industrial','Scandinavian']:['All','Sliding','Casement','Fixed','Bay','Specialty']).map(item=><button key={item}>{item}</button>)}</div><div className="window-card-grid">{cards.map(([name,caption],i)=><button key={name} className={(tab==='Styles'?style:selected)===name?'is-selected':''} onClick={()=>{tab==='Styles'?setStyle(name):setSelected(name); if (tab === 'Library') { if(selectedWindowId) { updateWindow(selectedWindowId,{type:name}); } else { const id=addWindow({ type: name, style, wall, position, width, height, sillHeight: sill, panels, opening }); selectWindow(id); } }; if (tab === 'Library') addWindow({ type: name, style, wall, position, width, height, sillHeight: sill, panels, opening });apply(tab==='Styles'?{windowStyle:name}:{windowType:name})}}><span className={`window-card-art window-art-${i%9}`}/><strong>{name}</strong><small>{caption}</small>{(tab==='Styles'?style:selected)===name&&<b>✓</b>}</button>)}</div><div className="window-feature"><span className={`window-feature-art ${tab==='Styles'?'window-style-feature':''}`}/><div><strong>{tab==='Styles'?style:selected}</strong><small>{tab==='Styles'?'Clean lines, slim frames and a modern look':'Windows that make your space feel bigger, brighter and more alive.'}</small></div></div></>}{tab==='Properties'&&<><div className="selected-window"><span className="window-property-art"/><div><strong>{selected}</strong><small>Style: {style} | Minimal Black</small><button onClick={()=>setTab('Library')}>Change Window →</button></div></div><div className="window-property-grid"><div><h4>Dimensions</h4><WindowRange label="Width" value={width} min=".5" max="4" step=".1" suffix="m" onChange={setWidth}/><WindowRange label="Height" value={height} min=".5" max="3" step=".1" suffix="m" onChange={setHeight}/><WindowRange label="Sill Height" value={sill} min="0" max="1.5" step=".1" suffix="m" onChange={setSill}/><h4>Frame &amp; Material</h4><label>Frame Material<select><option>Aluminium</option><option>Wood</option><option>uPVC</option></select></label><label>Frame Color<select><option>Black</option><option>White</option><option>Bronze</option></select></label><label>Frame Finish<select><option>Matte</option><option>Gloss</option></select></label><h4>Glass Options</h4><label>Glass Type<select><option>Double Glazed (Insulated)</option><option>Triple Glazed</option><option>Single Glazed</option></select></label><label>Tint<select><option>Clear</option><option>Smoke</option><option>Blue</option></select></label><WindowToggle label="UV Protection" value={uv} onChange={setUv}/><WindowToggle label="Sound Insulation" value={sound} onChange={setSound}/><WindowToggle label="Frosted" value={frosted} onChange={setFrosted}/></div><div><h4>Opening &amp; Behavior</h4><label>Opening Type<select value={opening} onChange={e=>setOpening(e.target.value)}><option>Sliding</option><option>Casement</option><option>Awning</option><option>Fixed</option></select></label><label>Opening Direction<select value={direction} onChange={e=>setDirection(e.target.value)}><option>Left → Right</option><option>Right → Left</option><option>Top → Bottom</option></select></label><label>Number of Panels<select value={panels} onChange={e=>setPanels(e.target.value)}><option>1</option><option>2</option><option>3</option><option>4</option></select></label><WindowToggle label="Lockable" value={lockable} onChange={setLockable}/><h4>Positioning</h4><WindowRange label="Distance from Left Wall" value={1.2} min="0" max="5" step=".1" suffix="m" onChange={()=>{}}/><WindowRange label="Distance from Floor" value={sill} min="0" max="2" step=".1" suffix="m" onChange={setSill}/><WindowToggle label="Show in 2D Plan" value={true} onChange={()=>{}}/><WindowToggle label="Apply to Similar Windows" value={false} onChange={()=>{}}/></div></div></>}<div className="window-actions"><button className="intelli-apply" onClick={()=>apply()}>{applied?'Applied':tab==='Library'?'Add Window to Room →':tab==='Styles'?'Apply Style →':'Apply Changes'}</button><button onClick={()=>{setWidth(2.4);setHeight(1.8);setSill(0);setPanels('2');setLockable(true);setUv(true);setSound(true);setFrosted(false)}}>{tab==='Library'?'◈':'Reset'}</button></div></div> }
-function WindowRange({label,value,min,max,step,suffix,onChange}){return <label className="window-range"><span>{label}<strong>{Number(value).toFixed(2)} {suffix}</strong></span><input type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))}/></label>}
-function WindowToggle({label,value,onChange}){return <div className="window-toggle"><span>{label}</span><button className={`intelli-switch ${value?'is-on':''}`} onClick={()=>onChange(!value)}><span/></button></div>}
+// ── Window Library Data ───────────────────────────────────────────────────────
+// Each entry: [name, description, category, defaultPanels, defaultOpening]
+const WINDOW_CATALOG = [
+  { name: 'Sliding Window',    desc: 'Modern & space-saving',   cat: 'Sliding',   panels: '2', opening: 'Sliding'  },
+  { name: 'Casement Window',   desc: 'Classic & versatile',     cat: 'Casement',  panels: '2', opening: 'Casement' },
+  { name: 'Fixed Window',      desc: 'Panoramic view',          cat: 'Fixed',     panels: '1', opening: 'Fixed'    },
+  { name: 'Bay Window',        desc: 'Adds space & light',      cat: 'Bay',       panels: '3', opening: 'Fixed'    },
+  { name: 'Awning Window',     desc: 'Top-hinged ventilation',  cat: 'Specialty', panels: '1', opening: 'Awning'   },
+  { name: 'Tilt & Turn Window',desc: 'Flexible & secure',       cat: 'Specialty', panels: '1', opening: 'Casement' },
+  { name: 'French Window',     desc: 'Elegant double panel',    cat: 'Specialty', panels: '2', opening: 'Casement' },
+  { name: 'Floor-to-Ceiling',  desc: 'Maximum natural light',   cat: 'Specialty', panels: '3', opening: 'Fixed'    },
+  { name: 'Custom Window',     desc: 'Upload / Design',         cat: 'Specialty', panels: '2', opening: 'Sliding'  },
+];
 
-const LIGHT_PRESETS_UI = [['Natural Daylight','Bright, natural and refreshing','#d9e5dd'],['Warm Evening','Cozy and comfortable','#8d6547'],['Bright Day','Clean and energetic','#cfd8d5'],['Cozy Night','Relaxed and intimate','#3b2f2a'],['Sunset','Warm golden tones','#b76843'],['Studio','Balanced and neutral','#b9b8b0'],['Cinematic','Dramatic and stylish','#262321'],['Custom','Create your own lighting setup','#263039']];
-const LIGHT_FIXTURES_UI = [['Recessed Light','Clean & minimal'],['Pendant Light','Modern & stylish'],['Chandelier','Luxury & elegant'],['Track Light','Flexible & directional'],['Ceiling Light','Simple & functional'],['Wall Sconce','Ambient lighting'],['Floor Lamp','Decorative & warm'],['Table Lamp','Compact & cozy'],['Spotlight','Focused lighting'],['LED Strip','Modern & versatile'],['Linear Light','Sleek & contemporary'],['Smart Light','Color & app control']];
+// SVG thumbnail for each window type — architectural top-level perspective drawings
+function WindowThumbnailSVG({ type, selected }) {
+  const accent = selected ? '#e8aa40' : '#8aaabb';
+  const frame  = selected ? '#c8880a' : '#2e4050';
+  const glass  = 'rgba(180,210,225,0.55)';
+
+  const svgs = {
+    'Sliding Window': (
+      <svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="4" width="112" height="72" rx="2" fill={frame} />
+        <rect x="8" y="8" width="51" height="64" rx="1" fill={glass} />
+        <rect x="61" y="8" width="51" height="64" rx="1" fill={glass} />
+        <rect x="58" y="8" width="4" height="64" fill={frame} />
+        <rect x="34" y="8" width="2" height="64" fill={accent} opacity="0.5" />
+        <rect x="84" y="8" width="2" height="64" fill={accent} opacity="0.5" />
+        <rect x="8" y="38" width="51" height="2" fill={accent} opacity="0.3" />
+        <rect x="61" y="38" width="51" height="2" fill={accent} opacity="0.3" />
+        <circle cx="59" cy="40" r="3" fill={accent} />
+      </svg>
+    ),
+    'Casement Window': (
+      <svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="4" width="112" height="72" rx="2" fill={frame} />
+        <rect x="8" y="8" width="50" height="64" rx="1" fill={glass} />
+        <rect x="62" y="8" width="50" height="64" rx="1" fill={glass} />
+        <rect x="57" y="4" width="6" height="72" fill={frame} />
+        <line x1="8" y1="39" x2="58" y2="39" stroke={accent} strokeWidth="1.5" opacity="0.5" />
+        <line x1="62" y1="39" x2="112" y2="39" stroke={accent} strokeWidth="1.5" opacity="0.5" />
+        {/* Hinge marks */}
+        <rect x="8" y="10" width="3" height="8" fill={accent} opacity="0.7" />
+        <rect x="8" y="62" width="3" height="8" fill={accent} opacity="0.7" />
+        <rect x="109" y="10" width="3" height="8" fill={accent} opacity="0.7" />
+        <rect x="109" y="62" width="3" height="8" fill={accent} opacity="0.7" />
+        {/* Handle */}
+        <rect x="53" y="36" width="4" height="8" rx="2" fill={accent} />
+        <rect x="63" y="36" width="4" height="8" rx="2" fill={accent} />
+      </svg>
+    ),
+    'Fixed Window': (
+      <svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="4" width="112" height="72" rx="2" fill={frame} />
+        <rect x="8" y="8" width="104" height="64" rx="1" fill={glass} />
+        <line x1="8" y1="40" x2="112" y2="40" stroke={accent} strokeWidth="1" opacity="0.3" />
+        <line x1="60" y1="8" x2="60" y2="72" stroke={accent} strokeWidth="1" opacity="0.3" />
+        <rect x="28" y="20" width="64" height="40" rx="2" fill="none" stroke={accent} strokeWidth="1" opacity="0.25" />
+      </svg>
+    ),
+    'Bay Window': (
+      <svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+        {/* Left wing */}
+        <rect x="4" y="8" width="28" height="64" rx="1" fill={frame} transform="skewX(8)" />
+        <rect x="7" y="10" width="22" height="60" fill={glass} transform="skewX(8)" />
+        {/* Center */}
+        <rect x="34" y="4" width="52" height="72" rx="2" fill={frame} />
+        <rect x="38" y="8" width="44" height="64" rx="1" fill={glass} />
+        <line x1="60" y1="8" x2="60" y2="72" stroke={accent} strokeWidth="1.5" opacity="0.4" />
+        {/* Right wing */}
+        <rect x="88" y="8" width="28" height="64" rx="1" fill={frame} transform="skewX(-8)" />
+        <rect x="91" y="10" width="22" height="60" fill={glass} transform="skewX(-8)" />
+      </svg>
+    ),
+    'Awning Window': (
+      <svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="4" width="112" height="72" rx="2" fill={frame} />
+        <rect x="8" y="8" width="104" height="64" rx="1" fill={glass} />
+        {/* Awning top-hinged panel open indicator */}
+        <rect x="8" y="8" width="104" height="36" rx="1" fill={glass} stroke={accent} strokeWidth="1.5" opacity="0.9" />
+        <rect x="10" y="42" width="100" height="28" rx="1" fill={glass} />
+        {/* Hinge top */}
+        <rect x="30" y="5" width="12" height="5" rx="1" fill={accent} opacity="0.8" />
+        <rect x="78" y="5" width="12" height="5" rx="1" fill={accent} opacity="0.8" />
+        {/* Open angle lines */}
+        <line x1="12" y1="8" x2="12" y2="42" stroke={accent} strokeWidth="1" strokeDasharray="3,2" opacity="0.6" />
+        <line x1="108" y1="8" x2="108" y2="42" stroke={accent} strokeWidth="1" strokeDasharray="3,2" opacity="0.6" />
+      </svg>
+    ),
+    'Tilt & Turn Window': (
+      <svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="4" width="112" height="72" rx="2" fill={frame} />
+        <rect x="8" y="8" width="104" height="64" rx="1" fill={glass} />
+        {/* Diagonal tilt lines */}
+        <line x1="8" y1="72" x2="112" y2="8" stroke={accent} strokeWidth="2" opacity="0.5" />
+        <line x1="8" y1="8" x2="112" y2="72" stroke={accent} strokeWidth="1" opacity="0.25" />
+        {/* Handle */}
+        <rect x="109" y="34" width="5" height="12" rx="2.5" fill={accent} />
+        {/* Hinge marks */}
+        <rect x="5" y="10" width="4" height="7" rx="1" fill={accent} opacity="0.7" />
+        <rect x="5" y="63" width="4" height="7" rx="1" fill={accent} opacity="0.7" />
+      </svg>
+    ),
+    'French Window': (
+      <svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="4" width="112" height="72" rx="2" fill={frame} />
+        <rect x="8" y="8" width="50" height="64" rx="1" fill={glass} />
+        <rect x="62" y="8" width="50" height="64" rx="1" fill={glass} />
+        <rect x="57" y="4" width="6" height="72" fill={frame} />
+        {/* Decorative cross bars */}
+        <line x1="8" y1="27" x2="58" y2="27" stroke={accent} strokeWidth="1.2" opacity="0.5" />
+        <line x1="62" y1="27" x2="112" y2="27" stroke={accent} strokeWidth="1.2" opacity="0.5" />
+        <line x1="8" y1="52" x2="58" y2="52" stroke={accent} strokeWidth="1.2" opacity="0.5" />
+        <line x1="62" y1="52" x2="112" y2="52" stroke={accent} strokeWidth="1.2" opacity="0.5" />
+        {/* Knobs */}
+        <circle cx="55" cy="40" r="3" fill={accent} />
+        <circle cx="65" cy="40" r="3" fill={accent} />
+      </svg>
+    ),
+    'Floor-to-Ceiling': (
+      <svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="116" height="76" rx="1" fill={frame} />
+        <rect x="5" y="2" width="36" height="76" fill={glass} opacity="0.9" />
+        <rect x="43" y="2" width="34" height="76" fill={glass} />
+        <rect x="79" y="2" width="36" height="76" fill={glass} opacity="0.9" />
+        <rect x="41" y="2" width="2" height="76" fill={frame} />
+        <rect x="77" y="2" width="2" height="76" fill={frame} />
+        {/* Floor indicator */}
+        <rect x="2" y="72" width="116" height="6" fill={frame} opacity="0.8" />
+        {/* Ceiling indicator */}
+        <rect x="2" y="2" width="116" height="4" fill={frame} opacity="0.8" />
+        <line x1="23" y1="2" x2="23" y2="78" stroke={accent} strokeWidth="0.8" opacity="0.25" />
+        <line x1="97" y1="2" x2="97" y2="78" stroke={accent} strokeWidth="0.8" opacity="0.25" />
+      </svg>
+    ),
+    'Custom Window': (
+      <svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="4" width="112" height="72" rx="3" fill={frame} strokeDasharray="6,3" stroke={accent} strokeWidth="2" />
+        <rect x="8" y="8" width="104" height="64" rx="2" fill={glass} />
+        {/* Plus / Design icon */}
+        <line x1="60" y1="25" x2="60" y2="55" stroke={accent} strokeWidth="3" strokeLinecap="round" />
+        <line x1="45" y1="40" x2="75" y2="40" stroke={accent} strokeWidth="3" strokeLinecap="round" />
+        <text x="60" y="70" textAnchor="middle" fontSize="8" fill={accent} opacity="0.7" fontFamily="Inter, sans-serif">CUSTOM</text>
+      </svg>
+    ),
+  };
+
+  return (
+    <div style={{
+      width: '100%', height: 76, borderRadius: '6px 6px 0 0',
+      overflow: 'hidden', flexShrink: 0,
+      background: selected ? 'rgba(40,32,18,0.95)' : 'rgba(18,24,32,0.95)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 6,
+    }}>
+      {svgs[type] || svgs['Fixed Window']}
+    </div>
+  );
+}
+
+const WINDOW_CATEGORIES = ['All', 'Sliding', 'Casement', 'Fixed', 'Bay', 'Specialty'];
+
+function WindowRange({ label, value, min, max, step, suffix, onChange }) {
+  return (
+    <label className="window-range">
+      <span>{label}<strong>{Number(value).toFixed(suffix === 'm' ? 1 : 0)}{suffix ? ` ${suffix}` : ''}</strong></span>
+      <input type="range" min={min} max={max} step={step} value={value} onChange={e => onChange(Number(e.target.value))} />
+    </label>
+  );
+}
+
+function WindowToggle({ label, value, onChange }) {
+  return (
+    <label className="window-toggle-row">
+      <span>{label}</span>
+      <button
+        className={`window-toggle-btn ${value ? 'on' : 'off'}`}
+        onClick={() => onChange(!value)}
+      >
+        <span className="window-toggle-thumb" />
+      </button>
+    </label>
+  );
+}
+
+function WindowsContent({ room, setRoomAppearance }) {
+  const addWindow    = useStore((s) => s.addWindow);
+  const updateWindow = useStore((s) => s.updateWindow);
+  const deleteWindow = useStore((s) => s.deleteWindow);
+  const windows      = useStore((s) => s.windows);
+  const selectedWindowId = useStore((s) => s.selectedWindowId);
+  const selectWindow = useStore((s) => s.selectWindow);
+  const selectedWindow = windows.find((w) => w.id === selectedWindowId);
+
+  const [tab, setTab]           = useState('Library');
+  const [query, setQuery]       = useState('');
+  const [category, setCategory] = useState('All');
+
+  // Placement controls (synced with selected window)
+  const [wall,     setWall]     = useState('back');
+  const [position, setPosition] = useState(0.5);
+  const [width,    setWidth]    = useState(2.4);
+  const [height,   setHeight]   = useState(1.6);
+  const [sill,     setSill]     = useState(0.7);
+  const [panels,   setPanels]   = useState('2');
+  const [opening,  setOpening]  = useState('Sliding');
+
+  // Properties tab extras
+  const [frameMat,  setFrameMat]  = useState('Aluminium');
+  const [frameCol,  setFrameCol]  = useState('Black');
+  const [glassType, setGlassType] = useState('Double Glazed');
+  const [tint,      setTint]      = useState('Clear');
+  const [frosted,   setFrosted]   = useState(false);
+  const [uv,        setUv]        = useState(true);
+  const [sound,     setSound]     = useState(true);
+
+  // Sync form with selected window
+  useEffect(() => {
+    if (!selectedWindow) return;
+    setWall(selectedWindow.wall || 'back');
+    setPosition(selectedWindow.position ?? 0.5);
+    setWidth(selectedWindow.width ?? 2.4);
+    setHeight(selectedWindow.height ?? 1.6);
+    setSill(selectedWindow.sillHeight ?? 0.7);
+    setPanels(selectedWindow.panels || '2');
+    setOpening(selectedWindow.opening || 'Sliding');
+  }, [selectedWindowId]);
+
+  // Live-update selected window when placement controls change
+  const updateLive = (updates) => {
+    if (selectedWindowId) updateWindow(selectedWindowId, updates);
+  };
+
+  const filtered = WINDOW_CATALOG.filter((w) => {
+    const matchQuery = w.name.toLowerCase().includes(query.toLowerCase())
+                    || w.desc.toLowerCase().includes(query.toLowerCase());
+    const matchCat   = category === 'All' || w.cat === category;
+    return matchQuery && matchCat;
+  });
+
+  const handleAddWindow = (catalogEntry) => {
+    const windowId = addWindow({
+      type: catalogEntry.name,
+      wall, position, width, height,
+      sillHeight: sill,
+      panels: catalogEntry.panels,
+      opening: catalogEntry.opening,
+    });
+    selectWindow(windowId);
+    setPanels(catalogEntry.panels);
+    setOpening(catalogEntry.opening);
+  };
+
+  const handleSelectType = (catalogEntry) => {
+    if (selectedWindowId) {
+      // Update existing window type
+      updateWindow(selectedWindowId, {
+        type: catalogEntry.name,
+        panels: catalogEntry.panels,
+        opening: catalogEntry.opening,
+      });
+      setPanels(catalogEntry.panels);
+      setOpening(catalogEntry.opening);
+    }
+  };
+
+  return (
+    <div className="windows-content">
+      {/* Header */}
+      <div className="windows-heading">
+        <h3>Windows</h3>
+        <p>
+          {tab === 'Properties'
+            ? 'Adjust dimensions, frame material and glass options'
+            : 'Choose a window type and place it on any wall'}
+        </p>
+      </div>
+
+      {/* Placement bar */}
+      {tab === 'Library' && (
+        <div className="window-placement-controls">
+          <label>
+            <span>Wall</span>
+            <select value={wall} onChange={e => { setWall(e.target.value); updateLive({ wall: e.target.value }); }}>
+              <option value="back">Back wall</option>
+              <option value="front">Front wall</option>
+              <option value="left">Left wall</option>
+              <option value="right">Right wall</option>
+            </select>
+          </label>
+          <label className="window-range">
+            <span>Position<strong>{Math.round(position * 100)}%</strong></span>
+            <input type="range" min="0.12" max="0.88" step="0.01" value={position}
+              onChange={e => { const v = Number(e.target.value); setPosition(v); updateLive({ position: v }); }} />
+          </label>
+          <label className="window-range">
+            <span>Width<strong>{width.toFixed(1)} m</strong></span>
+            <input type="range" min="0.6" max="4.8" step="0.1" value={width}
+              onChange={e => { const v = Number(e.target.value); setWidth(v); updateLive({ width: v }); }} />
+          </label>
+          <label className="window-range">
+            <span>Height<strong>{height.toFixed(1)} m</strong></span>
+            <input type="range" min="0.6" max="2.8" step="0.1" value={height}
+              onChange={e => { const v = Number(e.target.value); setHeight(v); updateLive({ height: v }); }} />
+          </label>
+        </div>
+      )}
+
+      {/* Tabs */}
+      <div className="intelli-tabs windows-tabs">
+        {['Library', 'Properties'].map(t => (
+          <button key={t} className={tab === t ? 'is-active' : ''} onClick={() => setTab(t)}>{t}</button>
+        ))}
+      </div>
+
+      {/* ── LIBRARY TAB ── */}
+      {tab === 'Library' && (
+        <>
+          <input
+            className="wall-search"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search window types..."
+          />
+          <div className="window-filters">
+            {WINDOW_CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                className={category === cat ? 'is-active' : ''}
+                onClick={() => setCategory(cat)}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Window cards */}
+          <div className="window-card-grid-v2">
+            {filtered.map((entry) => {
+              const isSelected = selectedWindow?.type === entry.name;
+              return (
+                <div key={entry.name} className={`window-card-v2 ${isSelected ? 'is-selected' : ''}`}>
+                  {/* SVG thumbnail */}
+                  <WindowThumbnailSVG type={entry.name} selected={isSelected} />
+                  <div className="window-card-v2-body">
+                    <strong>{entry.name}</strong>
+                    <small>{entry.desc}</small>
+                  </div>
+                  <div className="window-card-v2-actions">
+                    {selectedWindowId && (
+                      <button className="wc-btn wc-apply" onClick={() => handleSelectType(entry)} title="Apply type to selected window">
+                        Apply
+                      </button>
+                    )}
+                    <button className="wc-btn wc-add" onClick={() => handleAddWindow(entry)} title="Add new window">
+                      + Add
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Placed Windows list */}
+          {windows.length > 0 && (
+            <div className="placed-windows-list">
+              <h4>Placed Windows ({windows.length})</h4>
+              {windows.map((win, idx) => (
+                <div
+                  key={win.id}
+                  className={`placed-window-row ${win.id === selectedWindowId ? 'is-selected' : ''}`}
+                  onClick={() => selectWindow(win.id)}
+                >
+                  <span className="placed-win-icon">
+                    <Box size={13} />
+                  </span>
+                  <span className="placed-win-label">
+                    <strong>{win.type || 'Window'}</strong>
+                    <small>{win.wall} wall · {(win.width ?? 0).toFixed(1)}×{(win.height ?? 0).toFixed(1)} m</small>
+                  </span>
+                  <button
+                    className="placed-win-delete"
+                    onClick={e => { e.stopPropagation(); deleteWindow(win.id); }}
+                    title="Remove"
+                  >✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {windows.length === 0 && (
+            <div className="windows-empty-hint">
+              <Box size={28} strokeWidth={1.2} style={{ opacity: 0.3 }} />
+              <span>Click "+ Add" on a window type to place it on the selected wall.</span>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── PROPERTIES TAB ── */}
+      {tab === 'Properties' && (
+        <>
+          {selectedWindow ? (
+            <>
+              <div className="selected-window">
+                <div style={{ width: 120, flexShrink: 0 }}>
+                  <WindowThumbnailSVG type={selectedWindow.type} selected={true} />
+                </div>
+                <div>
+                  <strong>{selectedWindow.type}</strong>
+                  <small>{selectedWindow.wall} wall · {(selectedWindow.width ?? 0).toFixed(1)} × {(selectedWindow.height ?? 0).toFixed(1)} m</small>
+                  <button onClick={() => setTab('Library')}>Change Type →</button>
+                </div>
+              </div>
+
+              <div className="window-property-grid">
+                <div>
+                  <h4>Dimensions</h4>
+                  <WindowRange label="Width"       value={width}    min="0.5" max="5"   step="0.1" suffix="m" onChange={v => { setWidth(v);    updateWindow(selectedWindowId, { width: v }); }} />
+                  <WindowRange label="Height"      value={height}   min="0.5" max="3"   step="0.1" suffix="m" onChange={v => { setHeight(v);   updateWindow(selectedWindowId, { height: v }); }} />
+                  <WindowRange label="Sill Height" value={sill}     min="0"   max="1.5" step="0.1" suffix="m" onChange={v => { setSill(v);     updateWindow(selectedWindowId, { sillHeight: v }); }} />
+
+                  <h4>Position</h4>
+                  <label>
+                    Wall
+                    <select value={wall} onChange={e => { setWall(e.target.value); updateWindow(selectedWindowId, { wall: e.target.value }); }}>
+                      <option value="back">Back wall</option>
+                      <option value="front">Front wall</option>
+                      <option value="left">Left wall</option>
+                      <option value="right">Right wall</option>
+                    </select>
+                  </label>
+                  <WindowRange label="Position" value={position} min="0.12" max="0.88" step="0.01" suffix="%" onChange={v => { setPosition(v); updateWindow(selectedWindowId, { position: v }); }} />
+                </div>
+
+                <div>
+                  <h4>Frame & Glass</h4>
+                  <label>Frame Material
+                    <select value={frameMat} onChange={e => setFrameMat(e.target.value)}>
+                      <option>Aluminium</option>
+                      <option>Wood</option>
+                      <option>uPVC</option>
+                      <option>Steel</option>
+                    </select>
+                  </label>
+                  <label>Frame Color
+                    <select value={frameCol} onChange={e => setFrameCol(e.target.value)}>
+                      <option>Black</option>
+                      <option>White</option>
+                      <option>Bronze</option>
+                      <option>Anthracite</option>
+                    </select>
+                  </label>
+                  <label>Glass Type
+                    <select value={glassType} onChange={e => setGlassType(e.target.value)}>
+                      <option>Double Glazed</option>
+                      <option>Triple Glazed</option>
+                      <option>Single Glazed</option>
+                      <option>Laminated</option>
+                    </select>
+                  </label>
+                  <label>Tint
+                    <select value={tint} onChange={e => setTint(e.target.value)}>
+                      <option>Clear</option>
+                      <option>Smoke</option>
+                      <option>Blue</option>
+                      <option>Bronze</option>
+                    </select>
+                  </label>
+                  <WindowToggle label="Frosted Glass"     value={frosted} onChange={setFrosted} />
+                  <WindowToggle label="UV Protection"     value={uv}      onChange={setUv}      />
+                  <WindowToggle label="Sound Insulation"  value={sound}   onChange={setSound}   />
+
+                  <h4>Opening</h4>
+                  <label>Opening Type
+                    <select value={opening} onChange={e => { setOpening(e.target.value); updateWindow(selectedWindowId, { opening: e.target.value }); }}>
+                      <option>Sliding</option>
+                      <option>Casement</option>
+                      <option>Awning</option>
+                      <option>Fixed</option>
+                    </select>
+                  </label>
+                  <label>Panels
+                    <select value={panels} onChange={e => { setPanels(e.target.value); updateWindow(selectedWindowId, { panels: e.target.value }); }}>
+                      <option>1</option>
+                      <option>2</option>
+                      <option>3</option>
+                      <option>4</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+
+              <div className="window-prop-actions">
+                <button className="wc-btn wc-delete" onClick={() => { deleteWindow(selectedWindowId); setTab('Library'); }}>
+                  Remove Window
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="windows-empty-hint">
+              <Box size={28} strokeWidth={1.2} style={{ opacity: 0.3 }} />
+              <span>Select a window in the 3D view or the Library to edit its properties.</span>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+
+
 const EMPTY_ENVIRONMENT_SETTINGS = { background: '#121313', ambientIntensity: .58, sunlightIntensity: 1.55, sunlightColor: '#fff8ea', azimuth: 218, elevation: 62, exposure: 1.08, shadows: true };
 const ENVIRONMENT_PRESETS = {
   'Bright Day': { background: '#b9d2e5', ambientIntensity: .9, sunlightIntensity: 2.1, sunlightColor: '#fffdf3', azimuth: 205, elevation: 68, exposure: 1.12, shadows: true },
@@ -174,7 +680,7 @@ const ENVIRONMENT_PRESETS = {
 function EnvironmentContent({ setRoomAppearance }) {
   const environmentPreset=useStore((s)=>s.environmentPreset||'Natural Daylight'); const settings=useStore((s)=>s.environmentSettings||EMPTY_ENVIRONMENT_SETTINGS); const setEnvironmentPreset=useStore((s)=>s.setEnvironmentPreset); const setEnvironmentSettings=useStore((s)=>s.setEnvironmentSettings); const [tab,setTab]=useState('Presets');
   const applyPreset=(name)=>{const next=ENVIRONMENT_PRESETS[name]; if(!next)return; setEnvironmentPreset(name,next); setRoomAppearance({environmentPreset:name,environmentBackground:next.background});}; const update=(updates)=>{setEnvironmentSettings(updates); setEnvironmentPreset('Custom'); setRoomAppearance({environmentPreset:'Custom',environmentBackground:updates.background||settings.background});};
-  return <div className="environment-content"><div className="intelli-section-title"><div><h3>Environment</h3><p>Set the atmosphere, sky, and sunlight for your room</p></div><Sparkles size={18}/></div><div className="intelli-tabs">{['Presets','Atmosphere','Sunlight'].map((item)=><button key={item} className={tab===item?'is-active':''} onClick={()=>setTab(item)}>{item}</button>)}</div>{tab==='Presets'&&<><div className="environment-preset-grid">{Object.keys(ENVIRONMENT_PRESETS).map((name)=><button key={name} className={`environment-preset-card ${environmentPreset===name?'is-selected':''}`} onClick={()=>applyPreset(name)}><span style={{background:ENVIRONMENT_PRESETS[name].background}}/><strong>{name}</strong><small>{environmentPreset===name?'Active environment':'Apply environment'}</small></button>)}</div><button className="intelli-apply" onClick={()=>applyPreset(environmentPreset==='Custom'?'Natural Daylight':environmentPreset)}>Apply Environment</button></>}{tab==='Atmosphere'&&<div className="environment-properties"><label>Background color<input type="color" value={settings.background||'#121313'} onChange={(e)=>update({background:e.target.value})}/></label><label>Ambient illumination<strong>{Number(settings.ambientIntensity||0).toFixed(2)}</strong><input type="range" min="0" max="1.2" step=".01" value={settings.ambientIntensity||0} onChange={(e)=>update({ambientIntensity:Number(e.target.value)})}/></label><label>Exposure<strong>{Number(settings.exposure||1).toFixed(2)}</strong><input type="range" min=".7" max="1.35" step=".01" value={settings.exposure||1} onChange={(e)=>update({exposure:Number(e.target.value)})}/></label><button className="intelli-secondary" onClick={()=>applyPreset('Natural Daylight')}>Restore default environment</button></div>}{tab==='Sunlight'&&<div className="environment-properties"><label>Sunlight intensity<strong>{Number(settings.sunlightIntensity||0).toFixed(2)}</strong><input type="range" min="0" max="2.8" step=".01" value={settings.sunlightIntensity||0} onChange={(e)=>update({sunlightIntensity:Number(e.target.value)})}/></label><label>Sunlight color<input type="color" value={settings.sunlightColor||'#fff8ea'} onChange={(e)=>update({sunlightColor:e.target.value})}/></label><label>Azimuth<strong>{Math.round(settings.azimuth||0)}°</strong><input type="range" min="0" max="360" value={settings.azimuth||0} onChange={(e)=>update({azimuth:Number(e.target.value)})}/></label><label>Elevation<strong>{Math.round(settings.elevation||0)}°</strong><input type="range" min="5" max="85" value={settings.elevation||0} onChange={(e)=>update({elevation:Number(e.target.value)})}/></label><div className="light-toggle"><span>Shadows</span><button className={`intelli-switch ${settings.shadows?'is-on':''}`} aria-pressed={settings.shadows} onClick={()=>update({shadows:!settings.shadows})}><span/></button></div></div>}</div>;
+  return <div className="environment-content"><div className="intelli-section-title"><div><h3>Environment</h3><p>Set the atmosphere, sky, and sunlight for your room</p></div><Sparkles size={18}/></div><div className="intelli-tabs">{['Presets','Atmosphere','Sunlight'].map((item)=><button key={item} className={tab===item?'is-active':''} onClick={()=>setTab(item)}>{item}</button>)}</div>{tab==='Presets'&&<><div className="environment-preset-grid">{Object.keys(ENVIRONMENT_PRESETS).map((name)=><button key={name} className={`environment-preset-card ${environmentPreset===name?'is-selected':''}`} onClick={()=>applyPreset(name)}><span style={{background:ENVIRONMENT_PRESETS[name].background}}/><strong>{name}</strong><small>{environmentPreset===name?'Active environment':'Apply environment'}</small></button>)}</div><button className="intelli-apply" onClick={()=>applyPreset(environmentPreset==='Custom'?'Natural Daylight':environmentPreset)}>Apply Environment</button></>}{tab==='Atmosphere'&&<div className="environment-properties"><label>Background color<input type="color" value={settings.background||'#121313'} onChange={(e)=>update({background:e.target.value})}/></label><label>Ambient illumination<strong>{Number(settings.ambientIntensity||0).toFixed(2)}</strong><input type="range" min="0" max="1.2" step=".01" value={settings.ambientIntensity||0} onChange={(e)=>update({ambientIntensity:Number(e.target.value)})}/></label><label>Exposure<strong>{Number(settings.exposure||1).toFixed(2)}</strong><input type="range" min=".7" max="1.35" step=".01" value={settings.exposure||1} onChange={(e)=>update({exposure:Number(e.target.value)})}/></label><button className="intelli-secondary" onClick={()=>applyPreset('Natural Daylight')}>Restore default environment</button></div>}{tab==='Sunlight'&&<div className="environment-properties"><label>Sunlight intensity<strong>{Number(settings.sunlightIntensity||0).toFixed(2)}</strong><input type="range" min="0" max="2.8" step=".01" value={settings.sunlightIntensity||0} onChange={(e)=>update({sunlightIntensity:Number(e.target.value)})}/></label><label>Sunlight color<input type="color" value={settings.sunlightColor||'#fff8ea'} onChange={(e)=>update({sunlightColor:e.target.value})}/></label><label>Azimuth<strong>{Math.round(settings.azimuth||0)}┬░</strong><input type="range" min="0" max="360" value={settings.azimuth||0} onChange={(e)=>update({azimuth:Number(e.target.value)})}/></label><label>Elevation<strong>{Math.round(settings.elevation||0)}┬░</strong><input type="range" min="5" max="85" value={settings.elevation||0} onChange={(e)=>update({elevation:Number(e.target.value)})}/></label><div className="light-toggle"><span>Shadows</span><button className={`intelli-switch ${settings.shadows?'is-on':''}`} aria-pressed={settings.shadows} onClick={()=>update({shadows:!settings.shadows})}><span/></button></div></div>}</div>;
 }
 
 function EnvironmentControls() {
@@ -199,15 +705,40 @@ const FUNCTIONAL_LIGHT_PRESETS={
   Studio:{key:'studio',ambientIntensity:.65,mainIntensity:1.35,color:'#f4f1e8',shadows:true},
   Cinematic:{key:'night',ambientIntensity:.12,mainIntensity:.7,color:'#7886c7',shadows:true},
 };
+const LIGHT_PRESETS_UI = [
+  ['Natural Daylight', 'Bright, natural and refreshing', '#d9e5dd'],
+  ['Warm Evening', 'Cozy and comfortable', '#8d6547'],
+  ['Bright Day', 'Clean and energetic', '#cfd8d5'],
+  ['Cozy Night', 'Relaxed and intimate', '#3b2f2a'],
+  ['Sunset', 'Warm golden tones', '#b76843'],
+  ['Studio', 'Balanced and neutral', '#b9b8b0'],
+  ['Cinematic', 'Dramatic and stylish', '#262321'],
+  ['Custom', 'Create your own lighting setup', '#263039']
+];
+
+const LIGHT_FIXTURES_UI = [
+  ['Recessed Light', 'Clean & minimal'],
+  ['Pendant Light', 'Modern & stylish'],
+  ['Chandelier', 'Luxury & elegant'],
+  ['Track Light', 'Flexible & directional'],
+  ['Ceiling Light', 'Simple & functional'],
+  ['Wall Sconce', 'Ambient lighting'],
+  ['Floor Lamp', 'Decorative & warm'],
+  ['Table Lamp', 'Compact & cozy'],
+  ['Spotlight', 'Focused lighting'],
+  ['LED Strip', 'Modern & versatile'],
+  ['Linear Light', 'Sleek & contemporary'],
+  ['Smart Light', 'Color & app control']
+];
 function LightingContent({ setRoomAppearance }) {
-  const setLightPreset=useStore((s)=>s.setLightPreset); const setLightingSettings=useStore((s)=>s.setLightingSettings); const fixtureState=useStore((s)=>s.lightingFixtures); const fixtures=fixtureState||EMPTY_LIGHTING_FIXTURES; const addFixture=useStore((s)=>s.addLightingFixture); const updateFixture=useStore((s)=>s.updateLightingFixture); const removeFixture=useStore((s)=>s.removeLightingFixture);
+  const setLightPreset=useStore((s)=>s.setLightPreset); const setLightingSettings=useStore((s)=>s.setLightingSettings); const fixtureState=useStore((s)=>s.lightingFixtures); const fixtures=fixtureState||EMPTY_LIGHTING_FIXTURES; const addFixture=useStore((s)=>s.addLightingFixture); const updateFixture=useStore((s)=>s.updateLightingFixture); const removeFixture=useStore((s)=>s.removeLightingFixture); const selectLightingFixture=useStore((s)=>s.selectLightingFixture);
   const customPresets=useStore((s)=>s.customLightingPresets||EMPTY_LIGHTING_FIXTURES); const saveCustomPreset=useStore((s)=>s.saveCustomLightingPreset); const deleteCustomPreset=useStore((s)=>s.deleteCustomLightingPreset); const applyCustomPreset=useStore((s)=>s.applyCustomLightingPreset); const selectedFixtureId=useStore((s)=>s.selectedLightingFixtureId); const selectedFixture=fixtures.find((item)=>item.id===selectedFixtureId); const lightingSettings=useStore((s)=>s.lightingSettings||{}); const [tab,setTab]=useState('Presets'); const [preset,setPreset]=useState('Natural Daylight'); const [intensity,setIntensity]=useState(Math.round((lightingSettings.mainIntensity||1.55)*45)); const [temperature,setTemperature]=useState(3000); const [shadows,setShadows]=useState(lightingSettings.shadows!==false); const [customName,setCustomName]=useState('');
   const applyPreset=(name=preset)=>{const config=FUNCTIONAL_LIGHT_PRESETS[name]||FUNCTIONAL_LIGHT_PRESETS['Natural Daylight']; setPreset(name); setLightPreset(config.key); setLightingSettings({ambientIntensity:config.ambientIntensity,mainIntensity:config.mainIntensity,color:config.color,shadows:config.shadows}); setShadows(config.shadows); setRoomAppearance({lightPreset:config.key,lightingPreset:name});};
   const setProperty=(updates)=>{setLightingSettings(updates); setLightPreset('custom'); setRoomAppearance({lightPreset:'custom',lightingPreset:'Custom'});};
-  return <div className="lighting-content"><div className="intelli-section-title"><div><h3>Lighting</h3><p>Shape the atmosphere of your room</p></div></div><div className="intelli-tabs">{['Presets','Fixtures','Properties'].map((item)=><button key={item} className={tab===item?'is-active':''} onClick={()=>setTab(item)}>{item}</button>)}</div>{tab==='Presets'&&<><div className="lighting-preset-grid">{LIGHT_PRESETS_UI.map(([name,description,color])=><button key={name} className={`lighting-preset-card ${preset===name?'is-selected':''}`} onClick={()=>{setPreset(name); if(name==='Custom'){setLightPreset('custom');setLightingSettings({...lightingSettings});setRoomAppearance({lightPreset:'custom',lightingPreset:'Custom'});}}}><span style={{background:color}}/><strong>{name}</strong><small>{description}</small></button>)}</div><button className="intelli-apply" onClick={()=>applyPreset()}>Apply Preset</button>{preset==='Custom'&&<div className="custom-preset-save"><input value={customName} onChange={(e)=>setCustomName(e.target.value)} placeholder="Preset name" aria-label="Custom preset name"/><button onClick={()=>{const id=saveCustomPreset(customName);if(id)setCustomName('')}}>Save as Custom Preset</button></div>}{customPresets.map((item)=><div className="saved-lighting-preset" key={item.id}><button onClick={()=>{applyCustomPreset(item.id);setPreset(item.name)}}>{item.name}</button><button aria-label={`Delete ${item.name}`} onClick={()=>deleteCustomPreset(item.id)}>×</button></div>)}</>}{tab==='Fixtures'&&<><div className="lighting-fixture-grid">{LIGHT_FIXTURES_UI.map(([name,description])=><button key={name} className={`lighting-fixture-card ${selectedFixture?.type===name?'is-selected':''}`} onClick={()=>{addFixture(name)}}><strong>{name}</strong><small>{description}</small></button>)}</div>{selectedFixture&&<div className="lighting-fixture-editor"><strong>{selectedFixture.type}</strong><label>Intensity<input type="range" min="0" max="3" step=".05" value={selectedFixture.intensity} onChange={(e)=>updateFixture(selectedFixture.id,{intensity:Number(e.target.value)})}/></label><label>Color<input type="color" value={selectedFixture.color} onChange={(e)=>updateFixture(selectedFixture.id,{color:e.target.value})}/></label><button onClick={()=>{removeFixture(selectedFixture.id);setSelectedFixtureId(null)}}>Delete fixture</button></div>}</>}{tab==='Properties'&&<div className="lighting-properties"><label>Intensity<input type="range" min="10" max="100" value={intensity} onChange={(e)=>{const value=Number(e.target.value);setIntensity(value);setProperty({mainIntensity:value/45,ambientIntensity:value/100})}}/></label><label>Temperature<input type="range" min="2200" max="6500" step="100" value={temperature} onChange={(e)=>{const value=Number(e.target.value);setTemperature(value);setProperty({color:value<3500?'#ffc58f':'#fff8ea'})}}/></label><label className="light-toggle">Shadows <button className={`intelli-switch ${shadows?'is-on':''}`} onClick={()=>{setShadows(!shadows);setProperty({shadows:!shadows})}}><span/></button></label></div>}</div>;
+  return <div className="lighting-content"><div className="intelli-section-title"><div><h3>Lighting</h3><p>Shape the atmosphere of your room</p></div></div><div className="intelli-tabs">{['Presets','Fixtures','Properties'].map((item)=><button key={item} className={tab===item?'is-active':''} onClick={()=>setTab(item)}>{item}</button>)}</div>{tab==='Presets'&&<><div className="lighting-preset-grid">{LIGHT_PRESETS_UI.map(([name,description,color])=><button key={name} className={`lighting-preset-card ${preset===name?'is-selected':''}`} onClick={()=>{setPreset(name); if(name==='Custom'){setLightPreset('custom');setLightingSettings({...lightingSettings});setRoomAppearance({lightPreset:'custom',lightingPreset:'Custom'});}}}><span style={{background:color}}/><strong>{name}</strong><small>{description}</small></button>)}</div><button className="intelli-apply" onClick={()=>applyPreset()}>Apply Preset</button>{preset==='Custom'&&<div className="custom-preset-save"><input value={customName} onChange={(e)=>setCustomName(e.target.value)} placeholder="Preset name" aria-label="Custom preset name"/><button onClick={()=>{const id=saveCustomPreset(customName);if(id)setCustomName('')}}>Save as Custom Preset</button></div>}{customPresets.map((item)=><div className="saved-lighting-preset" key={item.id}><button onClick={()=>{applyCustomPreset(item.id);setPreset(item.name)}}>{item.name}</button><button aria-label={`Delete ${item.name}`} onClick={()=>deleteCustomPreset(item.id)}>×</button></div>)}</>}{tab==='Fixtures'&&<><div className="lighting-fixture-grid">{LIGHT_FIXTURES_UI.map(([name,description])=><button key={name} className={`lighting-fixture-card ${selectedFixture?.type===name?'is-selected':''}`} onClick={()=>{addFixture(name)}}><strong>{name}</strong><small>{description}</small></button>)}</div>{selectedFixture&&<div className="lighting-fixture-editor"><strong>{selectedFixture.type}</strong><label>Intensity<input type="range" min="0" max="3" step=".05" value={selectedFixture.intensity} onChange={(e)=>updateFixture(selectedFixture.id,{intensity:Number(e.target.value)})}/></label><label>Color<input type="color" value={selectedFixture.color} onChange={(e)=>updateFixture(selectedFixture.id,{color:e.target.value})}/></label><button onClick={()=>{removeFixture(selectedFixture.id);selectLightingFixture(null)}}>Delete fixture</button></div>}</>}{tab==='Properties'&&<div className="lighting-properties"><label>Intensity<input type="range" min="10" max="100" value={intensity} onChange={(e)=>{const value=Number(e.target.value);setIntensity(value);setProperty({mainIntensity:value/45,ambientIntensity:value/100})}}/></label><label>Temperature<input type="range" min="2200" max="6500" step="100" value={temperature} onChange={(e)=>{const value=Number(e.target.value);setTemperature(value);setProperty({color:value<3500?'#ffc58f':'#fff8ea'})}}/></label><label className="light-toggle">Shadows <button className={`intelli-switch ${shadows?'is-on':''}`} onClick={()=>{setShadows(!shadows);setProperty({shadows:!shadows})}}><span/></button></label></div>}</div>;
 }
 
-function LegacyLightingContent({ setRoomAppearance }) { const setLightingSettings=useStore((s)=>s.setLightingSettings); const [tab,setTab]=useState('Presets'); const [preset,setPreset]=useState('Warm Evening'); const [fixture,setFixture]=useState('Pendant Light'); const [query,setQuery]=useState(''); const [intensity,setIntensity]=useState(70); const [temperature,setTemperature]=useState(3000); const [height,setHeight]=useState(.75); const [range,setRange]=useState(5); const [shadows,setShadows]=useState(true); const [affectGlobal,setAffectGlobal]=useState(true); const [visible,setVisible]=useState(true); const [dimmable,setDimmable]=useState(true); const [applied,setApplied]=useState(false); const presetKeyByName={'Natural Daylight':'midday','Warm Evening':'evening','Bright Day':'midday','Cozy Night':'night','Sunset':'goldenHour','Studio':'studio','Cinematic':'night','Custom':'custom'}; const apply=(updates={})=>{const nextPreset=updates.presetName || preset; const key=presetKeyByName[nextPreset] || 'midday'; setPreset(nextPreset); setLightingSettings({ ambientIntensity: Math.max(0.1, intensity / 100), mainIntensity: Math.max(0.2, intensity / 45), color: key === 'night' ? '#9aa9d8' : temperature < 3500 ? '#f6bd82' : '#fff8ea', shadows }); setRoomAppearance({lightPreset:key,lightingPreset:nextPreset,lightingFixture:fixture,lightingIntensity:intensity,lightingTemperature:temperature,lightingHeight:height,lightingRange:range,lightingShadows:shadows,lightingAffectGlobal:affectGlobal,lightingVisible:visible,lightingDimmable:dimmable,...updates});setApplied(true);window.setTimeout(()=>setApplied(false),1400)}; const list=(tab==='Fixtures'?LIGHT_FIXTURES_UI:LIGHT_PRESETS_UI).filter(([name])=>name.toLowerCase().includes(query.toLowerCase())); return <div className="lighting-content"><EnvironmentControls /><div className="lighting-heading"><h3>Lighting</h3><p>{tab==='Presets'?'Choose a lighting preset to set the perfect mood for your space':tab==='Fixtures'?'Add and configure lighting fixtures for your space':'Adjust the selected lighting fixture\'s properties'}</p></div><div className="intelli-tabs lighting-tabs">{['Presets','Fixtures','Properties'].map(item=><button key={item} className={tab===item?'is-active':''} onClick={()=>setTab(item)}>{item}</button>)}</div>{tab!=='Properties'&&<><input className="wall-search" value={query} onChange={e=>setQuery(e.target.value)} placeholder={tab==='Fixtures'?'Search lighting fixtures...':'Search presets...'}/><div className="lighting-card-grid">{list.map(([name,caption,color],i)=><button key={name} className={(tab==='Presets'?preset:fixture)===name?'is-selected':''} onClick={()=>{tab==='Presets'?setPreset(name):setFixture(name); useStore.getState().addLightingFixture(name);apply(tab==='Presets'?{lightPreset:name,lightingPreset:name}:{lightingFixture:name})}}><span className={`lighting-art lighting-art-${i%8}`} style={color?{background:color}:undefined}/><strong>{name}</strong><small>{caption}</small>{(tab==='Presets'?preset:fixture)===name&&<b>✓</b>}</button>)}</div><div className="lighting-feature"><strong>{tab==='Presets'?preset:fixture}</strong><small>{tab==='Presets'?'Combine light sources to create a space that matches your mood and style.':'Set the perfect ambience with a considered fixture arrangement.'}</small></div></>}{tab==='Properties'&&<><div className="selected-light"><span className="selected-light-art"/><div><strong>{fixture}</strong><small>Warm White (3000K)</small><button onClick={()=>setTab('Fixtures')}>Change Fixture →</button></div></div><div className="lighting-property-grid"><div><h4>Basic Properties</h4><label>Name<input value={fixture} readOnly/></label><label>Type<select><option>Pendant</option><option>Recessed</option><option>Wall</option></select></label><label>Qty<input value="3" readOnly/></label><label>Price (each)<input value="$120" readOnly/></label><h4>Light Settings</h4><LightRange label="Intensity" value={intensity} min="0" max="100" suffix="%" onChange={setIntensity}/><LightRange label="Color Temperature" value={temperature} min="1800" max="6500" suffix="K" onChange={setTemperature}/><label>Light Color<input value="#FFF4E0" readOnly/></label><LightRange label="Beam Angle" value={66} min="30" max="120" suffix="°" onChange={()=>{}}/><LightToggle label="Dimmable" value={dimmable} onChange={setDimmable}/></div><div><h4>Position &amp; Dimensions</h4><LightRange label="Height from Floor" value={height} min=".3" max="2.5" suffix="m" onChange={setHeight}/><LightRange label="Light Range" value={range} min="1" max="10" suffix="m" onChange={setRange}/><h4>Behavior &amp; Effects</h4><LightToggle label="Cast Shadows" value={shadows} onChange={setShadows}/><LightToggle label="Affect Global Lighting" value={affectGlobal} onChange={setAffectGlobal}/><LightToggle label="Visible in Renders" value={visible} onChange={setVisible}/></div></div></>}<div className="lighting-actions"><button className="intelli-apply" onClick={()=>apply()}>{applied?'Applied':tab==='Presets'?'Apply Preset':tab==='Fixtures'?'Add to Room →':'Apply Changes →'}</button>{tab==='Presets'&&<button onClick={()=>apply({lightingCustomPreset:true})}>Save as Custom Preset</button>}</div></div> }
+function LegacyLightingContent({ setRoomAppearance }) { const setLightingSettings=useStore((s)=>s.setLightingSettings); const [tab,setTab]=useState('Presets'); const [preset,setPreset]=useState('Warm Evening'); const [fixture,setFixture]=useState('Pendant Light'); const [query,setQuery]=useState(''); const [intensity,setIntensity]=useState(70); const [temperature,setTemperature]=useState(3000); const [height,setHeight]=useState(.75); const [range,setRange]=useState(5); const [shadows,setShadows]=useState(true); const [affectGlobal,setAffectGlobal]=useState(true); const [visible,setVisible]=useState(true); const [dimmable,setDimmable]=useState(true); const [applied,setApplied]=useState(false); const presetKeyByName={'Natural Daylight':'midday','Warm Evening':'evening','Bright Day':'midday','Cozy Night':'night','Sunset':'goldenHour','Studio':'studio','Cinematic':'night','Custom':'custom'}; const apply=(updates={})=>{const nextPreset=updates.presetName || preset; const key=presetKeyByName[nextPreset] || 'midday'; setPreset(nextPreset); setLightingSettings({ ambientIntensity: Math.max(0.1, intensity / 100), mainIntensity: Math.max(0.2, intensity / 45), color: key === 'night' ? '#9aa9d8' : temperature < 3500 ? '#f6bd82' : '#fff8ea', shadows }); setRoomAppearance({lightPreset:key,lightingPreset:nextPreset,lightingFixture:fixture,lightingIntensity:intensity,lightingTemperature:temperature,lightingHeight:height,lightingRange:range,lightingShadows:shadows,lightingAffectGlobal:affectGlobal,lightingVisible:visible,lightingDimmable:dimmable,...updates});setApplied(true);window.setTimeout(()=>setApplied(false),1400)}; const list=(tab==='Fixtures'?LIGHT_FIXTURES_UI:LIGHT_PRESETS_UI).filter(([name])=>name.toLowerCase().includes(query.toLowerCase())); return <div className="lighting-content"><EnvironmentControls /><div className="lighting-heading"><h3>Lighting</h3><p>{tab==='Presets'?'Choose a lighting preset to set the perfect mood for your space':tab==='Fixtures'?'Add and configure lighting fixtures for your space':'Adjust the selected lighting fixture\'s properties'}</p></div><div className="intelli-tabs lighting-tabs">{['Presets','Fixtures','Properties'].map(item=><button key={item} className={tab===item?'is-active':''} onClick={()=>setTab(item)}>{item}</button>)}</div>{tab!=='Properties'&&<><input className="wall-search" value={query} onChange={e=>setQuery(e.target.value)} placeholder={tab==='Fixtures'?'Search lighting fixtures...':'Search presets...'}/><div className="lighting-card-grid">{list.map(([name,caption,color],i)=><button key={name} className={(tab==='Presets'?preset:fixture)===name?'is-selected':''} onClick={()=>{tab==='Presets'?setPreset(name):setFixture(name); useStore.getState().addLightingFixture(name);apply(tab==='Presets'?{lightPreset:name,lightingPreset:name}:{lightingFixture:name})}}><span className={`lighting-art lighting-art-${i%8}`} style={color?{background:color}:undefined}/><strong>{name}</strong><small>{caption}</small>{(tab==='Presets'?preset:fixture)===name&&<b>Γ£ô</b>}</button>)}</div><div className="lighting-feature"><strong>{tab==='Presets'?preset:fixture}</strong><small>{tab==='Presets'?'Combine light sources to create a space that matches your mood and style.':'Set the perfect ambience with a considered fixture arrangement.'}</small></div></>}{tab==='Properties'&&<><div className="selected-light"><span className="selected-light-art"/><div><strong>{fixture}</strong><small>Warm White (3000K)</small><button onClick={()=>setTab('Fixtures')}>Change Fixture ΓåÆ</button></div></div><div className="lighting-property-grid"><div><h4>Basic Properties</h4><label>Name<input value={fixture} readOnly/></label><label>Type<select><option>Pendant</option><option>Recessed</option><option>Wall</option></select></label><label>Qty<input value="3" readOnly/></label><label>Price (each)<input value="$120" readOnly/></label><h4>Light Settings</h4><LightRange label="Intensity" value={intensity} min="0" max="100" suffix="%" onChange={setIntensity}/><LightRange label="Color Temperature" value={temperature} min="1800" max="6500" suffix="K" onChange={setTemperature}/><label>Light Color<input value="#FFF4E0" readOnly/></label><LightRange label="Beam Angle" value={66} min="30" max="120" suffix="┬░" onChange={()=>{}}/><LightToggle label="Dimmable" value={dimmable} onChange={setDimmable}/></div><div><h4>Position &amp; Dimensions</h4><LightRange label="Height from Floor" value={height} min=".3" max="2.5" suffix="m" onChange={setHeight}/><LightRange label="Light Range" value={range} min="1" max="10" suffix="m" onChange={setRange}/><h4>Behavior &amp; Effects</h4><LightToggle label="Cast Shadows" value={shadows} onChange={setShadows}/><LightToggle label="Affect Global Lighting" value={affectGlobal} onChange={setAffectGlobal}/><LightToggle label="Visible in Renders" value={visible} onChange={setVisible}/></div></div></>}<div className="lighting-actions"><button className="intelli-apply" onClick={()=>apply()}>{applied?'Applied':tab==='Presets'?'Apply Preset':tab==='Fixtures'?'Add to Room ΓåÆ':'Apply Changes ΓåÆ'}</button>{tab==='Presets'&&<button onClick={()=>apply({lightingCustomPreset:true})}>Save as Custom Preset</button>}</div></div> }
 function LightRange({label,value,min,max,suffix,onChange}){return <label className="light-range"><span>{label}<strong>{Number(value).toFixed(0)} {suffix}</strong></span><input type="range" min={min} max={max} value={value} onChange={e=>onChange(Number(e.target.value))}/></label>}
 function LightToggle({label,value,onChange}){return <div className="light-toggle"><span>{label}</span><button className={`intelli-switch ${value?'is-on':''}`} onClick={()=>onChange(!value)}><span/></button></div>}
 
@@ -378,8 +909,170 @@ function CustomFurnitureUploadForm() {
     </section>
   );
 }
+function FurnitureContent() {
+  const { items: catalogItems, status: catalogStatus } = useCatalog();
+  const addFurniture = useStore((s) => s.addFurniture);
+  const favorites = useStore((s) => s.favorites);
+  const toggleFavorite = useStore((s) => s.toggleFavorite);
+  const selectedCategory = useStore((s) => s.selectedCategory);
+  const setSelectedCategory = useStore((s) => s.setSelectedCategory);
+  const [query, setQuery] = useState('');
+  const [previewItem, setPreviewItem] = useState(null);
+  const categoryLabels = {
+    all: 'All',
+    'living-room': 'Sofas',
+    bedroom: 'Beds',
+    office: 'Office',
+    kitchen: 'Kitchen',
+    bathroom: 'Bathroom',
+    plants: 'Plants',
+    chairs: 'Chairs',
+    tables: 'Tables',
+    storage: 'Storage',
+    lighting: 'Lighting',
+    decor: 'Decor'
+  };
+  const category = categoryLabels[selectedCategory] || 'All';
+  const categories = ['All', 'Sofas', 'Chairs', 'Tables', 'Beds', 'Office', 'Kitchen', 'Bathroom', 'Plants', 'Storage', 'Lighting', 'Decor'];
+  const categoryKeys = {
+    Sofas: 'living-room',
+    Chairs: 'chairs',
+    Tables: 'tables',
+    Beds: 'bedroom',
+    Office: 'office',
+    Kitchen: 'kitchen',
+    Bathroom: 'bathroom',
+    Plants: 'plants',
+    Storage: 'storage',
+    Lighting: 'lighting',
+    Decor: 'decor'
+  };
+  const categoryKey = categoryKeys[category];
+  const filtered = catalogItems.filter((item) => {
+    const matchesQuery = item.name.toLowerCase().includes(query.toLowerCase());
+    const matchesCategory = category === 'All' || item.category === categoryKey;
+    return matchesQuery && matchesCategory;
+  });
+  const prices = ['$2,400', '$1,250', '$980', '$2,800', '$4,200', '$3,600', '$850', '$620', '$1,450', '$1,800', '$120', '$980'];
+  const activePreview = previewItem || filtered[0];
 
-function FurnitureContent() { const { items: catalogItems, status: catalogStatus } = useCatalog(); const addFurniture = useStore((s) => s.addFurniture); const favorites = useStore((s) => s.favorites); const toggleFavorite = useStore((s) => s.toggleFavorite); const selectedCategory = useStore((s) => s.selectedCategory); const setSelectedCategory = useStore((s) => s.setSelectedCategory); const [query,setQuery]=useState(''); const [previewItem,setPreviewItem]=useState(null); const categoryLabels={all:'All','living-room':'Sofas',bedroom:'Beds',office:'Office',kitchen:'Kitchen',bathroom:'Bathroom',plants:'Plants',chairs:'Chairs',tables:'Tables',storage:'Storage',lighting:'Lighting',decor:'Decor'}; const category = categoryLabels[selectedCategory] || 'All'; const categories=['All','Sofas','Chairs','Tables','Beds','Office','Kitchen','Bathroom','Plants','Storage','Lighting','Decor']; const categoryKeys={Sofas:'living-room',Chairs:'chairs',Tables:'tables',Beds:'bedroom',Office:'office',Kitchen:'kitchen',Bathroom:'bathroom',Plants:'plants',Storage:'storage',Lighting:'lighting',Decor:'decor'}; const categoryKey=categoryKeys[category]; const filtered=catalogItems.filter((item)=>{ const matchesQuery=item.name.toLowerCase().includes(query.toLowerCase()); const matchesCategory=category==='All'||item.category===categoryKey; return matchesQuery&&matchesCategory; }); const prices=['$2,400','$1,250','$980','$2,800','$4,200','$3,600','$850','$620','$1,450','$1,800','$120','$980']; const activePreview=previewItem || filtered[0]; const previewImage=activePreview ? ({'living-room':'/furniture-thumbnails/sofa.png',chairs:'/furniture-thumbnails/chair.png',tables:'/furniture-thumbnails/table.png',bedroom:'/furniture-thumbnails/bed.png'})[activePreview.category] : null; return <div className="furniture-content"><header className="furniture-heading"><div><h3>Furniture</h3><p>Find the perfect pieces for your space</p></div><button aria-label="Close furniture"><X size={19}/></button></header><div className="furniture-search"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search furniture, e.g. sofa, chair, table..."/><button aria-label="Filter furniture"><SlidersHorizontal size={16}/></button><button aria-label="Show favorites" className="furniture-favorite-filter"><Heart size={17}/></button></div><div className="furniture-categories">{categories.map(item=><button key={item} className={category===item?'is-active':''} onClick={()=>setSelectedCategory(categoryKeys[item] || 'all')}>{item}</button>)}</div>{activePreview&&<section className="furniture-object-preview" aria-live="polite"><ActualFurniturePreview item={activePreview} /><div className="furniture-object-preview-copy"><span>SELECTED PREVIEW</span><strong>{activePreview.name}</strong><small>Review this piece before adding it to your room.</small></div></section>}<section className="furniture-hero"><div><small>FEATURED</small><h4>Modern Living</h4><p>Timeless pieces for contemporary spaces.</p><button>Explore Collection <ChevronRight size={14}/></button></div></section><p className="catalog-source-status" role="status">{catalogStatus === 'live' ? `Live catalog · ${catalogItems.length} items` : catalogStatus === 'loading' ? 'Connecting to live catalog…' : 'Live catalog unavailable; showing local items'}</p><CustomFurnitureUploadForm /><div className="furniture-grid">{filtered.map((item,index)=><article className="furniture-product" key={item.id} onClick={()=>addFurniture(item,[0,0,0])}><button className={`furniture-heart ${favorites.includes(item.id)?'is-favorite':''}`} aria-label={`Favorite ${item.name}`} onClick={e=>{e.stopPropagation();toggleFavorite(item.id)}}><Heart size={15} fill={favorites.includes(item.id)?'currentColor':'none'}/></button><div className="furniture-thumb"><FurnitureThumbnail item={item}/></div><div className="furniture-product-copy"><strong>{item.name}</strong><span>{formatFurniturePrice(item, prices[index%prices.length])}</span></div><button className="furniture-add" aria-label={`Add ${item.name}`} onClick={e=>{e.stopPropagation();addFurniture(item,[0,0,0])}}><Plus size={15}/></button></article>)}</div></div> }
+  return (
+    <div className="furniture-content">
+      <header className="furniture-heading">
+        <div>
+          <h3>Furniture</h3>
+          <p>Find the perfect pieces for your space</p>
+        </div>
+        <button aria-label="Close furniture"><X size={19} /></button>
+      </header>
+      <div className="furniture-search">
+        <Search size={16} />
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search furniture, e.g. sofa, chair, table..." />
+        <button aria-label="Filter furniture"><SlidersHorizontal size={16} /></button>
+        <button aria-label="Show favorites" className="furniture-favorite-filter"><Heart size={17} /></button>
+      </div>
+      <div className="furniture-categories">
+        {categories.map((item) => (
+          <button key={item} className={category === item ? 'is-active' : ''} onClick={() => setSelectedCategory(categoryKeys[item] || 'all')}>
+            {item}
+          </button>
+        ))}
+      </div>
+      {activePreview && (
+        <section className="furniture-object-preview" aria-live="polite">
+          <ActualFurniturePreview item={activePreview} />
+          <div className="furniture-object-preview-copy">
+            <span>SELECTED PREVIEW</span>
+            <strong>{activePreview.name}</strong>
+            <small>Review this piece before adding it to your room.</small>
+          </div>
+        </section>
+      )}
+      <section className="furniture-hero">
+        <div>
+          <small>FEATURED</small>
+          <h4>Modern Living</h4>
+          <p>Timeless pieces for contemporary spaces.</p>
+          <button>Explore Collection <ChevronRight size={14} /></button>
+        </div>
+      </section>
+      <p className="catalog-source-status" role="status">
+        {catalogStatus === 'live' ? `Live catalog · ${catalogItems.length} items` : catalogStatus === 'loading' ? 'Connecting to live catalog…' : 'Live catalog unavailable; showing local items'}
+      </p>
+      <CustomFurnitureUploadForm />
+      <div className="furniture-grid">
+        {filtered.map((item, index) => (
+          <article
+            className="furniture-product"
+            key={item.id}
+            draggable
+            onDragStart={(e) => {
+              e.dataTransfer.setData('text/plain', item.id);
+              e.dataTransfer.effectAllowed = 'copy';
+            }}
+            onClick={() => addFurniture(item, [0, 0, 0])}
+          >
+            <button
+              className={`furniture-heart ${favorites.includes(item.id) ? 'is-favorite' : ''}`}
+              aria-label={`Favorite ${item.name}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFavorite(item.id);
+              }}
+            >
+              <Heart size={15} fill={favorites.includes(item.id) ? 'currentColor' : 'none'} />
+            </button>
+            <div className="furniture-thumb"><FurnitureThumbnail item={item} /></div>
+            <div className="furniture-product-copy">
+              <strong>{item.name}</strong>
+              <span>{formatFurniturePrice(item, prices[index % prices.length])}</span>
+            </div>
+            <button
+              className="furniture-add"
+              aria-label={`Add ${item.name}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                addFurniture(item, [0, 0, 0]);
+              }}
+            >
+              <Plus size={15} />
+            </button>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+class ConfigErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error('Configuration panel error:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '24px', textAlign: 'center', color: '#f87171' }}>
+          <p style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Something went wrong in this section.</p>
+          <button
+            style={{ padding: '6px 14px', fontSize: '12px', background: 'rgba(255,255,255,0.08)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', cursor: 'pointer' }}
+            onClick={() => this.setState({ hasError: false, error: null })}
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 
 function ConfigurationPanel() {
   const selectedIds = useStore((s) => s.selectedIds);
@@ -419,7 +1112,7 @@ function ConfigurationPanel() {
           ))}
           <button className="intelli-config-nav-bottom"><Settings2 size={18} strokeWidth={1.6} /><span>Settings</span></button>
         </nav>
-        <div className="intelli-config-content">
+        <div className="intelli-config-content"><ConfigErrorBoundary key={activeSection}>
           {activeSection === 'Layout' ? <LayoutContent room={room} setRoomAppearance={setRoomAppearance} /> : activeSection === 'Walls' ? <WallsContent room={room} setRoomAppearance={setRoomAppearance} /> : activeSection === 'Flooring' ? <FlooringContent room={room} setRoomAppearance={setRoomAppearance} /> : activeSection === 'Ceiling' ? <CeilingContent room={room} setRoomAppearance={setRoomAppearance} /> : activeSection === 'Windows' ? <WindowsContent room={room} setRoomAppearance={setRoomAppearance} /> : activeSection === 'Lighting' ? <LightingContent setRoomAppearance={setRoomAppearance} /> : activeSection === 'Environment' ? <EnvironmentContent setRoomAppearance={setRoomAppearance} /> : activeSection === 'Furniture' ? <FurnitureContent /> : <>
           <div className="intelli-section-title">
             <div><h3>{activeSection}</h3><p>{activeSection === 'Flooring' ? 'Select material and finish' : 'Configure this layer'}</p></div>
@@ -435,8 +1128,8 @@ function ConfigurationPanel() {
                 return (
                   <button key={materialId} className={`intelli-material-card ${selected ? 'is-selected' : ''}`} onClick={() => setRoomAppearance({ floorMaterial: materialId, floorColor: material.color })}>
                     <span className="intelli-material-swatch" style={{ backgroundColor: material.color }} />
-                    <span className="intelli-material-copy"><strong>{material.label}</strong><small>{material.price ? `+₹${material.price.toLocaleString('en-IN')}` : 'Included'}</small></span>
-                    <span className="intelli-radio">{selected ? '✓' : ''}</span>
+                    <span className="intelli-material-copy"><strong>{material.label}</strong><small>{material.price ? `+Γé╣${material.price.toLocaleString('en-IN')}` : 'Included'}</small></span>
+                    <span className="intelli-radio">{selected ? 'Γ£ô' : ''}</span>
                   </button>
                 );
               })}
@@ -447,11 +1140,93 @@ function ConfigurationPanel() {
           <div className="intelli-setting-row"><div><strong>Floor Heating</strong><small>Included</small></div><button className={`intelli-switch ${heating ? 'is-on' : ''}`} onClick={() => setHeating(!heating)} aria-pressed={heating}><span /></button></div>
           <button className="intelli-apply">Apply Selection</button>
           </>}
-        </div>
+        </ConfigErrorBoundary></div>
       </div>
     </aside>
   );
 }
+
+function PlanView({ view, room, furniture, onClose }) {
+  const canvasRef = React.useRef(null);
+  const isApartment = view === 'Apartment Plan';
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const rW = (room && room.width) || 6, rD = (room && room.depth) || 5;
+    const scale = Math.min((W - 80) / rW, (H - 80) / rD);
+    const ox = (W - rW * scale) / 2, oy = (H - rD * scale) / 2;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0f1117';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x < W; x += 30) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 0; y < H; y += 30) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    ctx.fillStyle = isApartment ? 'rgba(180,160,120,0.12)' : 'rgba(100,120,255,0.08)';
+    ctx.fillRect(ox, oy, rW * scale, rD * scale);
+    ctx.strokeStyle = isApartment ? '#c9a96e' : '#6c8cf5';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(ox, oy, rW * scale, rD * scale);
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.font = 'bold 12px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('N', W / 2, oy - 8);
+    ctx.fillText('S', W / 2, oy + rD * scale + 18);
+    ctx.fillText('W', ox - 12, oy + rD * scale / 2 + 4);
+    ctx.fillText('E', ox + rW * scale + 14, oy + rD * scale / 2 + 4);
+    ctx.fillStyle = 'rgba(255,255,255,0.32)';
+    ctx.font = '11px Inter, sans-serif';
+    ctx.fillText(rW + 'm', ox + rW * scale / 2, oy - 20);
+    ctx.textAlign = 'right';
+    ctx.fillText(rD + 'm', ox - 18, oy + rD * scale / 2 + 4);
+    ctx.textAlign = 'center';
+    (furniture || []).forEach(function(item) {
+      if (!item.position) return;
+      const fx = item.position[0], fz = item.position[2];
+      const fw = item.width || 1.2, fd = item.depth || 0.8;
+      const px = ox + (fx + rW / 2 - fw / 2) * scale;
+      const py = oy + (fz + rD / 2 - fd / 2) * scale;
+      ctx.fillStyle = 'rgba(108,140,245,0.35)';
+      ctx.fillRect(px, py, fw * scale, fd * scale);
+      ctx.strokeStyle = '#6c8cf5';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(px, py, fw * scale, fd * scale);
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.font = '9px Inter, sans-serif';
+      const label = (item.name || 'Item').substring(0, 8);
+      ctx.fillText(label, px + fw * scale / 2, py + fd * scale / 2 + 4);
+    });
+    const barW = 60;
+    const barM = (barW / scale).toFixed(1);
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(20, H - 20); ctx.lineTo(20 + barW, H - 20); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '10px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(barM + 'm', 24 + barW, H - 16);
+  }, [room, furniture, view, isApartment]);
+  return (
+    React.createElement('div', {
+      style: {
+        position: 'absolute', inset: 0, zIndex: 50,
+        background: 'linear-gradient(135deg, #0d1018 0%, #131928 100%)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+      }
+    },
+      React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
+        React.createElement('h2', { style: { color: '#e2c97e', fontFamily: 'Inter, sans-serif', fontSize: 18, fontWeight: 600, margin: 0 } }, view),
+        React.createElement('span', { style: { color: 'rgba(255,255,255,0.3)', fontSize: 12 } }, ((room && room.width) || 6) + 'm x ' + ((room && room.depth) || 5) + 'm'),
+        React.createElement('button', { onClick: onClose, style: { marginLeft: 'auto', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', padding: '4px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 12 } }, 'Close')
+      ),
+      React.createElement('canvas', { ref: canvasRef, width: 760, height: 520, style: { borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 80px rgba(0,0,0,0.6)' } }),
+      React.createElement('p', { style: { color: 'rgba(255,255,255,0.25)', fontSize: 11, marginTop: 12, fontFamily: 'Inter, sans-serif' } }, 'Top-down ' + view.toLowerCase() + ' ΓÇö furniture footprints shown to scale')
+    )
+  );
+}
+
 
 function WorkspaceOverlay() {
   const selectedIds = useStore((s) => s.selectedIds);
@@ -466,14 +1241,17 @@ function WorkspaceOverlay() {
   const redo = useStore((s) => s.redo);
   const setLightPreset = useStore((s) => s.setLightPreset);
   const [view, setView] = useState('3D View');
+  const room = useStore((s) => s.room);
+  const furniture = useStore((s) => s.furniture);
   const openConfig = (section) => window.dispatchEvent(new CustomEvent('intelli:open-config', { detail: { section } }));
   const cycleCamera = () => { const modes = Object.keys(CAMERA_MODES); setCameraMode(modes[(modes.indexOf(cameraMode) + 1) % modes.length]); };
   return <>
+    {(view === 'Floor Plan' || view === 'Apartment Plan') && <PlanView view={view} room={room} furniture={furniture} onClose={() => setView('3D View')} />}
     <div className="intelli-view-tabs"><button className={view === '3D View' ? 'is-active' : ''} onClick={() => setView('3D View')}>3D View</button><button className={view === 'Apartment Plan' ? 'is-active' : ''} onClick={() => setView('Apartment Plan')}>Apartment Plan</button><button className={view === 'Floor Plan' ? 'is-active' : ''} onClick={() => setView('Floor Plan')}>Floor Plan</button></div>
     <div className="intelli-canvas-actions"><button onClick={undo} disabled={!history.length} aria-label="Undo"><Undo2 size={17} /></button><button onClick={redo} disabled={!future.length} aria-label="Redo"><Redo2 size={17} /></button><button className="sun-action" onClick={() => setLightPreset(lightPreset === 'night' ? 'midday' : 'night')} aria-label="Toggle sunlight"><Sun size={18} /></button><button className="shadow-action">Shadows <ChevronDown size={14} /></button></div>
     <div className="intelli-tool-rail">{tools.map(({ label, icon: Icon }, index) => { const mode = label === 'Move' ? 'translate' : label === 'Rotate' ? 'rotate' : label === 'Scale' ? 'scale' : null; return <button key={label} className={(mode ? transformMode === mode : index === 0) ? 'is-active' : ''} onClick={() => mode && selectedIds.length === 1 && setTransformMode(mode)}><Icon size={20} strokeWidth={1.6} /><span>{label}</span></button>; })}</div>
     <div className="intelli-bottom-dock"><button className="is-active" onClick={() => openConfig('Lighting')}><Sun size={21} /><span>Sunlight</span></button><button onClick={cycleCamera} title={`Camera: ${CAMERA_MODES[cameraMode]?.label || 'Perspective'}`}><Box size={21} /><span>Camera</span></button><button onClick={() => openConfig('Environment')}><Lightbulb size={21} /><span>Environment</span></button><button onClick={() => openConfig('Flooring')}><Grid2X2 size={21} /><span>Materials</span></button><button onClick={() => setView(view === '3D View' ? 'Apartment Plan' : '3D View')}><Layers3 size={21} /><span>View Modes</span></button><button onClick={() => document.documentElement.requestFullscreen?.()}><Expand size={21} /><span>Presentation</span></button></div>
-    <div className="intelli-zoom"><button>−</button><span>90%</span><button>+</button></div><button className="intelli-fit"><Expand size={15} /> Fit to Screen</button><div className="intelli-view-toggle"><button>2D</button><button className="is-active">3D</button><button aria-label="Fullscreen"><Expand size={15} /></button></div>
+    <div className="intelli-zoom"><button>-</button><span>90%</span><button>+</button></div><button className="intelli-fit"><Expand size={15} /> Fit to Screen</button><div className="intelli-view-toggle"><button className={view === 'Floor Plan' ? 'is-active' : ''} onClick={() => setView('Floor Plan')}>2D</button><button className={view === '3D View' ? 'is-active' : ''} onClick={() => setView('3D View')}>3D</button><button aria-label="Fullscreen" onClick={() => document.documentElement.requestFullscreen?.()}><Expand size={15} /></button></div>
   </>;
 }
 
@@ -508,3 +1286,4 @@ export default function App() {
   if (route === 'register') return <AuthPlaceholder mode="register" />;
   return <LandingPage />;
 }
+
