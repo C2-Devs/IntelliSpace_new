@@ -17,6 +17,7 @@ import { CAMERA_MODES, FLOORING_MATERIAL_OPTIONS, FLOORING_MATERIALS, LIGHT_PRES
 import { TEMPLATE_LIST } from './data/roomTemplates';
 import { FLOORING_CATEGORIES, FLOORING_MATERIAL_CATALOG, FLOORING_PATTERNS, flooringPatternBackground, getFloorMaterialColor, getFloorMaterialId } from './data/flooringCatalog';
 import useCatalog from './hooks/useCatalog';
+import { useFurnitureThumbnail } from './utils/furnitureThumbnailService';
 import useWorkspaceStore from './store/useWorkspaceStore.js';
 import { uploadCustomFurniture } from './utils/customFurnitureApi.js';
 import { Heart, Plus, Search, SlidersHorizontal } from 'lucide-react';
@@ -759,7 +760,27 @@ function formatFurniturePrice(item, fallback) {
   }
 }
 
-function FurnitureThumbnail({ item }) { const category = item.category.replace('-', ' '); const imageByCategory = { 'living-room': '/furniture-thumbnails/sofa.png', chairs: '/furniture-thumbnails/chair.png', tables: '/furniture-thumbnails/table.png', bedroom: '/furniture-thumbnails/bed.png' }; const image = item.thumbnailPath || imageByCategory[item.category]; return <div className={`furniture-thumb-preview furniture-thumb-${item.category}`} aria-label={`${item.name} preview`}><div className="furniture-thumb-object" aria-hidden="true">{image ? <img src={image} alt="" /> : <><span className="furniture-thumb-surface" /><span className="furniture-thumb-form" /></>}</div><div className="furniture-thumb-meta"><span>{category}</span><b>PREVIEW</b></div></div>; }
+function FurnitureThumbnail({ item }) {
+  const thumbnail = useFurnitureThumbnail(item);
+  const category = (item.category || 'decor').replace('-', ' ');
+  return (
+    <div className={`furniture-thumb-preview furniture-thumb-${item.category || 'decor'}`} aria-label={`${item.name} preview`}>
+      <div className="furniture-thumb-object" aria-hidden="true">
+        {thumbnail ? (
+          <img src={thumbnail} alt={item.name} className="w-full h-full object-contain pointer-events-none" />
+        ) : item.thumbnailPath ? (
+          <img src={item.thumbnailPath} alt={item.name} className="w-full h-full object-contain pointer-events-none" />
+        ) : (
+          <div className="size-6 animate-pulse rounded-full bg-slate-400/20" />
+        )}
+      </div>
+      <div className="furniture-thumb-meta">
+        <span>{category}</span>
+        <b>PREVIEW</b>
+      </div>
+    </div>
+  );
+}
 
 function CustomFurnitureUploadForm() {
   const workspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
@@ -1010,6 +1031,8 @@ function FurnitureContent() {
               e.dataTransfer.setData('text/plain', item.id);
               e.dataTransfer.effectAllowed = 'copy';
             }}
+            onMouseEnter={() => setPreviewItem(item)}
+            onFocus={() => setPreviewItem(item)}
             onClick={() => addFurniture(item, [0, 0, 0])}
           >
             <button
