@@ -1,5 +1,11 @@
 {
   "buildCommand": "npm --prefix r3f-tailwind-app run build",
   "installCommand": "npm --prefix r3f-tailwind-app ci",
-  "outputDirectory": "r3f-tailwind-app/dist"
+  "outputDirectory": "r3f-tailwind-app/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ]
 }
