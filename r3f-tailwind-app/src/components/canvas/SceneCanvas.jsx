@@ -7,7 +7,7 @@
 import React, { Suspense } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
-import { Environment } from '@react-three/drei';
+import { AdaptiveDpr, Environment } from '@react-three/drei';
 import Room from './Room';
 import FurnitureManager from './FurnitureManager';
 import InteriorStructures from './InteriorStructures';
@@ -73,13 +73,15 @@ export default function SceneCanvas() {
         outputColorSpace: THREE.SRGBColorSpace,
       }}
       shadows={{ type: THREE.PCFSoftShadowMap }}
-      dpr={[1, 1.75]}
+      dpr={[1, 1.25]}
+      performance={{ min: 0.6, max: 1, debounce: 200 }}
       onCreated={({ gl }) => {
         gl.setClearColor('#121313', 1);
       }}
       onPointerMissed={() => useStore.getState().clearSelection()}
       style={{ background: 'transparent' }}
     >
+      <AdaptiveDpr />
       <SceneErrorBoundary>
         <Suspense fallback={<SceneFallback />}>
         <EnvironmentBackdrop />
