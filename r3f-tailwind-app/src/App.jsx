@@ -1239,7 +1239,7 @@ function PlanView({ view, room, furniture, onClose }) {
         React.createElement('span', { style: { color: 'rgba(255,255,255,0.3)', fontSize: 12 } }, ((room && room.width) || 6) + 'm x ' + ((room && room.depth) || 5) + 'm'),
         React.createElement('button', { onClick: onClose, style: { marginLeft: 'auto', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', padding: '4px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 12 } }, 'Close')
       ),
-      React.createElement('canvas', { ref: canvasRef, width: 760, height: 520, style: { borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 80px rgba(0,0,0,0.6)' } }),
+      React.createElement('canvas', { ref: canvasRef, width: 760, height: 520, style: { borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 80px rgba(0,0,0,0.6)', maxWidth: 'calc(100vw - 32px)', maxHeight: 'calc(100vh - 150px)', width: 'auto', height: 'auto', objectFit: 'contain' } }),
       React.createElement('p', { style: { color: 'rgba(255,255,255,0.25)', fontSize: 11, marginTop: 12, fontFamily: 'Inter, sans-serif' } }, 'Top-down ' + view.toLowerCase() + ' ΓÇö furniture footprints shown to scale')
     )
   );
