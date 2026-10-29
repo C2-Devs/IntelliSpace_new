@@ -79,72 +79,102 @@ export default function Navbar() {
       </div>
 
       {/* Toggles */}
-      <div className="flex gap-0.5 bg-[#121313] border border-[#343631] rounded-md p-0.5 shadow-[0_6px_18px_rgba(0,0,0,0.18)] ml-auto">
+      <div className="flex gap-1 bg-[#121313] border border-[#343631] rounded-lg p-1 shadow-[0_4px_14px_rgba(0,0,0,0.2)] ml-auto">
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${snapEnabled ? 'bg-[#c7a66a]/15 text-[#c7a66a] border border-[#c7a66a]/40 shadow-sm' : 'text-[#9a9a90] hover:bg-[#232421] hover:text-[#eee9df] border border-transparent'}`}
+          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${
+            snapEnabled
+              ? 'bg-[#c7a66a]/20 text-[#c7a66a] border border-[#c7a66a]/50 shadow-sm'
+              : 'text-[#9a9a90] hover:bg-[#232421] hover:text-[#eee9df] border border-transparent'
+          }`}
           onClick={toggleSnap}
-          title="Toggle Snap"
+          title="Toggle Snap (Align to grid)"
+          aria-label="Toggle Snap"
         >
-          <span className="text-sm">🧲</span>
+          <Magnet size={14} strokeWidth={2} />
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${showGrid ? 'bg-[#c7a66a]/15 text-[#c7a66a] border border-[#c7a66a]/40 shadow-sm' : 'text-[#9a9a90] hover:bg-[#232421] hover:text-[#eee9df] border border-transparent'}`}
+          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${
+            showGrid
+              ? 'bg-[#c7a66a]/20 text-[#c7a66a] border border-[#c7a66a]/50 shadow-sm'
+              : 'text-[#9a9a90] hover:bg-[#232421] hover:text-[#eee9df] border border-transparent'
+          }`}
           onClick={toggleGrid}
-          title="Toggle Grid"
+          title="Toggle Grid (Show floor grid)"
+          aria-label="Toggle Grid"
         >
-          <span className="text-sm">📏</span>
+          <Grid size={14} strokeWidth={2} />
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${showMinimap ? 'bg-[#c7a66a]/15 text-[#c7a66a] border border-[#c7a66a]/40 shadow-sm' : 'text-[#9a9a90] hover:bg-[#232421] hover:text-[#eee9df] border border-transparent'}`}
+          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${
+            showMinimap
+              ? 'bg-[#c7a66a]/20 text-[#c7a66a] border border-[#c7a66a]/50 shadow-sm'
+              : 'text-[#9a9a90] hover:bg-[#232421] hover:text-[#eee9df] border border-transparent'
+          }`}
           onClick={toggleMinimap}
           title="Toggle Minimap"
+          aria-label="Toggle Minimap"
         >
-          <span className="text-sm">🗺️</span>
+          <MapIcon size={14} strokeWidth={2} />
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${showMeasurements ? 'bg-[#c7a66a]/15 text-[#c7a66a] border border-[#c7a66a]/40 shadow-sm' : 'text-[#9a9a90] hover:bg-[#232421] hover:text-[#eee9df] border border-transparent'}`}
+          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${
+            showMeasurements
+              ? 'bg-[#c7a66a]/20 text-[#c7a66a] border border-[#c7a66a]/50 shadow-sm'
+              : 'text-[#9a9a90] hover:bg-[#232421] hover:text-[#eee9df] border border-transparent'
+          }`}
           onClick={toggleMeasurements}
-          title="Toggle Measurements"
+          title="Toggle Measurements (Room & item dimensions)"
+          aria-label="Toggle Measurements"
         >
-          <span className="text-sm">📐</span>
+          <Ruler size={14} strokeWidth={2} />
         </motion.button>
       </div>
 
-      {/* Save Indicator */}
+      {/* Save Indicator & Workspaces */}
       <WorkspaceManager />
       <SaveIndicator />
 
       {/* Actions */}
-      <div className="flex items-center gap-1 ml-2 border-l border-[#343631] pl-3">
+      <div className="flex items-center gap-1 ml-1 border-l border-[#343631] pl-2.5">
         <motion.button
           whileHover={history.length > 0 ? { scale: 1.05 } : {}}
           whileTap={history.length > 0 ? { scale: 0.95 } : {}}
-          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${history.length > 0 ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm cursor-pointer' : 'bg-transparent border border-transparent text-slate-400 opacity-40 cursor-not-allowed'}`}
+          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${
+            history.length > 0
+              ? 'bg-[#222522] border border-[#4b514a] text-[#e7e8e0] hover:bg-[#2b302a] hover:border-[#a6b49a] shadow-sm cursor-pointer'
+              : 'bg-transparent border border-transparent text-[#666963] opacity-40 cursor-not-allowed'
+          }`}
           onClick={undo}
           disabled={history.length === 0}
           title="Undo (Ctrl+Z)"
+          aria-label="Undo"
           id="btn-undo"
         >
-          <span className="text-sm">↩</span>
+          <Undo size={14} strokeWidth={2} />
         </motion.button>
         <motion.button
           whileHover={future.length > 0 ? { scale: 1.05 } : {}}
           whileTap={future.length > 0 ? { scale: 0.95 } : {}}
-          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${future.length > 0 ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm cursor-pointer' : 'bg-transparent border border-transparent text-slate-400 opacity-40 cursor-not-allowed'}`}
+          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${
+            future.length > 0
+              ? 'bg-[#222522] border border-[#4b514a] text-[#e7e8e0] hover:bg-[#2b302a] hover:border-[#a6b49a] shadow-sm cursor-pointer'
+              : 'bg-transparent border border-transparent text-[#666963] opacity-40 cursor-not-allowed'
+          }`}
           onClick={redo}
           disabled={future.length === 0}
           title="Redo (Ctrl+Y)"
+          aria-label="Redo"
           id="btn-redo"
         >
-          <span className="text-sm">↪</span>
+          <Redo size={14} strokeWidth={2} />
         </motion.button>
       </div>
     </motion.nav>
