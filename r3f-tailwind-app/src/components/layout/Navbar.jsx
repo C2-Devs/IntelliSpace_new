@@ -45,45 +45,52 @@ export default function Navbar() {
       initial={{ y: -50, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="flex-none flex items-center gap-3 px-4 bg-[#181918] border-b border-[#343631] z-50 h-14 shadow-[0_8px_24px_rgba(0,0,0,0.24)]" 
+      className="flex-none flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2.5 md:gap-3 px-2 sm:px-4 bg-[#181918] border-b border-[#343631] z-50 h-14 shadow-[0_8px_24px_rgba(0,0,0,0.24)]" 
       id="main-navbar"
     >
       {/* Logo & Title */}
-      <div className="intelli-brand" aria-label="IntelliSpace editor">
+      <div className="intelli-brand flex-shrink-0" aria-label="IntelliSpace editor">
         <motion.div whileHover={{ scale: 1.04 }} className="intelli-brand-mark" aria-hidden="true"><span /><span /><i /></motion.div>
-        <div className="intelli-brand-copy"><h1>INTELLI<span>SPACE</span></h1><span>Spatial design studio</span></div>
+        <div className="intelli-brand-copy">
+          <h1>INTELLI<span>SPACE</span></h1>
+          <span className="hidden lg:inline">Spatial design studio</span>
+        </div>
       </div>
 
       {/* Template Selector */}
-      <div className="intelli-project-picker">
-        <span className="intelli-project-label">Project</span>
-        <div className="intelli-project-select-wrap"><select
-          className="intelli-project-select"
-          value={currentTemplate}
-          onChange={(e) => setTemplate(e.target.value)}
-          id="template-selector"
-          aria-label="Select project template"
-        >
-          {TEMPLATE_LIST.map((t) => (
-            <option key={t.id} value={t.id} className="bg-[#16191c] text-[#eee9df] font-medium">{t.name}</option>
-          ))}
-        </select><ArrowDown className="intelli-project-chevron" size={13} aria-hidden="true" /></div>
+      <div className="intelli-project-picker flex-shrink-0">
+        <span className="intelli-project-label hidden xl:inline">Project</span>
+        <div className="intelli-project-select-wrap">
+          <select
+            className="intelli-project-select"
+            value={currentTemplate}
+            onChange={(e) => setTemplate(e.target.value)}
+            id="template-selector"
+            aria-label="Select project template"
+          >
+            {TEMPLATE_LIST.map((t) => (
+              <option key={t.id} value={t.id} className="bg-[#16191c] text-[#eee9df] font-medium">{t.name}</option>
+            ))}
+          </select>
+          <ArrowDown className="intelli-project-chevron" size={13} aria-hidden="true" />
+        </div>
       </div>
 
-      <div className="intelli-header-divider" />
+      <div className="intelli-header-divider hidden xl:block" />
 
-      <div className="intelli-metrics" aria-label="Live project totals">
-        <div><span>Total Area</span><strong>{metrics.area.toFixed(1)} m²</strong></div>
-        <div><span>Base Price</span><strong>{formatCurrency(metrics.base)}</strong></div>
+      {/* Metrics */}
+      <div className="intelli-metrics ml-auto flex-shrink-0" aria-label="Live project totals">
+        <div className="intelli-metric-area"><span>Total Area</span><strong>{metrics.area.toFixed(1)} m²</strong></div>
+        <div className="intelli-metric-base"><span>Base Price</span><strong>{formatCurrency(metrics.base)}</strong></div>
         <div className="intelli-total"><span>Total Price</span><strong>{formatCurrency(metrics.total)}</strong></div>
       </div>
 
       {/* Toggles */}
-      <div className="flex gap-1 bg-[#121313] border border-[#343631] rounded-lg p-1 shadow-[0_4px_14px_rgba(0,0,0,0.2)] ml-auto">
+      <div className="flex gap-0.5 sm:gap-1 bg-[#121313] border border-[#343631] rounded-lg p-0.5 sm:p-1 shadow-[0_4px_14px_rgba(0,0,0,0.2)] ml-1 sm:ml-2 flex-shrink-0">
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${
+          className={`flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-md transition-colors ${
             snapEnabled
               ? 'bg-[#c7a66a]/20 text-[#c7a66a] border border-[#c7a66a]/50 shadow-sm'
               : 'text-[#9a9a90] hover:bg-[#232421] hover:text-[#eee9df] border border-transparent'
@@ -92,12 +99,12 @@ export default function Navbar() {
           title="Toggle Snap (Align to grid)"
           aria-label="Toggle Snap"
         >
-          <Magnet size={14} strokeWidth={2} />
+          <Magnet size={13} strokeWidth={2} />
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${
+          className={`flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-md transition-colors ${
             showGrid
               ? 'bg-[#c7a66a]/20 text-[#c7a66a] border border-[#c7a66a]/50 shadow-sm'
               : 'text-[#9a9a90] hover:bg-[#232421] hover:text-[#eee9df] border border-transparent'
@@ -106,12 +113,12 @@ export default function Navbar() {
           title="Toggle Grid (Show floor grid)"
           aria-label="Toggle Grid"
         >
-          <Grid size={14} strokeWidth={2} />
+          <Grid size={13} strokeWidth={2} />
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${
+          className={`hidden md:flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-md transition-colors ${
             showMinimap
               ? 'bg-[#c7a66a]/20 text-[#c7a66a] border border-[#c7a66a]/50 shadow-sm'
               : 'text-[#9a9a90] hover:bg-[#232421] hover:text-[#eee9df] border border-transparent'
@@ -120,12 +127,12 @@ export default function Navbar() {
           title="Toggle Minimap"
           aria-label="Toggle Minimap"
         >
-          <MapIcon size={14} strokeWidth={2} />
+          <MapIcon size={13} strokeWidth={2} />
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${
+          className={`hidden md:flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-md transition-colors ${
             showMeasurements
               ? 'bg-[#c7a66a]/20 text-[#c7a66a] border border-[#c7a66a]/50 shadow-sm'
               : 'text-[#9a9a90] hover:bg-[#232421] hover:text-[#eee9df] border border-transparent'
@@ -134,16 +141,18 @@ export default function Navbar() {
           title="Toggle Measurements (Room & item dimensions)"
           aria-label="Toggle Measurements"
         >
-          <Ruler size={14} strokeWidth={2} />
+          <Ruler size={13} strokeWidth={2} />
         </motion.button>
       </div>
 
       {/* Save Indicator & Workspaces */}
-      <WorkspaceManager />
-      <SaveIndicator />
+      <div className="flex-shrink-0 flex items-center">
+        <WorkspaceManager />
+        <SaveIndicator />
+      </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-1 ml-1 border-l border-[#343631] pl-2.5">
+      <div className="hidden sm:flex items-center gap-1 border-l border-[#343631] pl-2 flex-shrink-0">
         <motion.button
           whileHover={history.length > 0 ? { scale: 1.05 } : {}}
           whileTap={history.length > 0 ? { scale: 0.95 } : {}}
@@ -158,7 +167,7 @@ export default function Navbar() {
           aria-label="Undo"
           id="btn-undo"
         >
-          <Undo size={14} strokeWidth={2} />
+          <Undo size={13} strokeWidth={2} />
         </motion.button>
         <motion.button
           whileHover={future.length > 0 ? { scale: 1.05 } : {}}
@@ -174,7 +183,7 @@ export default function Navbar() {
           aria-label="Redo"
           id="btn-redo"
         >
-          <Redo size={14} strokeWidth={2} />
+          <Redo size={13} strokeWidth={2} />
         </motion.button>
       </div>
     </motion.nav>

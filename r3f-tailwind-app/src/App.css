@@ -262,3 +262,315 @@
   object-fit: contain !important;
   filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.6)) !important;
 }
+
+/* ==========================================================================
+   Responsive Architecture & Breakpoint Optimization
+   ========================================================================== */
+
+/* Laptop & Medium Screens (<= 1200px) */
+@media (max-width: 1200px) {
+  #main-navbar {
+    height: 60px !important;
+    padding: 0 16px !important;
+    gap: 10px !important;
+  }
+  .intelli-workspace {
+    height: calc(100vh - 60px) !important;
+  }
+  .intelli-brand {
+    min-width: auto !important;
+    margin-right: 4px !important;
+    gap: 8px !important;
+  }
+  .intelli-brand-copy > span {
+    display: none !important;
+  }
+  .intelli-project-label,
+  .intelli-header-divider {
+    display: none !important;
+  }
+  .intelli-project-select {
+    min-width: 130px !important;
+    height: 36px !important;
+    font-size: 11px !important;
+  }
+  .intelli-metrics {
+    gap: 12px !important;
+  }
+  .intelli-metric-base {
+    display: none !important;
+  }
+  .intelli-metrics .intelli-total {
+    min-width: 110px !important;
+    padding: 5px 12px !important;
+  }
+  .intelli-metrics .intelli-total strong {
+    font-size: 13px !important;
+  }
+}
+
+/* Screens <= 1024px: Hide floating canvas actions that collide with view tabs */
+@media (max-width: 1024px) {
+  .intelli-canvas-actions {
+    display: none !important;
+  }
+}
+
+/* Tablet Landscape & Below (<= 900px) */
+@media (max-width: 900px) {
+  #main-navbar {
+    height: 54px !important;
+    padding: 0 10px !important;
+    gap: 8px !important;
+  }
+  .intelli-workspace {
+    height: calc(100vh - 54px) !important;
+  }
+  .intelli-metric-area {
+    display: none !important;
+  }
+  .intelli-metrics {
+    gap: 6px !important;
+  }
+  .intelli-metrics .intelli-total {
+    min-width: unset !important;
+    padding: 4px 10px !important;
+  }
+  .intelli-metrics .intelli-total strong {
+    font-size: 12px !important;
+  }
+
+  /* Cloud workspaces icon-only */
+  .workspace-manager-trigger span {
+    display: none !important;
+  }
+  .workspace-manager-trigger {
+    padding: 6px 8px !important;
+    min-width: 32px !important;
+  }
+
+  /* Hide the 160px minimap on tablets & mobile to keep 3D canvas unobstructed */
+  .intelli-minimap {
+    display: none !important;
+  }
+
+  /* Lift zoom controls and 2D/3D toggle above bottom dock */
+  .intelli-zoom {
+    left: 10px !important;
+    bottom: 66px !important;
+    z-index: 20 !important;
+    scale: 0.88;
+    transform-origin: bottom left;
+  }
+  .intelli-fit {
+    display: none !important;
+  }
+  .intelli-view-toggle {
+    right: 10px !important;
+    bottom: 66px !important;
+    z-index: 20 !important;
+    scale: 0.88;
+    transform-origin: bottom right;
+  }
+
+  /* Bottom dock responsiveness */
+  .intelli-bottom-dock {
+    bottom: 8px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    max-width: calc(100vw - 16px) !important;
+    padding: 4px 6px !important;
+    gap: 3px !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+    z-index: 25 !important;
+  }
+  .intelli-bottom-dock::-webkit-scrollbar {
+    display: none !important;
+  }
+  .intelli-bottom-dock button {
+    min-width: 44px !important;
+    padding: 4px 3px !important;
+    font-size: 8px !important;
+    gap: 3px !important;
+  }
+  .intelli-bottom-dock button svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .intelli-config.is-furniture-config {
+    width: min(520px, calc(100vw - 20px)) !important;
+  }
+  .intelli-config.is-furniture-config .furniture-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+}
+
+/* Tablet Portrait & Handheld (<= 768px) */
+@media (max-width: 768px) {
+  #main-navbar {
+    height: 48px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    gap: 6px !important;
+  }
+  .intelli-workspace {
+    height: calc(100vh - 48px) !important;
+  }
+
+  .intelli-brand h1 {
+    font-size: 13px !important;
+  }
+  .intelli-brand-mark {
+    width: 26px !important;
+    height: 26px !important;
+    border-radius: 7px !important;
+  }
+  .intelli-brand-mark span {
+    width: 12px !important;
+    height: 12px !important;
+  }
+  .intelli-project-select {
+    min-width: 105px !important;
+    max-width: 125px !important;
+    height: 32px !important;
+    font-size: 10px !important;
+    padding: 0 20px 0 8px !important;
+  }
+  .intelli-project-chevron {
+    right: 7px !important;
+  }
+
+  .intelli-metrics {
+    gap: 4px !important;
+  }
+  .intelli-metrics .intelli-total {
+    min-width: auto !important;
+    padding: 3px 8px !important;
+  }
+  .intelli-metrics .intelli-total span {
+    display: none !important;
+  }
+  .intelli-metrics .intelli-total strong {
+    font-size: 11px !important;
+  }
+
+  /* Left tool rail: icon-only strip */
+  .intelli-tool-rail {
+    left: 8px !important;
+    top: 56px !important;
+    gap: 3px !important;
+    padding: 4px 2px !important;
+    width: 40px !important;
+  }
+  .intelli-tool-rail button {
+    width: 36px !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+  }
+  .intelli-tool-rail button span {
+    display: none !important;
+  }
+  .intelli-tool-rail button.is-active {
+    width: 32px !important;
+    margin: 0 2px !important;
+  }
+  .intelli-tool-rail button svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .intelli-view-tabs {
+    left: 8px !important;
+    top: 10px !important;
+  }
+  .intelli-view-tabs button {
+    padding: 6px 10px !important;
+    font-size: 10px !important;
+  }
+
+  /* Configuration and Furniture Panels as clean slide-over drawer */
+  .intelli-config,
+  .intelli-config.is-furniture-config {
+    position: fixed !important;
+    top: 50px !important;
+    right: 8px !important;
+    bottom: 8px !important;
+    left: auto !important;
+    width: min(420px, calc(100vw - 16px)) !important;
+    max-width: calc(100vw - 16px) !important;
+    border-radius: 12px !important;
+    box-shadow: -10px 0 35px rgba(0, 0, 0, 0.6) !important;
+    z-index: 60 !important;
+  }
+  .config-resize-handle {
+    display: none !important;
+  }
+  .intelli-config.is-furniture-config .furniture-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  /* Selection Inspector Panel as Drawer */
+  .intelli-selection-panel {
+    position: fixed !important;
+    top: 50px !important;
+    right: 8px !important;
+    bottom: 8px !important;
+    left: auto !important;
+    width: min(360px, calc(100vw - 16px)) !important;
+    max-width: calc(100vw - 16px) !important;
+    margin: 0 !important;
+    border-radius: 12px !important;
+    z-index: 60 !important;
+    box-shadow: -10px 0 35px rgba(0, 0, 0, 0.6) !important;
+  }
+}
+
+/* Mobile Handsets (<= 480px) */
+@media (max-width: 480px) {
+  #main-navbar {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+  .intelli-brand {
+    gap: 6px !important;
+  }
+  .intelli-brand h1 {
+    font-size: 11px !important;
+    letter-spacing: 0.08em !important;
+  }
+  .intelli-brand-mark {
+    width: 22px !important;
+    height: 22px !important;
+    border-radius: 6px !important;
+  }
+  .intelli-project-select {
+    min-width: 90px !important;
+    max-width: 105px !important;
+    font-size: 9px !important;
+    padding: 0 18px 0 6px !important;
+  }
+  .intelli-config,
+  .intelli-config.is-furniture-config,
+  .intelli-selection-panel {
+    width: calc(100vw - 12px) !important;
+    right: 6px !important;
+    bottom: 6px !important;
+  }
+  .intelli-config-nav {
+    width: 58px !important;
+  }
+  .intelli-config-nav button {
+    padding: 8px 2px !important;
+    font-size: 8px !important;
+  }
+  .intelli-config-content {
+    padding: 12px 10px 10px !important;
+  }
+}
+

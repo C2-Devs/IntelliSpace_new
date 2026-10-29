@@ -91,7 +91,7 @@ export default function Minimap() {
   if (!showMinimap) return null;
 
   return (
-    <div style={{
+    <div className="intelli-minimap" style={{
       position: 'absolute', top: 16, right: 16, zIndex: 30,
       display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4,
       pointerEvents: 'none',
