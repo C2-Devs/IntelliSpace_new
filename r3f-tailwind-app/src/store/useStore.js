@@ -47,7 +47,9 @@ function normalizeFurnitureItem(item) {
     position: normalizeVector(item.position, [0, 0, 0]),
     rotation: normalizeVector(item.rotation, [0, 0, 0]),
     scale,
-    isLocked: Boolean(item.isLocked ?? item.is_locked ?? item.locked),
+    isLocked: typeof item.isLocked === 'boolean' ? item.isLocked : Boolean(item.is_locked ?? item.locked),
+    is_locked: typeof item.isLocked === 'boolean' ? item.isLocked : Boolean(item.is_locked ?? item.locked),
+    locked: typeof item.isLocked === 'boolean' ? item.isLocked : Boolean(item.is_locked ?? item.locked),
     isVisible: item.isVisible !== false && item.is_visible !== false && item.visible !== false,
     hasCustomMaterial: Boolean(item.hasCustomMaterial),
     materialColor: item.hasCustomMaterial && /^#[0-9a-f]{6}$/i.test(item.materialColor || '') ? item.materialColor : null,
@@ -311,6 +313,12 @@ lightPreset: template.lightPreset || 'midday',
       furniture: state.furniture.filter((f) => !idsArray.includes(f.id)),
       selectedIds: state.selectedIds.filter((id) => !idsArray.includes(id)),
     }));
+  },
+
+  toggleFurnitureLock: (id) => {
+    const item = get().furniture.find((f) => f.id === id);
+    if (!item) return;
+    get().updateFurniture(id, { isLocked: !item.isLocked });
   },
 
   updateFurniture: (id, updates) => {

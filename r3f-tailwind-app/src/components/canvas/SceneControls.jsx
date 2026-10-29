@@ -188,7 +188,7 @@ export default function SceneControls() {
         target={[0, 0.75, 0]}
       />
 
-      {selectedItem && (
+      {selectedItem && !selectedItem.isLocked && (
         <TransformControls
           ref={transformRef}
           object={targetRef.current}

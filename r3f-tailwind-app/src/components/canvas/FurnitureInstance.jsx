@@ -298,7 +298,6 @@ function LoadedFurnitureInstance({ item, definition }) {
   }, [gl]);
 
   const handlePointerDown = (e) => {
-    if (item.isLocked) return;
     e.stopPropagation();
     selectFurniture(item.id, e.shiftKey);
   };
@@ -312,7 +311,6 @@ function LoadedFurnitureInstance({ item, definition }) {
       scale={item.scale}
       onPointerDown={handlePointerDown}
       onPointerOver={(e) => {
-        if (item.isLocked) e.stopPropagation();
         e.stopPropagation();
         setHovered(true);
         gl.domElement.style.cursor = 'pointer';
