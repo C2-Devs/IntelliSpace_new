@@ -402,9 +402,11 @@
   .intelli-config.is-furniture-config {
     width: min(520px, calc(100vw - 20px)) !important;
   }
+  .furniture-grid,
   .intelli-config.is-furniture-config .furniture-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)) !important;
     gap: 8px !important;
+    min-width: 0 !important;
   }
 }
 
@@ -510,9 +512,11 @@
   .config-resize-handle {
     display: none !important;
   }
+  .furniture-grid,
   .intelli-config.is-furniture-config .furniture-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)) !important;
     gap: 8px !important;
+    min-width: 0 !important;
   }
 
   /* Selection Inspector Panel as Drawer */
@@ -571,6 +575,37 @@
   }
   .intelli-config-content {
     padding: 12px 10px 10px !important;
+  }
+}
+
+/* Smooth slide drawer transitions */
+.intelli-config,
+.intelli-config.is-furniture-config,
+.intelli-selection-panel {
+  transition: width 0.2s ease, opacity 0.2s ease !important;
+}
+
+@media (max-width: 768px) {
+  .config-reopen-button {
+    position: fixed !important;
+    right: 0 !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 45 !important;
+    border-radius: 8px 0 0 8px !important;
+    width: 32px !important;
+    height: 60px !important;
+    background: rgba(29, 34, 41, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-right: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .furniture-grid,
+  .intelli-config.is-furniture-config .furniture-grid {
+    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)) !important;
+    gap: 6px !important;
   }
 }
 
