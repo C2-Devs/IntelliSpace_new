@@ -50,10 +50,10 @@ export default function CollisionAdvisoryEngine() {
         object.userData?.collisionProxy === false ||
         object.userData?.selectionOutline
       ) return;
-      const box = new THREE.Box3().setFromObject(object);
-      if (box.isEmpty()) return;
+      const bounds = new THREE.Box3().setFromObject(object);
+      if (bounds.isEmpty()) return;
       // Skip thin floor items like carpets and rugs to prevent false collisions with furniture placed on them.
-      const size = box.getSize(new THREE.Vector3());
+      const size = bounds.getSize(new THREE.Vector3());
       if (size.y < 0.08) return;
       const id = object.userData.furnitureId;
       let box = boxes.current.get(id);
