@@ -82,18 +82,21 @@ export function getFurnitureThumbnail(modelPath) {
     return pendingPromises.get(modelPath);
   }
 
-  const promise = new Promise((resolve) => {
-    renderQueue = renderQueue.then(async () => {
-      try {
-        const pipeline = initOffscreenPipeline();
-        if (!pipeline) {
-          resolve(null);
-          return;
-        }
+  // Fetch model concurrently across network; queue only the rapid WebGL draw pass
+  const promise = (async () => {
+    try {
+      if (!gltfLoader) {
+        initOffscreenPipeline();
+      }
+      if (!gltfLoader) return null;
 
-        const gltf = await new Promise((res, rej) => {
-          gltfLoader.load(modelPath, res, undefined, rej);
-        });
+      const gltf = await new Promise((res, rej) => {
+        gltfLoader.load(modelPath, res, undefined, rej);
+      });
+
+      return await (renderQueue = renderQueue.then(() => {
+        const pipeline = initOffscreenPipeline();
+        if (!pipeline) return null;
 
         const root = gltf.scene;
         const box = new THREE.Box3().setFromObject(root);
@@ -102,12 +105,12 @@ export function getFurnitureThumbnail(modelPath) {
         const maxDim = Math.max(size.x, size.y, size.z) || 1;
 
         root.position.sub(center);
-        root.scale.setScalar(1.95 / maxDim);
+        root.scale.setScalar(2.1 / maxDim);
 
         pipeline.scene.add(root);
         pipeline.renderer.render(pipeline.scene, pipeline.camera);
 
-        const dataUrl = pipeline.renderer.domElement.toDataURL('image/webp', 0.85);
+        const dataUrl = pipeline.renderer.domElement.toDataURL('image/webp', 0.88);
         pipeline.scene.remove(root);
 
         root.traverse((child) => {
@@ -126,15 +129,17 @@ export function getFurnitureThumbnail(modelPath) {
           sessionStorage.setItem('thumb_' + modelPath, dataUrl);
         } catch (_) {}
 
-        resolve(dataUrl);
-      } catch (error) {
+        return dataUrl;
+      }));
+    } catch (error) {
+      if (import.meta.env.DEV) {
         console.warn('Failed to render thumbnail for ' + modelPath, error);
-        resolve(null);
-      } finally {
-        pendingPromises.delete(modelPath);
       }
-    });
-  });
+      return null;
+    } finally {
+      pendingPromises.delete(modelPath);
+    }
+  })();
 
   pendingPromises.set(modelPath, promise);
   return promise;

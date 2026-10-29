@@ -762,21 +762,16 @@ function formatFurniturePrice(item, fallback) {
 
 function FurnitureThumbnail({ item }) {
   const thumbnail = useFurnitureThumbnail(item);
-  const category = (item.category || 'decor').replace('-', ' ');
   return (
-    <div className={`furniture-thumb-preview furniture-thumb-${item.category || 'decor'}`} aria-label={`${item.name} preview`}>
+    <div className="furniture-thumb-preview" aria-label={`${item.name} preview`}>
       <div className="furniture-thumb-object" aria-hidden="true">
         {thumbnail ? (
-          <img src={thumbnail} alt={item.name} className="w-full h-full object-contain pointer-events-none" />
+          <img src={thumbnail} alt={item.name} className="w-full h-full object-contain pointer-events-none transition-opacity duration-200" />
         ) : item.thumbnailPath ? (
           <img src={item.thumbnailPath} alt={item.name} className="w-full h-full object-contain pointer-events-none" />
         ) : (
-          <div className="size-6 animate-pulse rounded-full bg-slate-400/20" />
+          <div className="size-7 animate-pulse rounded-full bg-white/10" />
         )}
-      </div>
-      <div className="furniture-thumb-meta">
-        <span>{category}</span>
-        <b>PREVIEW</b>
       </div>
     </div>
   );

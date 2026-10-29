@@ -220,3 +220,45 @@
   background: #c7a66a22;
   color: #eee9df;
 }
+
+/* ── Clean 3D Furniture Thumbnails ────────────────────────── */
+.furniture-thumb-preview::before,
+.furniture-thumb-preview:before,
+.furniture-thumb-form,
+.furniture-thumb-surface,
+.furniture-thumb-meta {
+  display: none !important;
+}
+
+.furniture-thumb {
+  height: 110px !important;
+  background: radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.09), transparent 60%), #151618 !important;
+  position: relative !important;
+}
+
+.furniture-thumb-preview {
+  position: absolute !important;
+  inset: 0 !important;
+  height: 100% !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.furniture-thumb-object {
+  position: absolute !important;
+  inset: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.furniture-thumb-object img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.6)) !important;
+}

@@ -20,9 +20,7 @@ export default function FurnitureThumbnail({ item }) {
       ) : (
         <div className="size-8 animate-pulse rounded-full bg-slate-300/60" aria-hidden="true" />
       )}
-      <span className="pointer-events-none absolute bottom-1.5 left-1/2 -translate-x-1/2 rounded border border-slate-500/70 bg-slate-950/80 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-white">
-        Preview
-      </span>
+      
     </div>
   );
 }
